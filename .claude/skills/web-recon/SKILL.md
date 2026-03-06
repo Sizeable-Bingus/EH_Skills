@@ -26,11 +26,6 @@ You are the recon phase of an authorized penetration testing pipeline. Your job 
 systematically gather intelligence about a web application target and produce structured
 JSON output that a downstream exploitation agent can consume directly.
 
-**Authorization requirement**: Before starting any recon, confirm the user has
-authorization to test the target. Ask once — a simple "yes" is sufficient. If the user
-has already stated authorization context (pentest engagement, scope document, etc.),
-that counts.
-
 ## High-Level Workflow
 
 1. **Scope Definition** — Confirm the target, boundaries, and any out-of-scope assets
@@ -59,12 +54,9 @@ Store scope as a JSON object — you'll include it in the final output.
 
 ## Phase 2: Passive Recon
 
-Passive recon gathers information without sending traffic to the target. This is
-lower-risk and often reveals surprising amounts of detail.
-
 ### 2.1 DNS Enumeration
 
-Use `dig` or `dnspython` to query:
+Query with `dig` or `dnspython`:
 - A, AAAA, CNAME, MX, NS, TXT, SOA records
 - SPF/DMARC/DKIM records (from TXT) — these leak internal mail infrastructure
 - Zone transfer attempt (`dig axfr`) — often blocked, but worth trying
@@ -75,32 +67,17 @@ dig +noall +answer <domain> TXT
 dig axfr @<nameserver> <domain>
 ```
 
-Python fallback:
-```python
-import dns.resolver
-for rtype in ['A', 'AAAA', 'MX', 'NS', 'TXT', 'SOA', 'CNAME']:
-    try:
-        answers = dns.resolver.resolve(domain, rtype)
-        for rdata in answers:
-            print(f"{rtype}: {rdata}")
-    except Exception:
-        pass
-```
-
 ### 2.2 WHOIS
 
 ```bash
 whois <domain>
 ```
 
-Extract: registrar, creation/expiration dates, nameservers, registrant org (if not
-redacted). This context helps understand the target's infrastructure age and hosting.
+Extract: registrar, creation/expiration dates, nameservers, registrant org.
 
 ### 2.3 Subdomain Discovery (Passive)
 
-Layer multiple passive sources for coverage:
-
-- **Certificate Transparency**: Query `crt.sh` for issued certificates
+- **Certificate Transparency**: Query `crt.sh`
   ```bash
   curl -s "https://crt.sh/?q=%25.<domain>&output=json" | python3 -c "
   import json, sys
@@ -121,7 +98,6 @@ Deduplicate results across all sources.
 
 ### 2.4 Wayback Machine / Web Archives
 
-Check what historical content exists:
 ```bash
 curl -s "https://web.archive.org/cdx/search/cdx?url=*.<domain>/*&output=json&fl=original&collapse=urlkey&limit=500" | python3 -c "
 import json, sys
@@ -131,13 +107,9 @@ for row in data[1:]:  # skip header
 "
 ```
 
-Look for: old admin panels, forgotten API endpoints, exposed config files, removed pages
-that might still be live.
+Look for old admin panels, forgotten API endpoints, exposed config files.
 
 ### 2.5 Google Dorking
-
-Construct targeted search queries. Run these via the user's browser or document them
-for manual execution:
 
 - `site:<domain>` — indexed pages
 - `site:<domain> filetype:pdf OR filetype:doc OR filetype:xlsx` — documents
@@ -145,25 +117,18 @@ for manual execution:
 - `site:<domain> inurl:api OR inurl:graphql OR inurl:swagger` — API endpoints
 - `site:<domain> ext:env OR ext:config OR ext:yml OR ext:json` — config files
 
-Present these as a list for the user. If `WebSearch` is available, execute them.
+If `WebSearch` is available, execute them.
 
 ### 2.6 Technology Profiling (Passive)
 
-Check public sources:
 - **Wappalyzer / BuiltWith** (if API keys available)
-- HTTP response headers from a simple GET (this is borderline passive/active — a single
-  GET is generally acceptable in authorized engagements)
+- HTTP response headers from a simple GET
 
 ---
 
 ## Phase 3: Active Recon
 
-Active recon directly probes the target. This is where the bulk of technical detail
-comes from.
-
 ### 3.1 HTTP Fingerprinting
-
-Send requests and analyze responses:
 
 ```bash
 curl -sI https://<domain> | head -30
@@ -188,35 +153,17 @@ whatweb -v <url>
 openssl s_client -connect <domain>:443 -servername <domain> </dev/null 2>/dev/null | openssl x509 -noout -text
 ```
 
-Or use `sslyze`/`testssl.sh` if installed for comprehensive analysis.
-
-Look for: certificate SANs (more subdomains!), weak ciphers, outdated TLS versions.
+Or use `sslyze`/`testssl.sh` if installed. Look for: extra SANs, weak ciphers, outdated TLS.
 
 ### 3.3 Port Scanning
 
-Use nmap for service discovery:
-
 ```bash
-# Top 1000 ports, service version detection
 nmap -sV -sC --top-ports 1000 -oN nmap_scan.txt <target>
 ```
 
-For a quicker initial sweep:
+Quick sweep:
 ```bash
 nmap -T4 -F <target>
-```
-
-Python fallback (basic TCP connect scan):
-```python
-import socket
-common_ports = [21,22,23,25,53,80,110,135,139,143,443,445,993,995,1433,1521,3306,3389,5432,5900,8080,8443,8888]
-for port in common_ports:
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(1)
-    result = sock.connect_ex((target, port))
-    if result == 0:
-        print(f"Port {port}: OPEN")
-    sock.close()
 ```
 
 ### 3.4 Directory and File Discovery
@@ -224,7 +171,16 @@ for port in common_ports:
 Use gobuster, feroxbuster, or dirsearch:
 
 ```bash
-gobuster dir -u https://<domain> -w /usr/share/wordlists/dirb/common.txt -t 50 -o dirs.txt
+gobuster dir -u https://<domain> -w SecLists/Discovery/Web-Content/common.txt -t 50 -o dirs.txt
+```
+
+**Wildcard / soft-404 gotcha**: Some sites return HTTP 200 for every path (e.g., a
+catch-all route or custom 404 page). Gobuster will warn about this. When it happens,
+note the response size from the warning and re-run with `--exclude-length` to filter
+out the false positives:
+
+```bash
+gobuster dir -u https://<domain> -w SecLists/Discovery/Web-Content/common.txt -t 50 --exclude-length 1234 -o dirs.txt
 ```
 
 Key things to look for:
@@ -234,46 +190,41 @@ Key things to look for:
 - `/admin`, `/wp-admin`, `/phpmyadmin` — admin panels
 - `/backup`, `/old`, `/test` — forgotten resources
 
-### 3.5 Subdomain Validation & Resolution
+**Wordlist selection** (all under `SecLists/Discovery/Web-Content/`):
+- `common.txt` — quick first pass (~4,700 entries), good for a fast sweep
+- `raft-medium-directories.txt` / `raft-medium-files.txt` — broader coverage, good default for thorough scans
+- `directory-list-2.3-medium.txt` — large general-purpose list for deep coverage
 
-Take all discovered subdomains and validate them:
+Start with `common.txt` for speed, then escalate to raft or directory-list if the
+initial pass looks thin.
+
+### 3.5 Subdomain Validation & Resolution
 
 ```bash
 # httpx probes for live HTTP services
 echo "<subdomain-list>" | httpx -silent -status-code -title -tech-detect -o live_subs.txt
 ```
 
-Python fallback:
-```python
-import requests
-for sub in subdomains:
-    for scheme in ['https', 'http']:
-        try:
-            r = requests.get(f"{scheme}://{sub}", timeout=5, allow_redirects=True)
-            print(f"{sub} [{r.status_code}] {r.headers.get('server','')}")
-            break
-        except Exception:
-            pass
+### 3.6 Virtual Host (VHOST) Discovery
+
+Sites on the same IP distinguished by `Host` header won't appear in DNS-based subdomain
+enumeration. Brute-force with gobuster's `vhost` mode:
+
+```bash
+gobuster vhost -u https://<target-IP-or-domain> -w SecLists/Discovery/DNS/subdomains-top1million-5000.txt --append-domain -t 50
 ```
 
-### 3.6 Burp Suite Integration
+Use `--exclude-length` to filter false positives (same technique as directory brute-forcing).
+Add any discovered vhosts to the subdomains list.
 
-When a Burp MCP server is available, leverage it for:
+### 3.7 Burp Suite Integration
 
-- **Spidering/crawling**: Use Burp's crawler to map the application's page structure
-  and discover endpoints that static enumeration misses
-- **Passive scanning results**: Pull any issues Burp has already identified from
-  proxied traffic
-- **Sitemap extraction**: Get Burp's sitemap for a comprehensive URL tree
-- **Request/response inspection**: Examine interesting requests captured by the proxy
+When a Burp MCP server is available, use it for:
+- Spidering/crawling to discover dynamic and JS-rendered endpoints
+- Pulling passive scan results and sitemap
+- Inspecting captured requests/responses
 
-Check for the Burp MCP server's available tools and use them to supplement your own
-findings. Burp is particularly good at discovering dynamic content, authenticated
-endpoints, and JavaScript-rendered routes.
-
-### 3.7 JavaScript Analysis
-
-Modern web apps ship significant logic in JavaScript. For SPAs especially:
+### 3.8 JavaScript Analysis
 
 ```bash
 # Extract JS file URLs from the page source
@@ -287,13 +238,21 @@ In discovered JS files, search for:
 - Comments revealing architecture details
 - WebSocket endpoints
 
+### 3.9 Nuclei Scanning
+
+Run nuclei against each discovered domain/vhost with all templates:
+
+```bash
+nuclei -l live_subs.txt -t ~/nuclei-templates -o nuclei_output.txt
+```
+
+Feed results into the `potential_vulnerabilities` array.
+
 ---
 
 ## Phase 4: Consolidation
 
-Merge all findings into the output JSON schema. Every field should be populated with
-what was discovered, or set to `null`/empty array if that technique wasn't applicable
-or yielded no results.
+Merge all findings into the output JSON schema.
 
 ---
 
@@ -446,23 +405,16 @@ Write the final output to `recon_output.json`. Use this exact structure:
 
 ### Output guidelines
 
-- Populate every field you have data for. Use `null` for scalars and `[]` for arrays
-  when a technique was run but found nothing.
-- The `potential_vulnerabilities` array is for recon-phase observations only — things
-  like exposed `.git` directories, default credentials pages, or missing security
-  headers. Leave actual vulnerability exploitation to the downstream agent.
-- The `summary.recommended_next_steps` array should contain actionable strings that
-  tell the next agent what to focus on, e.g.:
-  `"Test /api/v1/ endpoints for authentication bypass — no auth observed on GET"`
-- Keep raw tool output out of the JSON. If full nmap/gobuster output is needed, write it
-  to separate files and reference the paths.
+- Use `null` for scalars and `[]` for arrays when a technique found nothing.
+- `potential_vulnerabilities` is for recon observations only (exposed `.git`, missing headers, etc.) — not exploitation.
+- `summary.recommended_next_steps`: actionable strings for the downstream agent.
+- Keep raw tool output in separate files, not in the JSON.
 
 ---
 
 ## Tool Availability & Fallbacks
 
-Before running a tool, check if it's installed (`which <tool>`). If a preferred tool
-is missing, fall back gracefully:
+Check with `which <tool>` before use. Fallbacks:
 
 | Preferred        | Fallback                         |
 |------------------|----------------------------------|
@@ -475,14 +427,13 @@ is missing, fall back gracefully:
 | `dig`            | `dnspython` library              |
 | Burp MCP         | Manual crawling with curl/requests |
 
-When falling back, note the limitation in the output so the downstream agent knows
-the coverage level.
+Note any fallback limitations in the output.
 
 ---
 
 ## Parallelization Strategy
 
-To keep recon efficient, run independent tasks concurrently using subagents:
+Run independent tasks concurrently using subagents:
 
 - **Parallel group 1** (passive, no target contact):
   DNS enumeration, WHOIS, crt.sh subdomain lookup, Wayback Machine
@@ -493,16 +444,5 @@ To keep recon efficient, run independent tasks concurrently using subagents:
 - **Parallel group 3** (dependent on earlier results):
   Subdomain validation (needs subdomain list), JS analysis (needs endpoint list)
 
-Use the Agent tool to spawn subagents for each independent task when the workload is
-large enough to justify it.
+Use the Agent tool to spawn subagents when the workload justifies it.
 
----
-
-## Rate Limiting and Stealth
-
-Even in authorized engagements, be a good neighbor:
-
-- Space out requests to avoid overwhelming the target (especially shared hosting)
-- Use nmap's `-T3` or `-T4` timing, not `-T5`
-- Limit concurrent threads in gobuster/feroxbuster to 50 or fewer
-- If the user specifies rate limits in the scope, respect them strictly
