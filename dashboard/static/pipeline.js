@@ -85,6 +85,7 @@
       evtSource.close();
       evtSource = null;
       loadEngagements();
+      scheduleAutoHide();
     });
 
     evtSource.onerror = () => {
@@ -95,12 +96,30 @@
     };
   }
 
+  /* --- Auto-hide status bar (only when log panel is closed) --- */
+  let autoHideTimer = null;
+  let scanFinished = false;
+
+  function scheduleAutoHide() {
+    scanFinished = true;
+    clearTimeout(autoHideTimer);
+    if (!logPanel.classList.contains("hidden")) return;
+    autoHideTimer = setTimeout(() => statusBar.classList.add("hidden"), 5000);
+  }
+
   /* --- Log toggle --- */
   logToggle.addEventListener("click", () => {
     logPanel.classList.toggle("hidden");
     logToggle.textContent = logPanel.classList.contains("hidden")
       ? "Show Log"
       : "Hide Log";
+
+    if (scanFinished) {
+      clearTimeout(autoHideTimer);
+      if (logPanel.classList.contains("hidden")) {
+        scheduleAutoHide();
+      }
+    }
   });
 
   /* --- Engagement selector --- */
@@ -151,8 +170,6 @@
       if (info.status === "running") {
         showStatus("running", info.current_phase, info.target);
         connectSSE();
-      } else if (info.status !== "idle") {
-        showStatus(info.status, info.current_phase, info.target);
       }
     } catch {
       /* ignore */

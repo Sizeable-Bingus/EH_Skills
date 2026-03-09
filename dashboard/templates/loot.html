@@ -7,14 +7,10 @@
 <h1 class="text-xl font-bold mb-6">Credentials & Loot</h1>
 
 <!-- Summary Stats -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+<div class="grid grid-cols-1 gap-4 mb-6">
     <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
         <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Credentials Found</p>
         <p class="text-2xl font-bold text-white">{{ credentials | length }}</p>
-    </div>
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
-        <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Data Exfiltrated</p>
-        <p class="text-2xl font-bold text-red-400">{{ exfiltrated | length }}</p>
     </div>
 </div>
 
@@ -27,7 +23,6 @@
         <table class="w-full text-sm">
             <thead class="bg-gray-800/50">
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">URL</th>
                     <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
                     <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Detail</th>
                     <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Evidence</th>
@@ -36,10 +31,11 @@
             <tbody class="divide-y divide-gray-800">
                 {% for c in credentials %}
                 <tr class="hover:bg-gray-800/30 transition">
-                    <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ c.url or '' }}">{{ c.url or '—' }}</td>
                     <td class="px-4 py-3 text-gray-300 text-xs">{{ c.technique or '—' }}</td>
                     <td class="px-4 py-3 text-gray-400 text-xs max-w-xs">{{ c.detail or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate" title="{{ c.evidence or '' }}">{{ c.evidence or '—' }}</td>
+                    <td class="px-4 py-3 text-gray-500 text-xs max-w-md">
+                        <pre class="whitespace-pre-wrap break-all font-mono text-xs">{{ c.evidence or '—' }}</pre>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -47,32 +43,4 @@
     </div>
 </div>
 
-<!-- Data Exfiltration Table -->
-<div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-    <div class="px-4 py-3 border-b border-gray-800">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">Data Exfiltration</h2>
-    </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-800/50">
-                <tr>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">URL</th>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Detail</th>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Evidence</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-800">
-                {% for e in exfiltrated %}
-                <tr class="hover:bg-gray-800/30 transition">
-                    <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ e.url or '' }}">{{ e.url or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-300 text-xs">{{ e.technique or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-400 text-xs max-w-md">{{ e.detail or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate" title="{{ e.evidence or '' }}">{{ e.evidence or '—' }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-</div>
 {% endblock %}

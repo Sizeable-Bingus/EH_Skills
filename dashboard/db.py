@@ -115,10 +115,9 @@ def get_summary_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
             SELECT
                 (SELECT COUNT(*) FROM findings WHERE engagement_id = ?) AS total_findings,
                 (SELECT COUNT(*) FROM credentials WHERE engagement_id = ?) AS total_credentials,
-                (SELECT COUNT(*) FROM exploitation_chains WHERE engagement_id = ?) AS total_chains,
-                (SELECT COALESCE(SUM(record_count), 0) FROM data_exfiltrated WHERE engagement_id = ?) AS total_exfil_records
+                (SELECT COUNT(*) FROM exploitation_chains WHERE engagement_id = ?) AS total_chains
             """,
-            (eid, eid, eid, eid),
+            (eid, eid, eid),
         )
 
     return {
@@ -225,12 +224,6 @@ def get_loot_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
             "SELECT * FROM credentials WHERE engagement_id = ? ORDER BY id",
             (eid,),
         )
-        exfiltrated = _fetch_all(
-            conn,
-            "SELECT * FROM data_exfiltrated WHERE engagement_id = ? ORDER BY id",
-            (eid,),
-        )
-
     normalized_credentials = []
     for credential in credentials:
         detail_parts = [credential.get("username") or "Unknown username"]
@@ -244,30 +237,11 @@ def get_loot_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
             evidence_parts.append(f"Cracked: {credential['password_cracked']}")
 
         normalized_credentials.append({
-            "url": credential.get("service") or "Credential store",
             "technique": credential.get("source") or "Unknown source",
             "detail": " | ".join(detail_parts),
             "evidence": " | ".join(evidence_parts) or "Captured credential material",
         })
 
-    normalized_exfiltrated = []
-    for exfil in exfiltrated:
-        data_types = _parse_json(exfil.get("data_types")) or []
-        technique = ", ".join(data_types) if isinstance(data_types, list) and data_types else "Data exfiltration"
-        evidence = []
-        if exfil.get("record_count") is not None:
-            evidence.append(f"Records: {exfil['record_count']}")
-        if data_types:
-            evidence.append(f"Types: {', '.join(data_types)}")
-
-        normalized_exfiltrated.append({
-            "url": exfil.get("source") or "Unknown source",
-            "technique": technique,
-            "detail": exfil.get("detail") or "No detail provided",
-            "evidence": " | ".join(evidence) or "Exfiltrated data confirmed",
-        })
-
     return {
         "credentials": normalized_credentials,
-        "exfiltrated": normalized_exfiltrated,
     }
