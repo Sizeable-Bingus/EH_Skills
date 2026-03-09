@@ -124,21 +124,25 @@ a:hover { text-decoration: underline; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   user-select: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .cnh-logo-mark {
   width: 32px;
   height: 32px;
-  background: rgba(255,255,255,0.15);
-  border: 1.5px solid rgba(255,255,255,0.3);
-  border-radius: 6px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-top-color: rgba(255,255,255,0.25);
+  border-radius: 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.05em;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
 
 .cnh-logo-divider {
@@ -149,11 +153,12 @@ a:hover { text-decoration: underline; }
 }
 
 .cnh-logo-sub {
-  font-weight: 300;
+  font-weight: 600;
   font-size: 0.82rem;
   letter-spacing: 0.06em;
-  opacity: 0.55;
+  opacity: 1;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 /* Nav Links */
@@ -161,6 +166,7 @@ a:hover { text-decoration: underline; }
   display: flex;
   align-items: center;
   gap: 2px;
+  flex-shrink: 0;
 }
 
 .cnh-nav-link {
@@ -168,10 +174,11 @@ a:hover { text-decoration: underline; }
   border-radius: 5px;
   font-size: 0.88rem;
   font-weight: 500;
-  color: rgba(255,255,255,0.72);
+  color: rgba(255,255,255,0.85);
   transition: all 0.2s ease;
   text-decoration: none;
   letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 .cnh-nav-link:hover {
