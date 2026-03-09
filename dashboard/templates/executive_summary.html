@@ -93,6 +93,10 @@
             {% endfor %}
         </ul>
         {% endif %}
+        {% if engagement.scope.rules_of_engagement %}
+        <h3 class="text-xs text-gray-500 uppercase mb-1">Rules Of Engagement</h3>
+        <p class="text-sm text-gray-300">{{ engagement.scope.rules_of_engagement }}</p>
+        {% endif %}
     {% else %}
     <p class="text-sm text-gray-300">{{ engagement.scope }}</p>
     {% endif %}

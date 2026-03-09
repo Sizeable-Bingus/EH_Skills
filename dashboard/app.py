@@ -43,8 +43,9 @@ async def add_security_headers(request: Request, call_next):
 def _resolve_db(engagement: str | None) -> tuple[Path, int]:
     if engagement:
         safe = Path(engagement).name  # prevent path traversal
-        return ENGAGEMENTS_DIR / safe / "pentest_data.db", 1
-    return db.DEFAULT_DB, db.DEFAULT_ENGAGEMENT_ID
+        db_path = ENGAGEMENTS_DIR / safe / "pentest_data.db"
+        return db_path, db.get_latest_engagement_id(db_path)
+    return db.DEFAULT_DB, db.get_latest_engagement_id(db.DEFAULT_DB)
 
 
 def _page_ctx(request: Request, page: str, engagement: str | None, extra: dict) -> dict:

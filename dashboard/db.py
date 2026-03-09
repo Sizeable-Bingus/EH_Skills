@@ -6,7 +6,6 @@ import sqlite3
 from contextlib import closing
 from pathlib import Path
 
-SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "info": 4}
 SEVERITY_ORDER_SQL = (
     "CASE severity "
     "WHEN 'critical' THEN 0 "
@@ -40,6 +39,16 @@ def connect(db_path=DEFAULT_DB):
     return conn
 
 
+def get_latest_engagement_id(db_path=DEFAULT_DB, fallback=DEFAULT_ENGAGEMENT_ID):
+    if not Path(db_path).exists():
+        return fallback
+    with closing(connect(db_path)) as conn:
+        row = conn.execute(
+            "SELECT id FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+        ).fetchone()
+    return row["id"] if row else fallback
+
+
 def _fetch_all(conn, sql, params=()):
     return [dict(row) for row in conn.execute(sql, params).fetchall()]
 
@@ -58,13 +67,30 @@ def _parse_json(value):
         return value
 
 
+def _normalize_scope(engagement):
+    if "scope" in engagement:
+        scope = _parse_json(engagement.get("scope"))
+        if scope:
+            return scope
+
+    in_scope = _parse_json(engagement.get("scope_in")) or []
+    out_of_scope = _parse_json(engagement.get("scope_out")) or []
+    rules = engagement.get("rules")
+    if in_scope or out_of_scope or rules:
+        return {
+            "in_scope": in_scope,
+            "out_of_scope": out_of_scope,
+            "rules_of_engagement": rules,
+        }
+    return None
+
+
 def get_summary_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
     with closing(connect(db_path)) as conn:
         engagement = _fetch_one(conn, "SELECT * FROM engagements WHERE id = ?", (eid,))
         if engagement:
             engagement["tools_used"] = _parse_json(engagement.get("tools_used"))
-            engagement["scope"] = _parse_json(engagement.get("scope"))
-            engagement["summary"] = _parse_json(engagement.get("summary"))
+            engagement["scope"] = _normalize_scope(engagement)
 
         severity_rows = _fetch_all(
             conn,
