@@ -149,10 +149,11 @@ a:hover { text-decoration: underline; }
 }
 
 .cnh-logo-sub {
-  font-weight: 500;
+  font-weight: 300;
   font-size: 0.82rem;
-  letter-spacing: 0.04em;
-  opacity: 0.85;
+  letter-spacing: 0.06em;
+  opacity: 0.55;
+  text-transform: uppercase;
 }
 
 /* Nav Links */
@@ -744,9 +745,9 @@ a:hover { text-decoration: underline; }
   background: var(--surface-1);
   border: 1px solid var(--surface-border);
   border-radius: var(--radius);
-  padding: 7px 32px 7px 12px;
+  padding: 9px 36px 9px 14px;
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--text-primary);
   cursor: pointer;
@@ -763,13 +764,13 @@ a:hover { text-decoration: underline; }
 }
 
 .cnh-filter-btn {
-  padding: 7px 18px;
+  padding: 9px 20px;
   background: var(--cnh-navy);
   color: #fff;
   border: none;
   border-radius: var(--radius);
   font-family: 'Montserrat', sans-serif;
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -780,7 +781,7 @@ a:hover { text-decoration: underline; }
 }
 
 .cnh-filter-clear {
-  font-size: 0.78rem;
+  font-size: 0.88rem;
   font-weight: 500;
   color: var(--text-tertiary);
   text-decoration: none;
@@ -795,7 +796,7 @@ a:hover { text-decoration: underline; }
 
 /* ---- Page Header ---- */
 .cnh-page-title {
-  font-size: 1.15rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-primary);
   margin: 0;
@@ -804,7 +805,7 @@ a:hover { text-decoration: underline; }
 .cnh-page-count {
   font-weight: 400;
   color: var(--text-tertiary);
-  font-size: 0.9rem;
+  font-size: 1.1rem;
 }
 
 /* ---- Attack Chain Timeline ---- */

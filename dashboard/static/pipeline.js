@@ -184,7 +184,14 @@
     window.location.search = params.toString();
   }
 
-  comboInput.addEventListener("focus", openListbox);
+  comboInput.addEventListener("focus", () => {
+    comboInput.select();
+    openListbox();
+    comboInput.addEventListener("mouseup", function preventDeselect(e) {
+      e.preventDefault();
+      comboInput.removeEventListener("mouseup", preventDeselect);
+    });
+  });
   comboInput.addEventListener("input", () => {
     focusedIdx = -1;
     renderOptions(comboInput.value);
