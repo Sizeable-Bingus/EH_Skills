@@ -5,26 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Pentest Dashboard{% endblock %}</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        sev: {
-                            critical: '#ef4444',
-                            high: '#f97316',
-                            medium: '#eab308',
-                            low: '#3b82f6',
-                            info: '#6b7280',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="/static/styles.css">
+    {% block head_scripts %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
 <body class="bg-gray-950 text-gray-100 min-h-screen">
     <nav class="bg-gray-900 border-b border-gray-800">
@@ -56,5 +38,6 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {% block content %}{% endblock %}
     </main>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

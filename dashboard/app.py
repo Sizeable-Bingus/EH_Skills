@@ -1,8 +1,6 @@
 """Pentest Report Dashboard — FastAPI application."""
 
-import json
-
-from fastapi import FastAPI, Request, Query
+from fastapi import FastAPI, Query, Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -17,95 +15,76 @@ app.mount("/static", StaticFiles(directory=BASE / "static"), name="static")
 templates = Jinja2Templates(directory=BASE / "templates")
 
 
-def _parse_json(value):
-    """Safely parse a JSON string, returning the original value on failure."""
-    if value is None:
-        return None
-    if isinstance(value, (list, dict)):
-        return value
-    try:
-        return json.loads(value)
-    except (json.JSONDecodeError, TypeError):
-        return value
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "script-src 'self' https://cdn.tailwindcss.com https://cdn.jsdelivr.net; "
+        "style-src 'self' 'unsafe-inline'; "
+        "img-src 'self' data:; "
+        "font-src 'self'; "
+        "object-src 'none'; "
+        "base-uri 'self'; "
+        "frame-ancestors 'none'"
+    )
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    return response
 
 
 @app.get("/", response_class=HTMLResponse)
-async def executive_summary(request: Request):
-    engagement = db.get_engagement()
-    if engagement:
-        engagement["tools_used"] = _parse_json(engagement.get("tools_used"))
-        engagement["scope_in"] = _parse_json(engagement.get("scope_in"))
-    severity_counts = db.get_severity_counts()
-    category_counts = db.get_category_counts()
-    stats = db.get_stats()
-    return templates.TemplateResponse("executive_summary.html", {
-        "request": request,
-        "engagement": engagement,
-        "severity_counts": severity_counts,
-        "category_counts": category_counts,
-        "stats": stats,
-        "page": "summary",
-    })
+def executive_summary(request: Request):
+    return templates.TemplateResponse(
+        "executive_summary.html",
+        {
+            "request": request,
+            "page": "summary",
+            **db.get_summary_page(),
+        },
+    )
 
 
 @app.get("/findings", response_class=HTMLResponse)
-async def findings(
+def findings(
     request: Request,
     severity: str = Query(default=None),
     category: str = Query(default=None),
     status: str = Query(default=None),
 ):
-    rows = db.get_findings(severity=severity, category=category, status=status)
-    for r in rows:
-        r["raw"] = _parse_json(r.get("raw"))
-
-    # Collect distinct values for filter dropdowns
-    all_rows = db.get_findings()
-    severities = sorted(set(r["severity"] for r in all_rows), key=lambda s: db.SEVERITY_ORDER.get(s, 5))
-    categories = sorted(set(r["category"] for r in all_rows))
-    statuses = sorted(set(r["status"] for r in all_rows))
-
-    return templates.TemplateResponse("findings.html", {
-        "request": request,
-        "findings": rows,
-        "severities": severities,
-        "categories": categories,
-        "statuses": statuses,
-        "cur_severity": severity or "",
-        "cur_category": category or "",
-        "cur_status": status or "",
-        "page": "findings",
-    })
+    return templates.TemplateResponse(
+        "findings.html",
+        {
+            "request": request,
+            "page": "findings",
+            **db.get_findings_page(severity=severity, category=category, status=status),
+        },
+    )
 
 
 @app.get("/chains", response_class=HTMLResponse)
-async def chains(request: Request):
-    chains_data = db.get_chains_with_steps()
-    return templates.TemplateResponse("chains.html", {
-        "request": request,
-        "chains": chains_data,
-        "page": "chains",
-    })
+def chains(request: Request):
+    return templates.TemplateResponse(
+        "chains.html",
+        {
+            "request": request,
+            "page": "chains",
+            **db.get_chains_page(),
+        },
+    )
 
 
 @app.get("/loot", response_class=HTMLResponse)
-async def loot(request: Request):
-    credentials = db.get_credentials()
-    exfiltrated = db.get_exfiltrated()
-    for e in exfiltrated:
-        e["data_types"] = _parse_json(e.get("data_types"))
-
-    cracked = sum(1 for c in credentials if c.get("password_cracked"))
-    total_records = sum(e.get("record_count", 0) or 0 for e in exfiltrated)
-
-    return templates.TemplateResponse("loot.html", {
-        "request": request,
-        "credentials": credentials,
-        "exfiltrated": exfiltrated,
-        "cracked_count": cracked,
-        "total_records": total_records,
-        "page": "loot",
-    })
+def loot(request: Request):
+    return templates.TemplateResponse(
+        "loot.html",
+        {
+            "request": request,
+            "page": "loot",
+            **db.get_loot_page(),
+        },
+    )
 
 
 if __name__ == "__main__":

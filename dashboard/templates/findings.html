@@ -50,8 +50,19 @@
         </thead>
         <tbody class="divide-y divide-gray-800">
             {% for f in findings %}
-            <tr class="hover:bg-gray-800/30 cursor-pointer transition" onclick="toggleDetail({{ f.id }})">
-                <td class="px-4 py-3 text-gray-500"><span id="arrow-{{ f.id }}" class="inline-block transition-transform">&#9654;</span></td>
+            <tr class="hover:bg-gray-800/30 transition">
+                <td class="px-4 py-3 text-gray-500">
+                    <button
+                        type="button"
+                        class="inline-flex items-center justify-center hover:text-gray-300 transition"
+                        data-detail-toggle
+                        data-id="{{ f.id }}"
+                        aria-expanded="false"
+                        aria-controls="detail-{{ f.id }}"
+                    >
+                        <span id="arrow-{{ f.id }}" class="inline-block transition-transform">&#9654;</span>
+                    </button>
+                </td>
                 <td class="px-4 py-3">{{ severity_badge(f.severity) }}</td>
                 <td class="px-4 py-3 text-gray-300">{{ f.category }}</td>
                 <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
@@ -115,18 +126,5 @@
         </tbody>
     </table>
 </div>
-
-<script>
-function toggleDetail(id) {
-    const row = document.getElementById('detail-' + id);
-    const arrow = document.getElementById('arrow-' + id);
-    if (row.classList.contains('hidden')) {
-        row.classList.remove('hidden');
-        arrow.style.transform = 'rotate(90deg)';
-    } else {
-        row.classList.add('hidden');
-        arrow.style.transform = '';
-    }
-}
-</script>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='findings.js') }}" defer></script>{% endblock %}

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
-{% from "_macros.html" import severity_badge %}
 
 {% block title %}Executive Summary — Pentest Dashboard{% endblock %}
+{% block head_scripts %}<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>{% endblock %}
 
 {% block content %}
 <!-- Engagement Header -->
@@ -49,7 +49,12 @@
 </div>
 
 <!-- Charts Row -->
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+<div
+    id="summary-chart-data"
+    class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"
+    data-severity-counts="{{ severity_counts | tojson | forceescape }}"
+    data-category-counts="{{ category_counts | tojson | forceescape }}"
+>
     <!-- Severity Doughnut -->
     <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
         <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-4">Findings by Severity</h2>
@@ -88,57 +93,5 @@
     </div>
 </div>
 {% endif %}
-
-<script>
-    const sevData = {{ severity_counts | tojson }};
-    const sevLabels = ['Critical', 'High', 'Medium', 'Low', 'Info'];
-    const sevValues = [sevData.critical, sevData.high, sevData.medium, sevData.low, sevData.info];
-    const sevColors = ['#ef4444', '#f97316', '#eab308', '#3b82f6', '#6b7280'];
-
-    new Chart(document.getElementById('severityChart'), {
-        type: 'doughnut',
-        data: {
-            labels: sevLabels,
-            datasets: [{
-                data: sevValues,
-                backgroundColor: sevColors,
-                borderWidth: 0,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                    labels: { color: '#9ca3af', font: { size: 12 } }
-                }
-            },
-            cutout: '60%',
-        }
-    });
-
-    const catData = {{ category_counts | tojson }};
-    new Chart(document.getElementById('categoryChart'), {
-        type: 'bar',
-        data: {
-            labels: catData.map(c => c.category),
-            datasets: [{
-                data: catData.map(c => c.count),
-                backgroundColor: '#6366f1',
-                borderRadius: 4,
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            indexAxis: 'y',
-            plugins: { legend: { display: false } },
-            scales: {
-                x: { ticks: { color: '#9ca3af' }, grid: { color: '#1f2937' } },
-                y: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { display: false } },
-            }
-        }
-    });
-</script>
 {% endblock %}
+{% block scripts %}<script src="{{ url_for('static', path='executive_summary.js') }}" defer></script>{% endblock %}
