@@ -63,13 +63,18 @@ def get_summary_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
         engagement = _fetch_one(conn, "SELECT * FROM engagements WHERE id = ?", (eid,))
         if engagement:
             engagement["tools_used"] = _parse_json(engagement.get("tools_used"))
-            engagement["scope_in"] = _parse_json(engagement.get("scope_in"))
+            engagement["scope"] = _parse_json(engagement.get("scope"))
+            engagement["summary"] = _parse_json(engagement.get("summary"))
 
-        severity_counts = _fetch_one(
+        severity_rows = _fetch_all(
             conn,
-            "SELECT critical, high, medium, low, info FROM engagements WHERE id = ?",
+            "SELECT severity, COUNT(*) AS count FROM findings "
+            "WHERE engagement_id = ? GROUP BY severity",
             (eid,),
-        ) or {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        )
+        severity_counts = {"critical": 0, "high": 0, "medium": 0, "low": 0, "info": 0}
+        for row in severity_rows:
+            severity_counts[row["severity"]] = row["count"]
 
         category_counts = _fetch_all(
             conn,
@@ -85,10 +90,9 @@ def get_summary_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
                 (SELECT COUNT(*) FROM findings WHERE engagement_id = ?) AS total_findings,
                 (SELECT COUNT(*) FROM credentials WHERE engagement_id = ?) AS total_credentials,
                 (SELECT COUNT(*) FROM exploitation_chains WHERE engagement_id = ?) AS total_chains,
-                (SELECT COALESCE(SUM(record_count), 0) FROM data_exfiltrated WHERE engagement_id = ?) AS total_exfil_records,
-                (SELECT COUNT(*) FROM data_exfiltrated WHERE engagement_id = ?) AS total_exfil_sources
+                (SELECT COALESCE(SUM(record_count), 0) FROM data_exfiltrated WHERE engagement_id = ?) AS total_exfil_records
             """,
-            (eid, eid, eid, eid, eid),
+            (eid, eid, eid, eid),
         )
 
     return {
@@ -104,7 +108,6 @@ def get_findings_page(
     eid=DEFAULT_ENGAGEMENT_ID,
     severity=None,
     category=None,
-    status=None,
 ):
     sql = ["SELECT * FROM findings WHERE engagement_id = ?"]
     params = [eid]
@@ -115,9 +118,6 @@ def get_findings_page(
     if category:
         sql.append("AND category = ?")
         params.append(category)
-    if status:
-        sql.append("AND status = ?")
-        params.append(status)
 
     sql.append(f"ORDER BY {SEVERITY_ORDER_SQL}, category, id")
 
@@ -144,24 +144,13 @@ def get_findings_page(
             )
             if row["category"]
         ]
-        statuses = [
-            row["status"]
-            for row in _fetch_all(
-                conn,
-                "SELECT DISTINCT status FROM findings WHERE engagement_id = ? ORDER BY status",
-                (eid,),
-            )
-            if row["status"]
-        ]
 
     return {
         "findings": findings,
         "severities": severities,
         "categories": categories,
-        "statuses": statuses,
         "cur_severity": severity or "",
         "cur_category": category or "",
-        "cur_status": status or "",
     }
 
 
@@ -169,48 +158,38 @@ def get_chains_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
     with closing(connect(db_path)) as conn:
         rows = _fetch_all(
             conn,
-            """
-            SELECT
-                c.id AS chain_id,
-                c.name,
-                c.final_impact,
-                c.severity,
-                s.step_order,
-                s.action,
-                s.vuln_used,
-                s.result
-            FROM exploitation_chains AS c
-            LEFT JOIN chain_steps AS s ON s.chain_id = c.id
-            WHERE c.engagement_id = ?
-            ORDER BY c.id, s.step_order
-            """,
+            "SELECT * FROM exploitation_chains WHERE engagement_id = ? ORDER BY id",
+            (eid,),
+        )
+        step_rows = _fetch_all(
+            conn,
+            "SELECT * FROM chain_steps WHERE chain_id IN ("
+            "SELECT id FROM exploitation_chains WHERE engagement_id = ?"
+            ") ORDER BY chain_id, step_order, id",
             (eid,),
         )
 
-    chains_by_id = {}
-    for row in rows:
-        chain = chains_by_id.setdefault(
-            row["chain_id"],
-            {
-                "id": row["chain_id"],
-                "name": row["name"],
-                "final_impact": row["final_impact"],
-                "severity": row["severity"],
-                "steps": [],
-            },
-        )
-        if row["step_order"] is None:
-            continue
-        chain["steps"].append(
-            {
-                "step_order": row["step_order"],
-                "action": row["action"],
-                "vuln_used": row["vuln_used"],
-                "result": row["result"],
-            }
-        )
+    steps_by_chain: dict[int, list[dict]] = {}
+    for step in step_rows:
+        steps_by_chain.setdefault(step["chain_id"], []).append({
+            "id": step["id"],
+            "step_order": step["step_order"],
+            "action": step["action"],
+            "vuln_used": step["vuln_used"],
+            "result": step["result"],
+        })
 
-    return {"chains": list(chains_by_id.values())}
+    chains = []
+    for row in rows:
+        chains.append({
+            "id": row["id"],
+            "name": row["name"],
+            "final_impact": row["final_impact"],
+            "severity": row["severity"],
+            "steps": steps_by_chain.get(row["id"], []),
+        })
+
+    return {"chains": chains}
 
 
 def get_loot_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
@@ -226,15 +205,43 @@ def get_loot_page(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
             (eid,),
         )
 
-    for entry in exfiltrated:
-        entry["data_types"] = _parse_json(entry.get("data_types"))
+    normalized_credentials = []
+    for credential in credentials:
+        detail_parts = [credential.get("username") or "Unknown username"]
+        if credential.get("service"):
+            detail_parts.append(credential["service"])
 
-    cracked_count = sum(1 for credential in credentials if credential.get("password_cracked"))
-    total_records = sum(entry.get("record_count", 0) or 0 for entry in exfiltrated)
+        evidence_parts = []
+        if credential.get("password_hash"):
+            evidence_parts.append(f"Hash: {credential['password_hash']}")
+        if credential.get("password_cracked"):
+            evidence_parts.append(f"Cracked: {credential['password_cracked']}")
+
+        normalized_credentials.append({
+            "url": credential.get("service") or "Credential store",
+            "technique": credential.get("source") or "Unknown source",
+            "detail": " | ".join(detail_parts),
+            "evidence": " | ".join(evidence_parts) or "Captured credential material",
+        })
+
+    normalized_exfiltrated = []
+    for exfil in exfiltrated:
+        data_types = _parse_json(exfil.get("data_types")) or []
+        technique = ", ".join(data_types) if isinstance(data_types, list) and data_types else "Data exfiltration"
+        evidence = []
+        if exfil.get("record_count") is not None:
+            evidence.append(f"Records: {exfil['record_count']}")
+        if data_types:
+            evidence.append(f"Types: {', '.join(data_types)}")
+
+        normalized_exfiltrated.append({
+            "url": exfil.get("source") or "Unknown source",
+            "technique": technique,
+            "detail": exfil.get("detail") or "No detail provided",
+            "evidence": " | ".join(evidence) or "Exfiltrated data confirmed",
+        })
 
     return {
-        "credentials": credentials,
-        "exfiltrated": exfiltrated,
-        "cracked_count": cracked_count,
-        "total_records": total_records,
+        "credentials": normalized_credentials,
+        "exfiltrated": normalized_exfiltrated,
     }
