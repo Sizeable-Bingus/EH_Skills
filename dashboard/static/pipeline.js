@@ -237,10 +237,9 @@
       const params = new URLSearchParams(window.location.search);
       const cur = params.get("engagement") || "";
 
-      allEngagements = [
-        { value: "", label: "Default" },
-        ...data.map((name) => ({ value: name, label: name })),
-      ];
+      allEngagements = data
+        .filter((name) => name.toLowerCase() !== "default")
+        .map((name) => ({ value: name, label: name }));
 
       const match = allEngagements.find((o) => o.value === cur);
       comboInput.value = match && match.value ? match.label : "";
