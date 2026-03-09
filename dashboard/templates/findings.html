@@ -22,14 +22,8 @@
         <option value="{{ c }}" {% if cur_category == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
-    <select name="status" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500">
-        <option value="">All Statuses</option>
-        {% for s in statuses %}
-        <option value="{{ s }}" {% if cur_status == s %}selected{% endif %}>{{ s | capitalize }}</option>
-        {% endfor %}
-    </select>
     <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-sm font-medium transition">Filter</button>
-    {% if cur_severity or cur_category or cur_status %}
+    {% if cur_severity or cur_category %}
     <a href="/findings" class="text-gray-400 hover:text-white px-3 py-1.5 text-sm transition">Clear</a>
     {% endif %}
 </form>
@@ -45,7 +39,6 @@
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">URL</th>
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Method</th>
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Status</th>
             </tr>
         </thead>
         <tbody class="divide-y divide-gray-800">
@@ -68,14 +61,9 @@
                 <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
                 <td class="px-4 py-3 text-gray-400">{{ f.http_method or '—' }}</td>
                 <td class="px-4 py-3 text-gray-300 max-w-xs truncate" title="{{ f.technique or '' }}">{{ f.technique or '—' }}</td>
-                <td class="px-4 py-3">
-                    <span class="px-2 py-0.5 rounded text-xs {% if f.status == 'confirmed' %}bg-green-500/20 text-green-400{% else %}bg-gray-500/20 text-gray-400{% endif %}">
-                        {{ f.status }}
-                    </span>
-                </td>
             </tr>
             <tr id="detail-{{ f.id }}" class="detail-row hidden">
-                <td colspan="7" class="px-6 py-4 bg-gray-900/50">
+                <td colspan="6" class="px-6 py-4 bg-gray-900/50">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         {% if f.detail %}
                         <div>

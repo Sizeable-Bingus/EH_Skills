@@ -36,11 +36,11 @@
     </div>
     <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
         <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Credentials</p>
-        <p class="text-3xl font-bold text-orange-400">{{ stats.total_credentials }}</p>
+        <p class="text-3xl font-bold text-orange-400">{{ stats.total_credentials or 0 }}</p>
     </div>
     <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
-        <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Records Exfiltrated</p>
-        <p class="text-3xl font-bold text-red-400">{{ stats.total_exfil_records }}</p>
+        <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Data Exfiltrated</p>
+        <p class="text-3xl font-bold text-red-400">{{ stats.total_exfil_records or 0 }}</p>
     </div>
     <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
         <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Attack Chains</p>
@@ -72,25 +72,30 @@
     </div>
 </div>
 
-<!-- Scope & Rules -->
-{% if engagement %}
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">In-Scope Targets</h2>
-        {% if engagement.scope_in %}
-        <ul class="space-y-1">
-            {% for item in engagement.scope_in %}
+<!-- Scope -->
+{% if engagement and engagement.scope %}
+<div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
+    <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">Scope</h2>
+    {% if engagement.scope is mapping %}
+        {% if engagement.scope.in_scope %}
+        <h3 class="text-xs text-gray-500 uppercase mb-1">In Scope</h3>
+        <ul class="space-y-1 mb-3">
+            {% for item in engagement.scope.in_scope %}
             <li class="text-sm mono text-gray-300">{{ item }}</li>
             {% endfor %}
         </ul>
-        {% else %}
-        <p class="text-gray-500 text-sm">Not specified</p>
         {% endif %}
-    </div>
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400 mb-3">Rules of Engagement</h2>
-        <p class="text-sm text-gray-300">{{ engagement.rules or "Not specified" }}</p>
-    </div>
+        {% if engagement.scope.out_of_scope %}
+        <h3 class="text-xs text-gray-500 uppercase mb-1">Out of Scope</h3>
+        <ul class="space-y-1">
+            {% for item in engagement.scope.out_of_scope %}
+            <li class="text-sm mono text-gray-300">{{ item }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% else %}
+    <p class="text-sm text-gray-300">{{ engagement.scope }}</p>
+    {% endif %}
 </div>
 {% endif %}
 {% endblock %}
