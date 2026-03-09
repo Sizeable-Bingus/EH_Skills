@@ -35,11 +35,22 @@
                 </div>
 
                 <div class="cnh-nav-controls">
-                    <select id="engagement-select" class="cnh-select">
-                        <option value="">Default</option>
-                    </select>
+                    <div class="combobox" id="engagement-combobox">
+                        <svg class="combobox-search-icon" width="14" height="14" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                        <input
+                            type="text"
+                            id="engagement-input"
+                            class="combobox-input"
+                            placeholder="Search engagements..."
+                            autocomplete="off"
+                            role="combobox"
+                            aria-expanded="false"
+                            aria-controls="engagement-listbox"
+                        >
+                        <ul id="engagement-listbox" class="combobox-listbox hidden" role="listbox"></ul>
+                    </div>
                     <button id="scan-open" class="cnh-btn-primary">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
                         New Scan
                     </button>
                 </div>
@@ -61,13 +72,20 @@
 
     <!-- New Scan modal -->
     <div id="scan-modal" class="hidden cnh-modal-overlay">
-        <div class="cnh-modal">
+        <div class="cnh-modal" style="max-width:520px;">
             <h2>Start New Scan</h2>
+            <div class="scan-warning">
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+                <div>
+                    <strong>Authorized Targets Only</strong>
+                        <p><strong>Scanning is strictly limited to CNH-owned development and staging environments.</strong> Production sites are prohibited. The target must be a CNH-owned asset deployed in a development environment. Third-party, vendor, or partner systems are not authorized. Unauthorized scanning will be logged, flagged, and may result in disciplinary action.</p>
+                </div>
+            </div>
             <label>Target URL</label>
-            <input id="scan-target" type="text" placeholder="https://example.com" class="cnh-input">
+            <input id="scan-target" type="text" placeholder="https://dev.example.cnh.com" class="cnh-input">
             <div class="cnh-modal-actions">
                 <button id="scan-cancel" class="cnh-btn-ghost">Cancel</button>
-                <button id="scan-start" class="cnh-btn-modal-primary">Start Pipeline</button>
+                <button id="scan-start" class="cnh-btn-modal-primary">Start Scan</button>
             </div>
         </div>
     </div>

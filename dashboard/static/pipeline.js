@@ -14,7 +14,12 @@
   const logPanel = document.getElementById("log-panel");
   const logPre = document.getElementById("log-pre");
 
-  const engDropdown = document.getElementById("engagement-select");
+  /* --- Searchable Combobox --- */
+  const combobox = document.getElementById("engagement-combobox");
+  const comboInput = document.getElementById("engagement-input");
+  const listbox = document.getElementById("engagement-listbox");
+  let allEngagements = [];  /* {value, label}[] */
+  let focusedIdx = -1;
   let currentTarget = "";
 
   /* --- Modal --- */
@@ -121,44 +126,128 @@
     }
   });
 
-  /* --- Engagement selector --- */
+  /* --- Engagement combobox --- */
+  function openListbox() {
+    listbox.classList.remove("hidden");
+    combobox.classList.add("combobox--open");
+    comboInput.setAttribute("aria-expanded", "true");
+    renderOptions(comboInput.value);
+  }
+
+  function closeListbox() {
+    listbox.classList.add("hidden");
+    combobox.classList.remove("combobox--open");
+    comboInput.setAttribute("aria-expanded", "false");
+    focusedIdx = -1;
+  }
+
+  function renderOptions(filter) {
+    const q = filter.toLowerCase().trim();
+    const filtered = allEngagements.filter((o) =>
+      o.label.toLowerCase().includes(q)
+    );
+    const params = new URLSearchParams(window.location.search);
+    const cur = params.get("engagement") || "";
+
+    if (filtered.length === 0) {
+      listbox.innerHTML = '<li class="combobox-empty">No matches</li>';
+      focusedIdx = -1;
+      return;
+    }
+
+    listbox.innerHTML = "";
+    filtered.forEach((opt, i) => {
+      const li = document.createElement("li");
+      li.className = "combobox-option";
+      li.setAttribute("role", "option");
+      li.textContent = opt.label;
+      li.dataset.value = opt.value;
+      if (opt.value === cur) li.classList.add("combobox-option--active");
+      if (i === focusedIdx) li.classList.add("combobox-option--focused");
+      li.addEventListener("mousedown", (e) => {
+        e.preventDefault();
+        selectEngagement(opt.value, opt.label);
+      });
+      listbox.appendChild(li);
+    });
+  }
+
+  function selectEngagement(value, label) {
+    closeListbox();
+    comboInput.value = value ? label : "";
+    const params = new URLSearchParams(window.location.search);
+    if (value) {
+      params.set("engagement", value);
+    } else {
+      params.delete("engagement");
+    }
+    window.location.search = params.toString();
+  }
+
+  comboInput.addEventListener("focus", openListbox);
+  comboInput.addEventListener("input", () => {
+    focusedIdx = -1;
+    renderOptions(comboInput.value);
+  });
+
+  comboInput.addEventListener("blur", () => {
+    closeListbox();
+    /* Restore display label to current selection */
+    const params = new URLSearchParams(window.location.search);
+    const cur = params.get("engagement") || "";
+    const match = allEngagements.find((o) => o.value === cur);
+    comboInput.value = match ? match.label : "";
+  });
+
+  comboInput.addEventListener("keydown", (e) => {
+    const items = listbox.querySelectorAll(".combobox-option");
+    if (!items.length) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      focusedIdx = Math.min(focusedIdx + 1, items.length - 1);
+      updateFocus(items);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      focusedIdx = Math.max(focusedIdx - 1, 0);
+      updateFocus(items);
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (focusedIdx >= 0 && items[focusedIdx]) {
+        const li = items[focusedIdx];
+        selectEngagement(li.dataset.value, li.textContent);
+      }
+    } else if (e.key === "Escape") {
+      closeListbox();
+      comboInput.blur();
+    }
+  });
+
+  function updateFocus(items) {
+    items.forEach((li, i) => {
+      li.classList.toggle("combobox-option--focused", i === focusedIdx);
+      if (i === focusedIdx) li.scrollIntoView({ block: "nearest" });
+    });
+  }
+
   async function loadEngagements() {
     try {
       const res = await fetch("/api/engagements");
       const data = await res.json();
       const params = new URLSearchParams(window.location.search);
-      const cur = params.get("engagement");
-      const options = [{ value: "", label: "Default" }, ...data.map((name) => ({
-        value: name,
-        label: name,
-      }))];
+      const cur = params.get("engagement") || "";
 
-      engDropdown.replaceChildren(
-        ...options.map(({ value, label }) => {
-          const option = document.createElement("option");
-          option.value = value;
-          option.textContent = label;
-          return option;
-        }),
-      );
+      allEngagements = [
+        { value: "", label: "Default" },
+        ...data.map((name) => ({ value: name, label: name })),
+      ];
 
-      if (cur) {
-        engDropdown.value = cur;
-      }
+      const match = allEngagements.find((o) => o.value === cur);
+      comboInput.value = match && match.value ? match.label : "";
     } catch {
       /* ignore */
     }
   }
-
-  engDropdown.addEventListener("change", () => {
-    const params = new URLSearchParams(window.location.search);
-    if (engDropdown.value) {
-      params.set("engagement", engDropdown.value);
-    } else {
-      params.delete("engagement");
-    }
-    window.location.search = params.toString();
-  });
 
   /* --- Init --- */
   async function init() {
