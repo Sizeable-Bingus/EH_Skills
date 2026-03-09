@@ -10,6 +10,9 @@
 
 <!-- Filters -->
 <form method="get" class="flex flex-wrap gap-3 mb-6">
+    {% if current_engagement %}
+    <input type="hidden" name="engagement" value="{{ current_engagement }}">
+    {% endif %}
     <select name="severity" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500">
         <option value="">All Severities</option>
         {% for s in severities %}
@@ -24,7 +27,7 @@
     </select>
     <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-sm font-medium transition">Filter</button>
     {% if cur_severity or cur_category %}
-    <a href="/findings" class="text-gray-400 hover:text-white px-3 py-1.5 text-sm transition">Clear</a>
+    <a href="/findings{% if current_engagement %}?engagement={{ current_engagement | urlencode }}{% endif %}" class="text-gray-400 hover:text-white px-3 py-1.5 text-sm transition">Clear</a>
     {% endif %}
 </form>
 
@@ -37,7 +40,6 @@
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Severity</th>
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Category</th>
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">URL</th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Method</th>
                 <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
             </tr>
         </thead>
@@ -59,11 +61,10 @@
                 <td class="px-4 py-3">{{ severity_badge(f.severity) }}</td>
                 <td class="px-4 py-3 text-gray-300">{{ f.category }}</td>
                 <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
-                <td class="px-4 py-3 text-gray-400">{{ f.http_method or '—' }}</td>
                 <td class="px-4 py-3 text-gray-300 max-w-xs truncate" title="{{ f.technique or '' }}">{{ f.technique or '—' }}</td>
             </tr>
-            <tr id="detail-{{ f.id }}" class="detail-row hidden">
-                <td colspan="6" class="px-6 py-4 bg-gray-900/50">
+            <tr id="detail-{{ f.id }}" class="hidden">
+                <td colspan="5" class="px-6 py-4 bg-gray-900/50">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         {% if f.detail %}
                         <div>

@@ -19,11 +19,6 @@ pre {
     max-height: 300px;
 }
 
-/* Smooth row expansion */
-.detail-row {
-    transition: all 0.15s ease;
-}
-
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 6px;
