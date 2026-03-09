@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Pentest Dashboard{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        sev: {
+                            critical: '#ef4444',
+                            high: '#f97316',
+                            medium: '#eab308',
+                            low: '#3b82f6',
+                            info: '#6b7280',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen">
+    <nav class="bg-gray-900 border-b border-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-14">
+                <div class="flex items-center gap-2">
+                    <span class="text-lg font-bold text-red-500">&#9760;</span>
+                    <span class="font-semibold text-sm tracking-wide">PENTEST DASHBOARD</span>
+                </div>
+                <div class="flex gap-1">
+                    {% set nav_items = [
+                        ("summary", "/", "Executive Summary"),
+                        ("findings", "/findings", "Findings"),
+                        ("chains", "/chains", "Attack Chains"),
+                        ("loot", "/loot", "Credentials & Loot"),
+                    ] %}
+                    {% for key, href, label in nav_items %}
+                    <a href="{{ href }}"
+                       class="px-3 py-2 rounded text-sm font-medium transition
+                              {% if page == key %}bg-gray-800 text-white{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
+                        {{ label }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

@@ -1,0 +1,40 @@
+/* Minimal custom overrides */
+body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.mono {
+    font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+pre {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+/* Chart container */
+.chart-container {
+    position: relative;
+    max-height: 300px;
+}
+
+/* Smooth row expansion */
+.detail-row {
+    transition: all 0.15s ease;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a2e;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #4a4a6a;
+    border-radius: 3px;
+}
