@@ -163,7 +163,9 @@ def list_engagements():
     results = sorted(
         d.name
         for d in ENGAGEMENTS_DIR.iterdir()
-        if d.is_dir() and (d / "pentest_data.db").exists()
+        if d.is_dir()
+        and (d / "pentest_data.db").exists()
+        and d.name.lower() != "default"
     )
     return JSONResponse(results)
 
