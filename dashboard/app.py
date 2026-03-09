@@ -2,15 +2,19 @@
 
 import asyncio
 import json
+from pathlib import Path
+
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pathlib import Path
 from pydantic import BaseModel
 
-import db
-import pipeline
+try:
+    from . import db, pipeline
+except ImportError:
+    import db
+    import pipeline
 
 app = FastAPI(title="Pentest Dashboard")
 
@@ -44,6 +48,8 @@ def _resolve_db(engagement: str | None) -> tuple[Path, int]:
     if engagement:
         safe = Path(engagement).name  # prevent path traversal
         db_path = ENGAGEMENTS_DIR / safe / "pentest_data.db"
+        if not db_path.is_file():
+            raise HTTPException(status_code=404, detail=f"Unknown engagement: {safe}")
         return db_path, db.get_latest_engagement_id(db_path)
     return db.DEFAULT_DB, db.get_latest_engagement_id(db.DEFAULT_DB)
 
@@ -172,4 +178,5 @@ def list_engagements():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
+
+    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)

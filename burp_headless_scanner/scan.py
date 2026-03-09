@@ -3,7 +3,6 @@
 import argparse
 import json
 import subprocess
-import sys
 import time
 
 import requests
@@ -11,7 +10,6 @@ import requests
 BURP_API = "http://127.0.0.1:1337"
 BURP_JAR = "/Applications/Burp Suite Professional.app/Contents/Resources/app/burpsuite_pro.jar"
 BURP_JAVA = "/Applications/Burp Suite Professional.app/Contents/Resources/jre.bundle/Contents/Home/bin/java"
-PROJECT_FILE = "./scanner.burp"
 POLL_INTERVAL = 5
 
 
