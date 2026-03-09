@@ -52,16 +52,15 @@
     }
 
     statusBar.classList.remove("hidden");
-    statusText.textContent = currentTarget ? `${phase} - ${currentTarget}` : phase;
-    statusDot.className =
-      "w-3 h-3 rounded-full inline-block mr-2 " +
-      (status === "running"
-        ? "bg-yellow-400 animate-pulse"
-        : status === "complete"
-          ? "bg-green-400"
-          : status === "error"
-            ? "bg-red-400"
-            : "bg-gray-500");
+    statusText.textContent = currentTarget ? `${phase} — ${currentTarget}` : phase;
+
+    const dotBase = "pipeline-dot";
+    const dotState =
+      status === "running"  ? "pipeline-dot--running" :
+      status === "complete" ? "pipeline-dot--complete" :
+      status === "error"    ? "pipeline-dot--error" :
+                              "pipeline-dot--idle";
+    statusDot.className = `${dotBase} ${dotState}`;
   }
 
   /* --- SSE --- */

@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 {% from "_macros.html" import severity_badge %}
 
-{% block title %}Attack Chains — Pentest Dashboard{% endblock %}
+{% block title %}Attack Chains — CNH Security Operations{% endblock %}
 
 {% block content %}
-<h1 class="text-xl font-bold mb-6">Attack Chains <span class="text-gray-500 text-base font-normal">({{ chains | length }})</span></h1>
+<h1 class="cnh-page-title animate-in animate-in-1" style="margin-bottom:24px;">Attack Chains <span class="cnh-page-count">({{ chains | length }})</span></h1>
 
-<div class="space-y-6">
+<div class="chain-space">
     {% for chain in chains %}
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-6">
+    <div class="cnh-card cnh-card-pad animate-in animate-in-{{ loop.index + 1 }}">
         <!-- Chain Header -->
-        <div class="flex items-start justify-between mb-4">
+        <div class="chain-header">
             <div>
-                <h2 class="text-lg font-semibold text-white">{{ chain.name }}</h2>
+                <h2 class="chain-name">{{ chain.name }}</h2>
                 {% if chain.final_impact %}
-                <p class="text-gray-400 text-sm mt-1">{{ chain.final_impact }}</p>
+                <p class="chain-impact">{{ chain.final_impact }}</p>
                 {% endif %}
             </div>
             {{ severity_badge(chain.severity) }}
@@ -22,22 +22,17 @@
 
         <!-- Step Timeline -->
         {% if chain.steps %}
-        <div class="ml-4 border-l-2 border-gray-700 pl-6 space-y-4">
+        <div class="chain-timeline">
             {% for step in chain.steps %}
-            <div class="relative">
-                <!-- Step circle -->
-                <div class="absolute -left-[33px] top-0.5 w-5 h-5 rounded-full bg-gray-800 border-2 border-indigo-500 flex items-center justify-center">
-                    <span class="text-[10px] font-bold text-indigo-400">{{ step.step_order }}</span>
-                </div>
+            <div class="chain-step">
+                <div class="chain-step-circle">{{ step.step_order }}</div>
                 <div>
-                    <p class="text-sm text-gray-200">{{ step.action }}</p>
-                    <div class="flex flex-wrap items-center gap-2 mt-1">
-                        {% if step.vuln_used %}
-                        <span class="px-2 py-0.5 bg-red-500/10 text-red-400 rounded text-xs border border-red-500/20">{{ step.vuln_used }}</span>
-                        {% endif %}
-                    </div>
+                    <p class="chain-step-action">{{ step.action }}</p>
+                    {% if step.vuln_used %}
+                    <span class="chain-vuln-tag">{{ step.vuln_used }}</span>
+                    {% endif %}
                     {% if step.result %}
-                    <p class="text-xs text-gray-500 mt-1">&#8627; {{ step.result }}</p>
+                    <p class="chain-step-result">&#8627; {{ step.result }}</p>
                     {% endif %}
                 </div>
             </div>

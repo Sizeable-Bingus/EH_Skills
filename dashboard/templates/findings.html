@@ -1,112 +1,112 @@
 {% extends "base.html" %}
 {% from "_macros.html" import severity_badge %}
 
-{% block title %}Findings — Pentest Dashboard{% endblock %}
+{% block title %}Findings — CNH Security Operations{% endblock %}
 
 {% block content %}
-<div class="flex items-center justify-between mb-4">
-    <h1 class="text-xl font-bold">Findings <span class="text-gray-500 text-base font-normal">({{ findings | length }})</span></h1>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;" class="animate-in animate-in-1">
+    <h1 class="cnh-page-title">Findings <span class="cnh-page-count">({{ findings | length }})</span></h1>
 </div>
 
 <!-- Filters -->
-<form method="get" class="flex flex-wrap gap-3 mb-6">
+<form method="get" class="cnh-filter-bar animate-in animate-in-2">
     {% if current_engagement %}
     <input type="hidden" name="engagement" value="{{ current_engagement }}">
     {% endif %}
-    <select name="severity" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500">
+    <select name="severity" class="cnh-filter-select">
         <option value="">All Severities</option>
         {% for s in severities %}
         <option value="{{ s }}" {% if cur_severity == s %}selected{% endif %}>{{ s | capitalize }}</option>
         {% endfor %}
     </select>
-    <select name="category" class="bg-gray-900 border border-gray-700 rounded px-3 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-gray-500">
+    <select name="category" class="cnh-filter-select">
         <option value="">All Categories</option>
         {% for c in categories %}
         <option value="{{ c }}" {% if cur_category == c %}selected{% endif %}>{{ c }}</option>
         {% endfor %}
     </select>
-    <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-1.5 rounded text-sm font-medium transition">Filter</button>
+    <button type="submit" class="cnh-filter-btn">Filter</button>
     {% if cur_severity or cur_category %}
-    <a href="/findings{% if current_engagement %}?engagement={{ current_engagement | urlencode }}{% endif %}" class="text-gray-400 hover:text-white px-3 py-1.5 text-sm transition">Clear</a>
+    <a href="/findings{% if current_engagement %}?engagement={{ current_engagement | urlencode }}{% endif %}" class="cnh-filter-clear">Clear</a>
     {% endif %}
 </form>
 
 <!-- Table -->
-<div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden">
-    <table class="w-full text-sm">
-        <thead class="bg-gray-800/50">
+<div class="cnh-card animate-in animate-in-3">
+    <table class="cnh-table">
+        <thead>
             <tr>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold w-8"></th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Severity</th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Category</th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">URL</th>
-                <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
+                <th style="width:36px;"></th>
+                <th>Severity</th>
+                <th>Category</th>
+                <th>URL</th>
+                <th>Technique</th>
             </tr>
         </thead>
-        <tbody class="divide-y divide-gray-800">
+        <tbody>
             {% for f in findings %}
-            <tr class="hover:bg-gray-800/30 transition">
-                <td class="px-4 py-3 text-gray-500">
+            <tr>
+                <td>
                     <button
                         type="button"
-                        class="inline-flex items-center justify-center hover:text-gray-300 transition"
+                        class="detail-toggle-btn"
                         data-detail-toggle
                         data-id="{{ f.id }}"
                         aria-expanded="false"
                         aria-controls="detail-{{ f.id }}"
                     >
-                        <span id="arrow-{{ f.id }}" class="inline-block transition-transform">&#9654;</span>
+                        <span id="arrow-{{ f.id }}" class="detail-arrow">&#9654;</span>
                     </button>
                 </td>
-                <td class="px-4 py-3">{{ severity_badge(f.severity) }}</td>
-                <td class="px-4 py-3 text-gray-300">{{ f.category }}</td>
-                <td class="px-4 py-3 text-gray-300 mono text-xs max-w-xs truncate" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
-                <td class="px-4 py-3 text-gray-300 max-w-xs truncate" title="{{ f.technique or '' }}">{{ f.technique or '—' }}</td>
+                <td>{{ severity_badge(f.severity) }}</td>
+                <td>{{ f.category }}</td>
+                <td class="mono truncate" style="font-size:0.75rem;max-width:240px;" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
+                <td class="truncate" style="max-width:240px;" title="{{ f.technique or '' }}">{{ f.technique or '—' }}</td>
             </tr>
             <tr id="detail-{{ f.id }}" class="hidden">
-                <td colspan="5" class="px-6 py-4 bg-gray-900/50">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <td colspan="5" class="detail-cell">
+                    <div class="detail-grid">
                         {% if f.detail %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Detail</h4>
-                            <p class="text-gray-300">{{ f.detail }}</p>
+                            <p class="detail-field-label">Detail</p>
+                            <p class="detail-field-value">{{ f.detail }}</p>
                         </div>
                         {% endif %}
                         {% if f.evidence %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Evidence</h4>
-                            <p class="text-gray-300">{{ f.evidence }}</p>
+                            <p class="detail-field-label">Evidence</p>
+                            <p class="detail-field-value">{{ f.evidence }}</p>
                         </div>
                         {% endif %}
                         {% if f.impact %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Impact</h4>
-                            <p class="text-gray-300">{{ f.impact }}</p>
+                            <p class="detail-field-label">Impact</p>
+                            <p class="detail-field-value">{{ f.impact }}</p>
                         </div>
                         {% endif %}
                         {% if f.remediation %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Remediation</h4>
-                            <p class="text-gray-300">{{ f.remediation }}</p>
+                            <p class="detail-field-label">Remediation</p>
+                            <p class="detail-field-value">{{ f.remediation }}</p>
                         </div>
                         {% endif %}
                         {% if f.parameter %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Parameter</h4>
-                            <p class="text-gray-300 mono">{{ f.parameter }}</p>
+                            <p class="detail-field-label">Parameter</p>
+                            <p class="detail-field-value mono">{{ f.parameter }}</p>
                         </div>
                         {% endif %}
                         {% if f.affected_asset %}
                         <div>
-                            <h4 class="text-xs uppercase tracking-wide text-gray-500 mb-1">Affected Asset</h4>
-                            <p class="text-gray-300 mono">{{ f.affected_asset }}</p>
+                            <p class="detail-field-label">Affected Asset</p>
+                            <p class="detail-field-value mono">{{ f.affected_asset }}</p>
                         </div>
                         {% endif %}
                     </div>
                     {% if f.raw %}
-                    <details class="mt-4">
-                        <summary class="text-xs uppercase tracking-wide text-gray-500 cursor-pointer hover:text-gray-300">Raw JSON</summary>
-                        <pre class="mt-2 bg-gray-950 rounded p-3 text-gray-400 overflow-x-auto max-h-64">{{ f.raw | tojson(indent=2) }}</pre>
+                    <details class="detail-raw-toggle">
+                        <summary>Raw JSON</summary>
+                        <pre class="detail-raw-pre">{{ f.raw | tojson(indent=2) }}</pre>
                     </details>
                     {% endif %}
                 </td>
@@ -116,4 +116,5 @@
     </table>
 </div>
 {% endblock %}
+
 {% block scripts %}<script src="{{ url_for('static', path='findings.js') }}" defer></script>{% endblock %}

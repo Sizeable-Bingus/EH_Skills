@@ -20,6 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
+    /* CNH-aligned chart defaults */
+    Chart.defaults.font.family = "'Montserrat', sans-serif";
+    Chart.defaults.font.weight = 500;
+
     const severityData = parseJsonAttribute(chartData.dataset.severityCounts, {});
     const categoryData = parseJsonAttribute(chartData.dataset.categoryCounts, []);
 
@@ -37,8 +41,15 @@ document.addEventListener("DOMContentLoaded", () => {
                         severityData.low || 0,
                         severityData.info || 0,
                     ],
-                    backgroundColor: ["#ef4444", "#f97316", "#eab308", "#3b82f6", "#6b7280"],
+                    backgroundColor: [
+                        "#d42a2a",  /* critical */
+                        "#e07314",  /* high */
+                        "#c59f07",  /* medium */
+                        "#2567cf",  /* low */
+                        "#9ca3af",  /* info */
+                    ],
                     borderWidth: 0,
+                    hoverOffset: 6,
                 }],
             },
             options: {
@@ -47,10 +58,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 plugins: {
                     legend: {
                         position: "right",
-                        labels: { color: "#9ca3af", font: { size: 12 } },
+                        labels: {
+                            color: "#5a6170",
+                            font: { size: 12, weight: 500 },
+                            padding: 14,
+                            usePointStyle: true,
+                            pointStyleWidth: 10,
+                        },
                     },
                 },
-                cutout: "60%",
+                cutout: "62%",
             },
         });
     }
@@ -63,8 +80,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 labels: categoryData.map((item) => item.category),
                 datasets: [{
                     data: categoryData.map((item) => item.count),
-                    backgroundColor: "#6366f1",
+                    backgroundColor: "#8b1a1a",
+                    hoverBackgroundColor: "#c62828",
                     borderRadius: 4,
+                    borderSkipped: false,
                 }],
             },
             options: {
@@ -73,8 +92,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 indexAxis: "y",
                 plugins: { legend: { display: false } },
                 scales: {
-                    x: { ticks: { color: "#9ca3af" }, grid: { color: "#1f2937" } },
-                    y: { ticks: { color: "#9ca3af", font: { size: 10 } }, grid: { display: false } },
+                    x: {
+                        ticks: { color: "#8b919e", font: { size: 11 } },
+                        grid: { color: "#e2e5ea", lineWidth: 0.5 },
+                    },
+                    y: {
+                        ticks: { color: "#5a6170", font: { size: 11, weight: 500 } },
+                        grid: { display: false },
+                    },
                 },
             },
         });

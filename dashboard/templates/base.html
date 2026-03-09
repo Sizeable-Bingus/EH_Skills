@@ -1,79 +1,78 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Pentest Dashboard{% endblock %}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     {% block head_scripts %}{% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', path='styles.css') }}">
 </head>
-<body class="bg-gray-950 text-gray-100 min-h-screen">
-    <nav class="bg-gray-900 border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-14">
-                <div class="flex items-center gap-2">
-                    <span class="text-lg font-bold text-red-500">&#9760;</span>
-                    <span class="font-semibold text-sm tracking-wide">PENTEST DASHBOARD</span>
-                </div>
-                <div class="flex gap-1 items-center">
+<body>
+    <!-- Top Navigation -->
+    <nav class="cnh-nav">
+        <div class="cnh-nav-inner">
+            <div class="cnh-logo">
+                <div class="cnh-logo-mark">CNH</div>
+                <div class="cnh-logo-divider"></div>
+                <span class="cnh-logo-sub">Security Operations</span>
+            </div>
+
+            <div style="display:flex;align-items:center;">
+                <div class="cnh-nav-links">
                     {% set eq = "?engagement=" ~ current_engagement if current_engagement else "" %}
                     {% set nav_items = [
                         ("summary", "/", "Executive Summary"),
                         ("findings", "/findings", "Findings"),
                         ("chains", "/chains", "Attack Chains"),
-                        ("loot", "/loot", "Credentials & Loot"),
+                        ("loot", "/loot", "Compromised Credentials"),
                     ] %}
                     {% for key, href, label in nav_items %}
                     <a href="{{ href }}{{ eq }}"
-                       class="px-3 py-2 rounded text-sm font-medium transition
-                              {% if page == key %}bg-gray-800 text-white{% else %}text-gray-400 hover:text-white hover:bg-gray-800{% endif %}">
+                       class="cnh-nav-link {% if page == key %}cnh-nav-link--active{% endif %}">
                         {{ label }}
                     </a>
                     {% endfor %}
+                </div>
 
-                    <div class="ml-3 border-l border-gray-700 pl-3 flex items-center gap-2">
-                        <select id="engagement-select"
-                                class="bg-gray-800 text-gray-300 text-xs rounded px-2 py-1.5 border border-gray-700 focus:outline-none focus:border-gray-500">
-                            <option value="">Default</option>
-                        </select>
-                        <button id="scan-open"
-                                class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold px-3 py-1.5 rounded transition">
-                            New Scan
-                        </button>
-                    </div>
+                <div class="cnh-nav-controls">
+                    <select id="engagement-select" class="cnh-select">
+                        <option value="">Default</option>
+                    </select>
+                    <button id="scan-open" class="cnh-btn-primary">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        New Scan
+                    </button>
                 </div>
             </div>
         </div>
     </nav>
 
     <!-- Pipeline status bar -->
-    <div id="pipeline-status" class="hidden bg-gray-900 border-b border-gray-800 px-4 py-2">
-        <div class="max-w-7xl mx-auto flex items-center gap-3 text-sm">
-            <span id="pipeline-dot" class="w-3 h-3 rounded-full inline-block bg-gray-500"></span>
-            <span id="pipeline-text" class="text-gray-300 flex-1">Idle</span>
-            <button id="log-toggle" class="text-gray-400 hover:text-white text-xs underline">Show Log</button>
+    <div id="pipeline-status" class="hidden pipeline-bar">
+        <div class="pipeline-bar-inner">
+            <span id="pipeline-dot" class="pipeline-dot pipeline-dot--idle"></span>
+            <span id="pipeline-text" class="pipeline-text">Idle</span>
+            <button id="log-toggle" class="pipeline-log-toggle">Show Log</button>
         </div>
-        <div id="log-panel" class="hidden max-w-7xl mx-auto mt-2">
-            <pre id="log-pre" class="bg-gray-950 text-green-400 text-xs p-3 rounded max-h-64 overflow-y-auto border border-gray-800 font-mono"></pre>
+        <div id="log-panel" class="hidden pipeline-log-panel">
+            <pre id="log-pre" class="pipeline-log-pre"></pre>
         </div>
     </div>
 
     <!-- New Scan modal -->
-    <div id="scan-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div class="bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-6 w-full max-w-md">
-            <h2 class="text-lg font-semibold mb-4">Start New Scan</h2>
-            <label class="block text-sm text-gray-400 mb-1">Target URL</label>
-            <input id="scan-target" type="text" placeholder="https://example.com"
-                   class="w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-gray-100 focus:outline-none focus:border-red-500 mb-4">
-            <div class="flex justify-end gap-2">
-                <button id="scan-cancel" class="px-4 py-2 text-sm text-gray-400 hover:text-white">Cancel</button>
-                <button id="scan-start" class="px-4 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded font-semibold">Start Pipeline</button>
+    <div id="scan-modal" class="hidden cnh-modal-overlay">
+        <div class="cnh-modal">
+            <h2>Start New Scan</h2>
+            <label>Target URL</label>
+            <input id="scan-target" type="text" placeholder="https://example.com" class="cnh-input">
+            <div class="cnh-modal-actions">
+                <button id="scan-cancel" class="cnh-btn-ghost">Cancel</button>
+                <button id="scan-start" class="cnh-btn-modal-primary">Start Pipeline</button>
             </div>
         </div>
     </div>
 
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <main class="cnh-main">
         {% block content %}{% endblock %}
     </main>
     <script src="{{ url_for('static', path='pipeline.js') }}"></script>

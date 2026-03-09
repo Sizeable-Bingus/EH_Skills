@@ -1,40 +1,40 @@
 {% extends "base.html" %}
 {% from "_macros.html" import severity_badge %}
 
-{% block title %}Credentials & Loot — Pentest Dashboard{% endblock %}
+{% block title %}Compromised Credentials — CNH Security Operations{% endblock %}
 
 {% block content %}
-<h1 class="text-xl font-bold mb-6">Credentials & Loot</h1>
+<h1 class="cnh-page-title animate-in animate-in-1" style="margin-bottom:24px;">Compromised Credentials</h1>
 
 <!-- Summary Stats -->
-<div class="grid grid-cols-1 gap-4 mb-6">
-    <div class="bg-gray-900 rounded-lg border border-gray-800 p-4">
-        <p class="text-gray-400 text-xs uppercase tracking-wide mb-1">Credentials Found</p>
-        <p class="text-2xl font-bold text-white">{{ credentials | length }}</p>
+<div class="cnh-stat-grid animate-in animate-in-2" style="margin-bottom:24px;">
+    <div class="cnh-card cnh-card-pad cnh-stat-card cnh-stat-card--orange">
+        <p class="cnh-stat-label">Credentials Found</p>
+        <p class="cnh-stat-value">{{ credentials | length }}</p>
     </div>
 </div>
 
 <!-- Credentials Table -->
-<div class="bg-gray-900 rounded-lg border border-gray-800 overflow-hidden mb-6">
-    <div class="px-4 py-3 border-b border-gray-800">
-        <h2 class="text-sm font-semibold uppercase tracking-wide text-gray-400">Credentials</h2>
+<div class="cnh-card animate-in animate-in-3">
+    <div class="cnh-card-header">
+        <p class="cnh-section-label" style="margin-bottom:0;">Credentials</p>
     </div>
-    <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-            <thead class="bg-gray-800/50">
+    <div style="overflow-x:auto;">
+        <table class="cnh-table">
+            <thead>
                 <tr>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Technique</th>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Detail</th>
-                    <th class="text-left px-4 py-3 text-xs uppercase tracking-wide text-gray-400 font-semibold">Evidence</th>
+                    <th>Technique</th>
+                    <th>Detail</th>
+                    <th>Evidence</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-800">
+            <tbody>
                 {% for c in credentials %}
-                <tr class="hover:bg-gray-800/30 transition">
-                    <td class="px-4 py-3 text-gray-300 text-xs">{{ c.technique or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-400 text-xs max-w-xs">{{ c.detail or '—' }}</td>
-                    <td class="px-4 py-3 text-gray-500 text-xs max-w-md">
-                        <pre class="whitespace-pre-wrap break-all font-mono text-xs">{{ c.evidence or '—' }}</pre>
+                <tr>
+                    <td style="font-size:0.78rem;">{{ c.technique or '—' }}</td>
+                    <td style="font-size:0.78rem;max-width:280px;">{{ c.detail or '—' }}</td>
+                    <td style="max-width:360px;">
+                        <pre class="mono" style="white-space:pre-wrap;word-break:break-all;font-size:0.72rem;margin:0;color:var(--text-secondary);">{{ c.evidence or '—' }}</pre>
                     </td>
                 </tr>
                 {% endfor %}
@@ -42,5 +42,4 @@
         </table>
     </div>
 </div>
-
 {% endblock %}
