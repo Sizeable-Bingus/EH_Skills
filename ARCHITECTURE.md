@@ -4,8 +4,9 @@
 
 - `dashboard/`: FastAPI app, Jinja templates, static assets, SQLite query layer, and in-process pipeline manager
 - `burp_headless_scanner/`: Burp configuration and helper script used by the real pipeline
+- `pentest_pipeline/`: real and synthetic pipeline entrypoints
 - `docs/`: durable product, architecture, and planning notes
-- repository root: pipeline entrypoints and supporting project config
+- repository root: supporting project config and shared assets
 
 `AGENTS.md` references `scripts/` and `tests/e2e/`, but those directories do not exist in the current repo state.
 
@@ -35,7 +36,7 @@ Templates live in `dashboard/templates/` and shared client behavior for scan con
 `dashboard/pipeline.py` is a single-process async coordinator. It:
 
 - enforces one active run at a time
-- chooses `pentest_pipeline.py` or `pentest_pipeline_test.py` from `PENTEST_PIPELINE_MODE`
+- chooses `pentest_pipeline/pentest_pipeline.py` or `pentest_pipeline/pentest_pipeline_test.py` from `PENTEST_PIPELINE_MODE`
 - spawns the pipeline with `uv run python3`
 - captures stdout into in-memory log state
 - extracts phase names from `PHASE:` log lines
@@ -45,7 +46,7 @@ Pipeline state is stored in a module-global `PipelineState` instance.
 
 ### Real pipeline
 
-`pentest_pipeline.py` orchestrates the authorized pentest flow:
+`pentest_pipeline/pentest_pipeline.py` orchestrates the authorized pentest flow:
 
 1. kill any stale Burp process
 2. launch Burp headless
@@ -57,7 +58,7 @@ Pipeline state is stored in a module-global `PipelineState` instance.
 
 ### Synthetic pipeline
 
-`pentest_pipeline_test.py` produces deterministic synthetic artifacts for development without running models. It writes JSON outputs and a SQLite database under the engagement directory.
+`pentest_pipeline/pentest_pipeline_test.py` produces deterministic synthetic artifacts for development without running models. It writes JSON outputs and a SQLite database under the engagement directory.
 
 ## Data Model And Storage
 
@@ -88,7 +89,7 @@ The dashboard treats an engagement directory as selectable when `pentest_data.db
 
 1. Browser posts target and optional credentials to `/api/pipeline/start`.
 2. FastAPI calls `dashboard.pipeline.start_pipeline(...)`.
-3. The pipeline manager spawns the configured root-level pipeline script.
+3. The pipeline manager spawns the configured pipeline script from `pentest_pipeline/`.
 4. Browser connects to `/api/pipeline/stream`.
 5. SSE messages stream stdout lines until completion.
 6. Browser refreshes the engagement list when the run ends.

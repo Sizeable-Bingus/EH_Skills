@@ -50,8 +50,8 @@ Users can delete a selected engagement from the UI. Deletion removes the entire 
 
 The implemented pipeline has two operating modes:
 
-- `real` mode via `pentest_pipeline.py`
-- `synthetic` mode via `pentest_pipeline_test.py`
+- `real` mode via `pentest_pipeline/pentest_pipeline.py`
+- `synthetic` mode via `pentest_pipeline/pentest_pipeline_test.py`
 
 The real pipeline currently runs these phases:
 
