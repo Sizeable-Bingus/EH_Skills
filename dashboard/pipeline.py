@@ -62,8 +62,8 @@ async def start_pipeline(
         env["PENTEST_CRED_PASSWORD"] = password
 
     proc = await asyncio.create_subprocess_exec(
-        #"uv", "run", "python3", "pentest_pipeline_test.py", target,
-        "uv", "run", "python3", "pentest_pipeline.py", target,
+        "uv", "run", "python3", "pentest_pipeline_test.py", target,
+        #"uv", "run", "python3", "pentest_pipeline.py", target,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
         cwd=str(PROJECT_ROOT),
