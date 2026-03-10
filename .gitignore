@@ -1,1 +1,7 @@
 __pycache__/
+engagements/
+tools/
+SecLists/
+*.db
+*.db.bak
+*.json.bak
