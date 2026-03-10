@@ -6,7 +6,7 @@ description: >
   machine-readable JSON for downstream pentest agents. Use this skill whenever the user
   wants to perform reconnaissance, information gathering, or attack surface mapping
   against a web application target — including subdomain enumeration, technology
-  fingerprinting, port scanning, directory discovery, OSINT, or any "recon phase" work.
+  fingerprinting, directory discovery, OSINT, or any "recon phase" work.
   Also trigger when the user provides a target domain/URL and asks to "start a pentest",
   "enumerate", "scan", "fingerprint", or "map the attack surface". This skill is the
   first phase in an AI-driven penetration testing pipeline.
@@ -26,6 +26,9 @@ You are the recon phase of an authorized penetration testing pipeline. Your job 
 systematically gather intelligence about a web application target and produce structured
 JSON output that a downstream exploitation agent can consume directly.
 
+Keep all output brief and professional — avoid filler, redundant explanations, or
+conversational phrasing. State findings, evidence, and recommendations directly.
+
 ## Output Directory Convention
 
 All output goes under `engagements/<target>/` relative to the project root. Sanitize the
@@ -43,7 +46,6 @@ mkdir -p "$TARGET_DIR/scans"
 | File / Dir                              | Contents                              |
 |-----------------------------------------|---------------------------------------|
 | `$TARGET_DIR/recon_output.json`         | Final structured recon output         |
-| `$TARGET_DIR/scans/nmap_*.txt`          | Nmap scan results                     |
 | `$TARGET_DIR/scans/gobuster_*.txt`      | Directory/file brute-force results    |
 | `$TARGET_DIR/scans/nuclei_output.txt`   | Nuclei scan results                   |
 | `$TARGET_DIR/scans/live_subs.txt`       | Live subdomain probe results          |
@@ -181,18 +183,7 @@ openssl s_client -connect <domain>:443 -servername <domain> </dev/null 2>/dev/nu
 
 Or use `sslyze`/`testssl.sh` if installed. Look for: extra SANs, weak ciphers, outdated TLS.
 
-### 3.3 Port Scanning
-
-```bash
-nmap -sV -sC --top-ports 1000 -oN "$TARGET_DIR/scans/nmap_scan.txt" <target>
-```
-
-Quick sweep:
-```bash
-nmap -T4 -F <target>
-```
-
-### 3.4 Directory and File Discovery
+### 3.3 Directory and File Discovery
 
 Use gobuster, feroxbuster, or dirsearch:
 
@@ -224,14 +215,14 @@ Key things to look for:
 Start with `common.txt` for speed, then escalate to raft or directory-list if the
 initial pass looks thin.
 
-### 3.5 Subdomain Validation & Resolution
+### 3.4 Subdomain Validation & Resolution
 
 ```bash
 # httpx probes for live HTTP services
 echo "<subdomain-list>" | httpx -silent -status-code -title -tech-detect -o "$TARGET_DIR/scans/live_subs.txt"
 ```
 
-### 3.6 Virtual Host (VHOST) Discovery
+### 3.5 Virtual Host (VHOST) Discovery
 
 Sites on the same IP distinguished by `Host` header won't appear in DNS-based subdomain
 enumeration. Brute-force with gobuster's `vhost` mode:
@@ -243,14 +234,14 @@ gobuster vhost -u https://<target-IP-or-domain> -w SecLists/Discovery/DNS/subdom
 Use `--exclude-length` to filter false positives (same technique as directory brute-forcing).
 Add any discovered vhosts to the subdomains list.
 
-### 3.7 Burp Suite Integration
+### 3.6 Burp Suite Integration
 
 When a Burp MCP server is available, use it for:
 - Spidering/crawling to discover dynamic and JS-rendered endpoints
 - Pulling passive scan results and sitemap
 - Inspecting captured requests/responses
 
-### 3.8 JavaScript Analysis
+### 3.7 JavaScript Analysis
 
 ```bash
 # Extract JS file URLs from the page source
@@ -264,7 +255,7 @@ In discovered JS files, search for:
 - Comments revealing architecture details
 - WebSocket endpoints
 
-### 3.9 Nuclei Scanning
+### 3.8 Nuclei Scanning
 
 Run nuclei against each discovered domain/vhost with all templates:
 
@@ -285,7 +276,7 @@ Merge all findings into the output JSON schema.
 ## Phase 5: Handoff
 
 After writing the JSON output file, provide a brief summary highlighting:
-- **Attack surface size**: number of live subdomains, open ports, discovered endpoints
+- **Attack surface size**: number of live subdomains, discovered endpoints
 - **High-value targets**: admin panels, exposed APIs, misconfigured services
 - **Notable findings**: anything unusual, leaked credentials, outdated software
 - **Recommended next steps**: what the exploitation agent should prioritize
@@ -306,7 +297,7 @@ Write the final output to `$TARGET_DIR/recon_output.json`. Use this exact struct
       "out_of_scope": ["..."],
       "rules_of_engagement": "<any constraints>"
     },
-    "tools_used": ["nmap", "subfinder", "..."],
+    "tools_used": ["subfinder", "gobuster", "..."],
     "recon_duration_seconds": null
   },
   "dns": {
@@ -339,16 +330,6 @@ Write the final output to `$TARGET_DIR/recon_output.json`. Use this exact struct
       "title": null,
       "server": null,
       "technologies": []
-    }
-  ],
-  "ports": [
-    {
-      "host": "<IP or hostname>",
-      "port": 443,
-      "state": "open",
-      "service": "https",
-      "version": "nginx 1.18.0",
-      "banner": null
     }
   ],
   "web_technologies": {
@@ -421,7 +402,6 @@ Write the final output to `$TARGET_DIR/recon_output.json`. Use this exact struct
   "summary": {
     "total_subdomains": 0,
     "live_subdomains": 0,
-    "open_ports": 0,
     "total_endpoints": 0,
     "high_value_targets": [],
     "recommended_next_steps": []
@@ -444,7 +424,6 @@ Check with `which <tool>` before use. Fallbacks:
 
 | Preferred        | Fallback                         |
 |------------------|----------------------------------|
-| `nmap`           | Python socket scan               |
 | `subfinder`      | crt.sh API + manual DNS bruteforce |
 | `gobuster`       | Python requests + wordlist       |
 | `whatweb`        | curl + header analysis           |
@@ -465,7 +444,7 @@ Run independent tasks concurrently using subagents:
   DNS enumeration, WHOIS, crt.sh subdomain lookup, Wayback Machine
 
 - **Parallel group 2** (active, after passive completes):
-  Port scanning, HTTP fingerprinting, directory brute-forcing, TLS analysis
+  HTTP fingerprinting, directory brute-forcing, TLS analysis
 
 - **Parallel group 3** (dependent on earlier results):
   Subdomain validation (needs subdomain list), JS analysis (needs endpoint list)

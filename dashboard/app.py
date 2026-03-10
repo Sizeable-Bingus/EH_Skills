@@ -146,7 +146,7 @@ async def pipeline_stream():
     async def generate():
         try:
             while True:
-                line = await asyncio.wait_for(q.get(), timeout=300)
+                line = await q.get()
                 if line is None:
                     st = pipeline.get_state()
                     payload = json.dumps({
