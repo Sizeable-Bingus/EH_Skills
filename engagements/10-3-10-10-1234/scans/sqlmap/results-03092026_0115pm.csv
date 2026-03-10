@@ -1,2 +1,0 @@
-Target URL,Place,Parameter,Technique(s),Note(s)
-http://10.3.10.10:1234/rest/products/search?q=test,GET,q,BT,
