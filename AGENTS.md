@@ -14,7 +14,7 @@ Before editing code, read:
 
 ## Repo map
 
-- `dashboard/`: application code
+- `src/`: Bun/Hono application code, TSX pages, browser TypeScript, SQLite access, and pipeline runtime
 - `docs/`: durable project knowledge
 - `scripts/`: stable commands the agent should use
 - `tests/e2e/`: critical user-flow checks
@@ -34,5 +34,5 @@ A task is done when:
 
 - the requested behavior is implemented
 - relevant docs are updated
-- `uv run pyright` and `uv run ruff check` pass
+- `bun x tsc --noEmit`, `bun x eslint .`, `bun x prettier --check .`, and `bun test` pass
 - remaining risks or unknowns are written down
