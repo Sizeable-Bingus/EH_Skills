@@ -1,0 +1,348 @@
+{
+  "scan_metrics": {
+    "current_url": "",
+    "crawl_requests_made": 3791,
+    "crawl_network_errors": 1,
+    "crawl_unique_locations_visited": 53,
+    "crawl_requests_queued": 0,
+    "audit_queue_items_completed": 53,
+    "audit_queue_items_waiting": 0,
+    "audit_requests_made": 38615,
+    "audit_network_errors": 10,
+    "issue_events": 4,
+    "crawl_and_audit_caption": "Scanning",
+    "crawl_and_audit_progress": 100,
+    "total_elapsed_time": 815,
+    "login_count": 0
+  },
+  "issue_events": [
+    {
+      "id": "116",
+      "type": "issue_found",
+      "issue": {
+        "name": "Cross-origin resource sharing: arbitrary origin trusted",
+        "type_index": 2098689,
+        "serial_number": "8990716975513160704",
+        "origin": "http://10.3.10.10:1234",
+        "path": "/de.svg",
+        "severity": "info",
+        "confidence": "certain",
+        "description": "The application implements an HTML5 cross-origin resource sharing (CORS) policy for this request that allows access from any domain.<br><br>The application allowed access from the requested origin <strong>http://jffqjqbvuwpq.com</strong><br><br>If the application relies on network firewalls or other IP-based access controls, this policy is likely to present a security risk.<br><br>Since the Vary: Origin header was not present in the response, reverse proxies and intermediate servers may cache it. This may enable an attacker to carry out cache poisoning attacks.",
+        "issue_background": "<p>An HTML5 cross-origin resource sharing (CORS) policy controls whether and how content running on other domains can perform two-way interaction with the domain that publishes the policy. The policy is fine-grained and can apply access controls per-request based on the URL and other features of the request.</p><p>\nTrusting arbitrary origins effectively disables the same-origin policy, allowing two-way interaction by third-party web sites. Unless the response consists only of unprotected public content, this policy is likely to present a security risk.</p>\n<p>If the site  specifies the header Access-Control-Allow-Credentials: true, third-party sites may be able to carry out privileged actions and retrieve sensitive information. Even if it does not, attackers may be able to  bypass any IP-based access controls by proxying through users'  browsers.</p>",
+        "remediation_background": "<p>Rather than using a wildcard or programmatically verifying supplied origins, use a whitelist of trusted domains.</p>",
+        "caption": "/de.svg",
+        "evidence": [
+          {
+            "type": "FirstOrderEvidence",
+            "detail": {
+              "band_flags": [
+                "in_band"
+              ]
+            },
+            "request_response": {
+              "url": "http://10.3.10.10:1234/de.svg",
+              "request": [
+                {
+                  "type": "DataSegment",
+                  "data": "R0VUIC9kZS5zdmcgSFRUUC8xLjENCkhvc3Q6IDEwLjMuMTAuMTA6MTIzNA0KQ2FjaGUtQ29udHJvbDogbWF4LWFnZT0wDQpTZWMtQ0gtVUE6ICJHb29nbGUgQ2hyb21lIjt2PSIxNDUiLCAiTm90PUE/QnJhbmQiO3Y9IjgiLCAiQ2hyb21pdW0iO3Y9IjE0NSINClNlYy1DSC1VQS1Nb2JpbGU6ID8wDQpTZWMtQ0gtVUEtUGxhdGZvcm06ICJtYWNPUyINCkFjY2VwdC1MYW5ndWFnZTogZW4tVVM7cT0wLjksZW47cT0wLjgNClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzE1XzcpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS8xNDUuMC4wLjAgU2FmYXJpLzUzNy4zNg0KQWNjZXB0OiBpbWFnZS9hdmlmLGltYWdlL3dlYnAsaW1hZ2UvYXBuZyxpbWFnZS9zdmcreG1sLGltYWdlLyosKi8qO3E9MC44DQpTZWMtRmV0Y2gtU2l0ZTogbm9uZQ0KU2VjLUZldGNoLU1vZGU6IG5hdmlnYXRlDQpTZWMtRmV0Y2gtVXNlcjogPzENClNlYy1GZXRjaC1EZXN0OiBkb2N1bWVudA0KQWNjZXB0LUVuY29kaW5nOiBnemlwLCBkZWZsYXRlLCBicg0KQ29ubmVjdGlvbjogY2xvc2UNCkNvb2tpZTogbGFuZ3VhZ2U9ZW4NClJlZmVyZXI6IGh0dHA6Ly8xMC4zLjEwLjEwOjEyMzQvc3R5bGVzLmNzcw0K",
+                  "length": 657
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "T3JpZ2luOiBodHRwOi8vamZmcWpxYnZ1d3BxLmNvbQ==",
+                  "length": 31
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQoNCg==",
+                  "length": 4
+                }
+              ],
+              "response": [
+                {
+                  "type": "DataSegment",
+                  "data": "SFRUUC8xLjEgMjAwIE9LDQo=",
+                  "length": 17
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "QWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luOiAq",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpYLUNvbnRlbnQtVHlwZS1PcHRpb25zOiBub3NuaWZmDQpYLUZyYW1lLU9wdGlvbnM6IFNBTUVPUklHSU4NCkZlYXR1cmUtUG9saWN5OiBwYXltZW50ICdzZWxmJw0KWC1SZWNydWl0aW5nOiAvIy9qb2JzDQpBY2NlcHQtUmFuZ2VzOiBieXRlcw0KQ2FjaGUtQ29udHJvbDogcHVibGljLCBtYXgtYWdlPTANCkxhc3QtTW9kaWZpZWQ6IEZyaSwgMDYgTWFyIDIwMjYgMTY6NDE6MzggR01UDQpFVGFnOiBXLyJkMi0xOWNjNDA2YjA3MCINCg==",
+                  "length": 247
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "Q29udGVudC1UeXBlOiBpbWFnZS9zdmcreG1s",
+                  "length": 27
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpDb250ZW50LUxlbmd0aDogMjEwDQpWYXJ5OiBBY2NlcHQtRW5jb2RpbmcNCkRhdGU6IEZyaSwgMDYgTWFyIDIwMjYgMjI6NDg6MzcgR01UDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgaWQ9ImZsYWctaWNvbnMtZGUiIHZpZXdCb3g9IjAgMCA2NDAgNDgwIj4KICA8cGF0aCBmaWxsPSIjZmZjZTAwIiBkPSJNMCAzMjBoNjQwdjE2MEgweiIvPgogIDxwYXRoIGQ9Ik0wIDBoNjQwdjE2MEgweiIvPgogIDxwYXRoIGZpbGw9IiNkMDAiIGQ9Ik0wIDE2MGg2NDB2MTYwSDB6Ig==",
+                  "length": 304
+                },
+                {
+                  "type": "SnipSegment",
+                  "length": 10
+                }
+              ],
+              "was_redirect_followed": false,
+              "request_time": "1772837320788"
+            }
+          }
+        ],
+        "internal_data": "eyJmbGFncyI6NjU2MzMsInZhcmlhbnQiOjAsImlzc3VlX2RldGFpbHNfbWFwIjp7IjQwIjoiaHR0cDovL2pmZnFqcWJ2dXdwcS5jb20ifX0="
+      }
+    },
+    {
+      "id": "117",
+      "type": "issue_found",
+      "issue": {
+        "name": "Cross-origin resource sharing",
+        "type_index": 2098688,
+        "serial_number": "9172534556036995072",
+        "origin": "http://10.3.10.10:1234",
+        "path": "/de.svg",
+        "severity": "info",
+        "confidence": "certain",
+        "description": "The application implements an HTML5 cross-origin resource sharing (CORS) policy for this request.<br><br>If the application relies on network firewalls or other IP-based access controls, this policy is likely to present a security risk.<br><br>Since the Vary: Origin header was not present in the response, reverse proxies and intermediate servers may cache it. This may enable an attacker to carry out cache poisoning attacks.",
+        "issue_background": "<p>An HTML5 cross-origin resource sharing (CORS) policy controls whether and how content running on other domains can perform two-way interaction with the domain that publishes the policy. The policy is fine-grained and can apply access controls per-request based on the URL and other features of the request.</p><p>If another domain is allowed by the policy, then that domain can potentially attack users of the application. If a user is logged in to the application, and visits a domain allowed by the policy, then any malicious content running on that domain can potentially retrieve content from the application, and sometimes carry out actions within the security context of the logged in user.</p>\n<p>Even if an allowed domain is not overtly malicious in itself, security vulnerabilities within that domain could potentially be leveraged by an attacker to exploit the trust relationship and attack the application that allows access. CORS policies on pages containing sensitive information should be reviewed to determine whether it is appropriate for the application to trust both the intentions and security posture of any domains granted access.</p>",
+        "remediation_background": "<p>Any inappropriate domains should be removed from the CORS policy.</p>",
+        "caption": "/de.svg",
+        "evidence": [
+          {
+            "type": "FirstOrderEvidence",
+            "detail": {
+              "band_flags": [
+                "in_band"
+              ]
+            },
+            "request_response": {
+              "url": "http://10.3.10.10:1234/de.svg",
+              "request": [
+                {
+                  "type": "DataSegment",
+                  "data": "R0VUIC9kZS5zdmcgSFRUUC8xLjENCkhvc3Q6IDEwLjMuMTAuMTA6MTIzNA0KQ2FjaGUtQ29udHJvbDogbWF4LWFnZT0wDQpTZWMtQ0gtVUE6ICJHb29nbGUgQ2hyb21lIjt2PSIxNDUiLCAiTm90PUE/QnJhbmQiO3Y9IjgiLCAiQ2hyb21pdW0iO3Y9IjE0NSINClNlYy1DSC1VQS1Nb2JpbGU6ID8wDQpTZWMtQ0gtVUEtUGxhdGZvcm06ICJtYWNPUyINCkFjY2VwdC1MYW5ndWFnZTogZW4tVVM7cT0wLjksZW47cT0wLjgNClVzZXItQWdlbnQ6IE1vemlsbGEvNS4wIChNYWNpbnRvc2g7IEludGVsIE1hYyBPUyBYIDEwXzE1XzcpIEFwcGxlV2ViS2l0LzUzNy4zNiAoS0hUTUwsIGxpa2UgR2Vja28pIENocm9tZS8xNDUuMC4wLjAgU2FmYXJpLzUzNy4zNg0KQWNjZXB0OiBpbWFnZS9hdmlmLGltYWdlL3dlYnAsaW1hZ2UvYXBuZyxpbWFnZS9zdmcreG1sLGltYWdlLyosKi8qO3E9MC44DQpTZWMtRmV0Y2gtU2l0ZTogbm9uZQ0KU2VjLUZldGNoLU1vZGU6IG5hdmlnYXRlDQpTZWMtRmV0Y2gtVXNlcjogPzENClNlYy1GZXRjaC1EZXN0OiBkb2N1bWVudA0KQWNjZXB0LUVuY29kaW5nOiBnemlwLCBkZWZsYXRlLCBicg0KQ29ubmVjdGlvbjogY2xvc2UNCkNvb2tpZTogbGFuZ3VhZ2U9ZW4NClJlZmVyZXI6IGh0dHA6Ly8xMC4zLjEwLjEwOjEyMzQvc3R5bGVzLmNzcw0K",
+                  "length": 657
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "T3JpZ2luOiBodHRwOi8vMTAuMy4xMC4xMDoxMjM0",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQoNCg==",
+                  "length": 4
+                }
+              ],
+              "response": [
+                {
+                  "type": "DataSegment",
+                  "data": "SFRUUC8xLjEgMjAwIE9LDQo=",
+                  "length": 17
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "QWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luOiAq",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpYLUNvbnRlbnQtVHlwZS1PcHRpb25zOiBub3NuaWZmDQpYLUZyYW1lLU9wdGlvbnM6IFNBTUVPUklHSU4NCkZlYXR1cmUtUG9saWN5OiBwYXltZW50ICdzZWxmJw0KWC1SZWNydWl0aW5nOiAvIy9qb2JzDQpBY2NlcHQtUmFuZ2VzOiBieXRlcw0KQ2FjaGUtQ29udHJvbDogcHVibGljLCBtYXgtYWdlPTANCkxhc3QtTW9kaWZpZWQ6IEZyaSwgMDYgTWFyIDIwMjYgMTY6NDE6MzggR01UDQpFVGFnOiBXLyJkMi0xOWNjNDA2YjA3MCINCg==",
+                  "length": 247
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "Q29udGVudC1UeXBlOiBpbWFnZS9zdmcreG1s",
+                  "length": 27
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpDb250ZW50LUxlbmd0aDogMjEwDQpWYXJ5OiBBY2NlcHQtRW5jb2RpbmcNCkRhdGU6IEZyaSwgMDYgTWFyIDIwMjYgMjI6NDg6MzUgR01UDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgaWQ9ImZsYWctaWNvbnMtZGUiIHZpZXdCb3g9IjAgMCA2NDAgNDgwIj4KICA8cGF0aCBmaWxsPSIjZmZjZTAwIiBkPSJNMCAzMjBoNjQwdjE2MEgweiIvPgogIDxwYXRoIGQ9Ik0wIDBoNjQwdjE2MEgweiIvPgogIDxwYXRoIGZpbGw9IiNkMDAiIGQ9Ik0wIDE2MGg2NDB2MTYwSDB6Ig==",
+                  "length": 304
+                },
+                {
+                  "type": "SnipSegment",
+                  "length": 10
+                }
+              ],
+              "was_redirect_followed": false,
+              "request_time": "1772837320788"
+            }
+          }
+        ],
+        "internal_data": "eyJmbGFncyI6NjU2MzMsInZhcmlhbnQiOjAsImlzc3VlX2RldGFpbHNfbWFwIjp7fX0="
+      }
+    },
+    {
+      "id": "118",
+      "type": "issue_found",
+      "issue": {
+        "name": "Cross-origin resource sharing: arbitrary origin trusted",
+        "type_index": 2098689,
+        "serial_number": "2386385687816431616",
+        "origin": "http://10.3.10.10:1234",
+        "path": "/assets/public/images/products/apple_pressings.jpg",
+        "severity": "info",
+        "confidence": "certain",
+        "description": "The application implements an HTML5 cross-origin resource sharing (CORS) policy for this request that allows access from any domain.<br><br>The application allowed access from the requested origin <strong>http://holtjyvnxtnd.com</strong><br><br>If the application relies on network firewalls or other IP-based access controls, this policy is likely to present a security risk.<br><br>Since the Vary: Origin header was not present in the response, reverse proxies and intermediate servers may cache it. This may enable an attacker to carry out cache poisoning attacks.",
+        "issue_background": "<p>An HTML5 cross-origin resource sharing (CORS) policy controls whether and how content running on other domains can perform two-way interaction with the domain that publishes the policy. The policy is fine-grained and can apply access controls per-request based on the URL and other features of the request.</p><p>\nTrusting arbitrary origins effectively disables the same-origin policy, allowing two-way interaction by third-party web sites. Unless the response consists only of unprotected public content, this policy is likely to present a security risk.</p>\n<p>If the site  specifies the header Access-Control-Allow-Credentials: true, third-party sites may be able to carry out privileged actions and retrieve sensitive information. Even if it does not, attackers may be able to  bypass any IP-based access controls by proxying through users'  browsers.</p>",
+        "remediation_background": "<p>Rather than using a wildcard or programmatically verifying supplied origins, use a whitelist of trusted domains.</p>",
+        "caption": "/assets/public/images/products/apple_pressings.jpg",
+        "evidence": [
+          {
+            "type": "FirstOrderEvidence",
+            "detail": {
+              "band_flags": [
+                "in_band"
+              ]
+            },
+            "request_response": {
+              "url": "http://10.3.10.10:1234/assets/public/images/products/apple_pressings.jpg",
+              "request": [
+                {
+                  "type": "DataSegment",
+                  "data": "R0VUIC9hc3NldHMvcHVibGljL2ltYWdlcy9wcm9kdWN0cy9hcHBsZV9wcmVzc2luZ3MuanBnIEhUVFAvMS4xDQpIb3N0OiAxMC4zLjEwLjEwOjEyMzQNCkNhY2hlLUNvbnRyb2w6IG1heC1hZ2U9MA0KU2VjLUNILVVBOiAiR29vZ2xlIENocm9tZSI7dj0iMTQ1IiwgIk5vdD1BP0JyYW5kIjt2PSI4IiwgIkNocm9taXVtIjt2PSIxNDUiDQpTZWMtQ0gtVUEtTW9iaWxlOiA/MA0KU2VjLUNILVVBLVBsYXRmb3JtOiAibWFjT1MiDQpBY2NlcHQtTGFuZ3VhZ2U6IGVuLVVTO3E9MC45LGVuO3E9MC44DQpVc2VyLUFnZW50OiBNb3ppbGxhLzUuMCAoTWFjaW50b3NoOyBJbnRlbCBNYWMgT1MgWCAxMF8xNV83KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQ1LjAuMC4wIFNhZmFyaS81MzcuMzYNCkFjY2VwdDogaW1hZ2UvYXZpZixpbWFnZS93ZWJwLGltYWdlL2FwbmcsaW1hZ2Uvc3ZnK3htbCxpbWFnZS8qLCovKjtxPTAuOA0KU2VjLUZldGNoLVNpdGU6IG5vbmUNClNlYy1GZXRjaC1Nb2RlOiBuYXZpZ2F0ZQ0KU2VjLUZldGNoLVVzZXI6ID8xDQpTZWMtRmV0Y2gtRGVzdDogZG9jdW1lbnQNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCwgZGVmbGF0ZSwgYnINCkNvbm5lY3Rpb246IGNsb3NlDQpDb29raWU6IGxhbmd1YWdlPWVuDQpSZWZlcmVyOiBodHRwOi8vMTAuMy4xMC4xMDoxMjM0Lw0K",
+                  "length": 690
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "T3JpZ2luOiBodHRwOi8vaG9sdGp5dm54dG5kLmNvbQ==",
+                  "length": 31
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQoNCg==",
+                  "length": 4
+                }
+              ],
+              "response": [
+                {
+                  "type": "DataSegment",
+                  "data": "SFRUUC8xLjEgMjAwIE9LDQo=",
+                  "length": 17
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "QWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luOiAq",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpYLUNvbnRlbnQtVHlwZS1PcHRpb25zOiBub3NuaWZmDQpYLUZyYW1lLU9wdGlvbnM6IFNBTUVPUklHSU4NCkZlYXR1cmUtUG9saWN5OiBwYXltZW50ICdzZWxmJw0KWC1SZWNydWl0aW5nOiAvIy9qb2JzDQpBY2NlcHQtUmFuZ2VzOiBieXRlcw0KQ2FjaGUtQ29udHJvbDogcHVibGljLCBtYXgtYWdlPTANCkxhc3QtTW9kaWZpZWQ6IEZyaSwgMDYgTWFyIDIwMjYgMTY6NDE6NTEgR01UDQpFVGFnOiBXLyI3MWViLTE5Y2M0MDZlM2FjIg0K",
+                  "length": 249
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "Q29udGVudC1UeXBlOiBpbWFnZS9qcGVn",
+                  "length": 24
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpDb250ZW50LUxlbmd0aDogMjkxNjMNCkRhdGU6IEZyaSwgMDYgTWFyIDIwMjYgMjI6NTI6MTkgR01UDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQr/2P/gABBKRklGAAEBAAABAAEAAP/bAIQAAgICAgICAgICAgMCAgIDBAMCAgMEBQQEBAQEBQYFBQUFBQUGBgcHCAcHBgkJCgoJCQwMDAwMDAwMDAwMDAwMDAEDAwMFBAUJBgYJDQoJCg0PDg4ODg8PDAwMDAwPDwwMDAwMDA8MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM/8IAEQgBNwEXAwERAAIRAQMRAf/EAB4AAQABBAMBAQAAAAAAAAAAAAAEAQMHCA==",
+                  "length": 283
+                },
+                {
+                  "type": "SnipSegment",
+                  "length": 28963
+                }
+              ],
+              "was_redirect_followed": false,
+              "request_time": "1772837542898"
+            }
+          }
+        ],
+        "internal_data": "eyJmbGFncyI6NjU2MzMsInZhcmlhbnQiOjAsImlzc3VlX2RldGFpbHNfbWFwIjp7IjQwIjoiaHR0cDovL2hvbHRqeXZueHRuZC5jb20ifX0="
+      }
+    },
+    {
+      "id": "119",
+      "type": "issue_found",
+      "issue": {
+        "name": "Cross-origin resource sharing",
+        "type_index": 2098688,
+        "serial_number": "7664430449359057920",
+        "origin": "http://10.3.10.10:1234",
+        "path": "/assets/public/images/products/apple_pressings.jpg",
+        "severity": "info",
+        "confidence": "certain",
+        "description": "The application implements an HTML5 cross-origin resource sharing (CORS) policy for this request.<br><br>If the application relies on network firewalls or other IP-based access controls, this policy is likely to present a security risk.<br><br>Since the Vary: Origin header was not present in the response, reverse proxies and intermediate servers may cache it. This may enable an attacker to carry out cache poisoning attacks.",
+        "issue_background": "<p>An HTML5 cross-origin resource sharing (CORS) policy controls whether and how content running on other domains can perform two-way interaction with the domain that publishes the policy. The policy is fine-grained and can apply access controls per-request based on the URL and other features of the request.</p><p>If another domain is allowed by the policy, then that domain can potentially attack users of the application. If a user is logged in to the application, and visits a domain allowed by the policy, then any malicious content running on that domain can potentially retrieve content from the application, and sometimes carry out actions within the security context of the logged in user.</p>\n<p>Even if an allowed domain is not overtly malicious in itself, security vulnerabilities within that domain could potentially be leveraged by an attacker to exploit the trust relationship and attack the application that allows access. CORS policies on pages containing sensitive information should be reviewed to determine whether it is appropriate for the application to trust both the intentions and security posture of any domains granted access.</p>",
+        "remediation_background": "<p>Any inappropriate domains should be removed from the CORS policy.</p>",
+        "caption": "/assets/public/images/products/apple_pressings.jpg",
+        "evidence": [
+          {
+            "type": "FirstOrderEvidence",
+            "detail": {
+              "band_flags": [
+                "in_band"
+              ]
+            },
+            "request_response": {
+              "url": "http://10.3.10.10:1234/assets/public/images/products/apple_pressings.jpg",
+              "request": [
+                {
+                  "type": "DataSegment",
+                  "data": "R0VUIC9hc3NldHMvcHVibGljL2ltYWdlcy9wcm9kdWN0cy9hcHBsZV9wcmVzc2luZ3MuanBnIEhUVFAvMS4xDQpIb3N0OiAxMC4zLjEwLjEwOjEyMzQNCkNhY2hlLUNvbnRyb2w6IG1heC1hZ2U9MA0KU2VjLUNILVVBOiAiR29vZ2xlIENocm9tZSI7dj0iMTQ1IiwgIk5vdD1BP0JyYW5kIjt2PSI4IiwgIkNocm9taXVtIjt2PSIxNDUiDQpTZWMtQ0gtVUEtTW9iaWxlOiA/MA0KU2VjLUNILVVBLVBsYXRmb3JtOiAibWFjT1MiDQpBY2NlcHQtTGFuZ3VhZ2U6IGVuLVVTO3E9MC45LGVuO3E9MC44DQpVc2VyLUFnZW50OiBNb3ppbGxhLzUuMCAoTWFjaW50b3NoOyBJbnRlbCBNYWMgT1MgWCAxMF8xNV83KSBBcHBsZVdlYktpdC81MzcuMzYgKEtIVE1MLCBsaWtlIEdlY2tvKSBDaHJvbWUvMTQ1LjAuMC4wIFNhZmFyaS81MzcuMzYNCkFjY2VwdDogaW1hZ2UvYXZpZixpbWFnZS93ZWJwLGltYWdlL2FwbmcsaW1hZ2Uvc3ZnK3htbCxpbWFnZS8qLCovKjtxPTAuOA0KU2VjLUZldGNoLVNpdGU6IG5vbmUNClNlYy1GZXRjaC1Nb2RlOiBuYXZpZ2F0ZQ0KU2VjLUZldGNoLVVzZXI6ID8xDQpTZWMtRmV0Y2gtRGVzdDogZG9jdW1lbnQNCkFjY2VwdC1FbmNvZGluZzogZ3ppcCwgZGVmbGF0ZSwgYnINCkNvbm5lY3Rpb246IGNsb3NlDQpDb29raWU6IGxhbmd1YWdlPWVuDQpSZWZlcmVyOiBodHRwOi8vMTAuMy4xMC4xMDoxMjM0Lw0K",
+                  "length": 690
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "T3JpZ2luOiBodHRwOi8vMTAuMy4xMC4xMDoxMjM0",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQoNCg==",
+                  "length": 4
+                }
+              ],
+              "response": [
+                {
+                  "type": "DataSegment",
+                  "data": "SFRUUC8xLjEgMjAwIE9LDQo=",
+                  "length": 17
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "QWNjZXNzLUNvbnRyb2wtQWxsb3ctT3JpZ2luOiAq",
+                  "length": 30
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpYLUNvbnRlbnQtVHlwZS1PcHRpb25zOiBub3NuaWZmDQpYLUZyYW1lLU9wdGlvbnM6IFNBTUVPUklHSU4NCkZlYXR1cmUtUG9saWN5OiBwYXltZW50ICdzZWxmJw0KWC1SZWNydWl0aW5nOiAvIy9qb2JzDQpBY2NlcHQtUmFuZ2VzOiBieXRlcw0KQ2FjaGUtQ29udHJvbDogcHVibGljLCBtYXgtYWdlPTANCkxhc3QtTW9kaWZpZWQ6IEZyaSwgMDYgTWFyIDIwMjYgMTY6NDE6NTEgR01UDQpFVGFnOiBXLyI3MWViLTE5Y2M0MDZlM2FjIg0K",
+                  "length": 249
+                },
+                {
+                  "type": "HighlightSegment",
+                  "data": "Q29udGVudC1UeXBlOiBpbWFnZS9qcGVn",
+                  "length": 24
+                },
+                {
+                  "type": "DataSegment",
+                  "data": "DQpDb250ZW50LUxlbmd0aDogMjkxNjMNCkRhdGU6IEZyaSwgMDYgTWFyIDIwMjYgMjI6NTI6MTkgR01UDQpDb25uZWN0aW9uOiBjbG9zZQ0KDQr/2P/gABBKRklGAAEBAAABAAEAAP/bAIQAAgICAgICAgICAgMCAgIDBAMCAgMEBQQEBAQEBQYFBQUFBQUGBgcHCAcHBgkJCgoJCQwMDAwMDAwMDAwMDAwMDAEDAwMFBAUJBgYJDQoJCg0PDg4ODg8PDAwMDAwPDwwMDAwMDA8MDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM/8IAEQgBNwEXAwERAAIRAQMRAf/EAB4AAQABBAMBAQAAAAAAAAAAAAAEAQMHCA==",
+                  "length": 283
+                },
+                {
+                  "type": "SnipSegment",
+                  "length": 28963
+                }
+              ],
+              "was_redirect_followed": false,
+              "request_time": "1772837542898"
+            }
+          }
+        ],
+        "internal_data": "eyJmbGFncyI6NjU2MzMsInZhcmlhbnQiOjAsImlzc3VlX2RldGFpbHNfbWFwIjp7fX0="
+      }
+    }
+  ],
+  "task_id": "10",
+  "scan_status": "succeeded",
+  "message": "",
+  "error_code": 0
+}

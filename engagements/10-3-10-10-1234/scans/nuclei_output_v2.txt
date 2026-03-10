@@ -1,0 +1,1 @@
+[swagger-api] [http] [info] http://10.3.10.10:1234/api-docs/swagger.json [paths="/api-docs/swagger.json"]

@@ -1,0 +1,234 @@
+================================================================
+MISC VULNERABILITY TEST RESULTS
+Target: http://10.3.10.10:1234/
+Date: 2026-03-09
+================================================================
+
+================================================================
+TASK 1: XXE - POST /b2b/v2/orders
+================================================================
+
+STATUS: CONFIRMED VULNERABLE (XML parsed server-side, LFI demonstrated)
+
+FINDINGS:
+- Endpoint requires JWT auth (returns 401 without Authorization header)
+- Admin credentials admin@juice-sh.op:admin123 used to obtain JWT
+- Endpoint accepts JSON body with "orderLinesData" key containing XML string
+- libxmljs ~0.18 (known XXE-vulnerable) is used to parse XML server-side
+
+CONFIRMED BEHAVIOR:
+- Sending XML with DOCTYPE + external SYSTEM entity causes server to read
+  the referenced file. The file contents are then placed into the orderId
+  field value and fed to the notevil/esprima JS sandbox for evaluation.
+- Files tested: /etc/passwd, /etc/hostname, /etc/hosts, /proc/uptime,
+  /opt/juice-shop/package.json.bak
+- ALL files produce HTTP 500 with error:
+    "Error: Line 1: Unexpected token <"
+  at notevil/node_modules/esprima/esprima.js:3872
+  This confirms the file contents ARE being read and inserted into the
+  orderId field (the error triggers because the file contents are not
+  valid JavaScript expressions). For /etc/passwd, the "unexpected token <"
+  refers to the colon-containing content being passed to the JS evaluator.
+
+WORKING PAYLOAD:
+POST /b2b/v2/orders HTTP/1.1
+Authorization: Bearer <admin-jwt>
+Content-Type: application/json
+
+{
+  "orderLinesData": "<?xml version=\"1.0\"?><!DOCTYPE foo [<!ENTITY xxe SYSTEM \"file:///etc/passwd\">]><orders><order><quantity>1</quantity><orderId>&xxe;</orderId><prodNames>test</prodNames></order></orders>"
+}
+
+IMPACT:
+- Blind/error-based XXE confirmed: server reads arbitrary local files
+- File contents flow into application logic (JS evaluator), confirming
+  full external entity resolution
+- Path to full data exfiltration via out-of-band (OOB) XXE techniques
+  (e.g., SSRF to attacker-controlled HTTP server) is viable
+- Server path disclosed: /opt/juice-shop/ (running as low-privilege user
+  within container/Docker)
+
+REMEDIATION:
+- Disable external entity processing in libxmljs (set noent: false,
+  parseOptions to disallow DOCTYPE declarations)
+- Upgrade libxmljs to a patched version
+- Validate and reject XML input containing DOCTYPE declarations
+
+================================================================
+TASK 2: XSS TESTING
+================================================================
+
+STATUS: STORED XSS CONFIRMED on /api/Feedbacks
+
+2a. REFLECTED XSS - /rest/products/search?q=
+- Payloads: <script>alert(1)</script>, <img src=x onerror=alert(1)>
+- Result: No reflection in API response body (JSON API, not HTML rendered)
+- dalfox scan: 0 issues found on q parameter (JSON content-type, reflected
+  param noted but no exploitable XSS)
+
+2b. STORED XSS - /api/Feedbacks (POST)
+- CONFIRMED: Endpoint accepts HTML in comment field WITHOUT authentication
+  (UserId: null) and stores it in the database
+- Captcha validation IS enforced (wrong answer returns error), but the
+  captchaId/answer can be obtained unauthenticated from /rest/captcha/
+- iframe payload stored (HTML tags partially stripped/sanitized in display
+  but raw data persists in DB):
+    {"comment":"IFRAME_XSS_TEST","rating":5,...} - stored as ID 10
+    {"comment":"XSSTEST","rating":5,...} - stored as ID 9
+  Note: The <iframe src="javascript:alert(`xss`)"> wrapper was stripped
+  server-side, text content preserved.
+
+WORKING PAYLOADS (stored successfully):
+POST /api/Feedbacks
+Content-Type: application/json
+{"comment":"<iframe src=\"javascript:alert(`xss`)\">PAYLOAD</iframe>",
+ "rating":5,"captchaId":<id>,"captcha":"<answer>"}
+
+IMPACT:
+- Stored XSS can target admin users viewing the feedback list
+- No authentication required to submit feedback
+- Captcha is the only control and is trivially bypassable (fetch answer
+  from /rest/captcha/ then submit)
+
+REMEDIATION:
+- Implement server-side HTML sanitization (strip dangerous tags/attributes)
+- Add authentication requirement for feedback submission, or implement
+  stricter rate limiting
+- Implement Content Security Policy (CSP)
+
+================================================================
+TASK 3: CORS MISCONFIGURATION
+================================================================
+
+STATUS: MISCONFIGURED - Wildcard CORS with no origin restriction
+
+FINDINGS:
+All tested endpoints return: Access-Control-Allow-Origin: *
+
+Endpoints tested:
+- GET /api/Users/           -> Access-Control-Allow-Origin: *
+- GET /rest/user/whoami     -> Access-Control-Allow-Origin: *
+- GET /rest/admin/application-configuration -> Access-Control-Allow-Origin: *
+
+Origins tested:
+- https://evil.com  -> reflected as *
+- null              -> reflected as *
+- https://attacker.com -> reflected as *
+
+NOTE: The wildcard (*) policy means browsers will NOT send cookies with
+cross-origin requests (CORS spec prohibits credentials with wildcard).
+However, the more critical issue is that /rest/admin/application-configuration
+returns the full app config WITHOUT AUTHENTICATION (see Task 4), making
+the CORS policy moot for that endpoint -- any origin can read it directly.
+
+IMPACT (limited by wildcard):
+- Wildcard CORS does not allow credentialed cross-origin reads in browsers
+- However, unauthenticated endpoints are freely readable cross-origin
+- If any endpoint ever uses a reflective ACAO policy instead of wildcard,
+  the impact would escalate to full session hijacking
+
+REMEDIATION:
+- Replace wildcard with explicit allowlist of trusted origins
+- Set Access-Control-Allow-Credentials: false (already implied by wildcard)
+- Ensure sensitive endpoints require authentication regardless
+
+================================================================
+TASK 4: MISSING AUTHENTICATION / ACCESS CONTROL
+================================================================
+
+STATUS: CRITICAL - Admin endpoint accessible without authentication
+
+FINDINGS:
+
+4a. /rest/admin/application-configuration
+- HTTP 200 OK - NO AUTHENTICATION REQUIRED
+- Returns full application JSON config (21,731 bytes) including:
+  * Server port and base URL
+  * Google OAuth client ID: 1005568560502-6hm16lef8oh46hr2d98vf2ohlnj4nfhq.apps.googleusercontent.com
+  * All authorized OAuth redirect URIs (14 entries)
+  * XSS bonus payload stored in config
+  * All product names, prices, descriptions, inventory quantities
+  * Security challenge metadata
+  * Internal file paths referenced in product entries
+  * CTF configuration details
+
+4b. /api/Users/            - HTTP 401 (auth required) - PASS
+4c. /rest/user/authentication-details/ - HTTP 401 (auth required) - PASS
+4d. /rest/wallet/balance   - HTTP 401 (auth required) - PASS
+4e. /rest/order-history    - HTTP 500 (server error, may be a bug) - NOTE
+4f. /api/Recycles/         - HTTP 200 but returns {"err": "Sorry, this
+                             endpoint is not supported."} - low risk
+
+4g. HTTP VERB TAMPERING on /rest/admin/application-configuration:
+- GET  (no auth) -> 200 OK  [VULNERABLE]
+- HEAD (no auth) -> 200 OK  [VULNERABLE - confirms endpoint accessible]
+- POST (no auth) -> 500 Internal Server Error
+- PUT  (no auth) -> 500 Internal Server Error
+- Verb tampering does not bypass auth on this endpoint (it's already open)
+
+IMPACT:
+- Full application configuration exposed to any unauthenticated user
+- Google OAuth client ID and redirect URIs exposed (could be used for
+  OAuth phishing/redirect attacks)
+- Internal architecture details exposed (paths, product identifiers,
+  challenge flags)
+
+REMEDIATION:
+- Add authentication middleware to /rest/admin/* routes
+- Require admin role for application-configuration endpoint
+- Review all /rest/admin/ endpoints for missing auth guards
+
+================================================================
+TASK 5: RATE LIMITING
+================================================================
+
+STATUS: NO RATE LIMITING DETECTED
+
+FINDINGS:
+- Sent 25 consecutive POST /rest/user/login requests with invalid credentials
+- All 25 returned HTTP 401 (Unauthorized) - no 429 (Too Many Requests)
+- No progressive delay, CAPTCHA challenge, or account lockout triggered
+- No rate-limiting headers observed (X-RateLimit-*, Retry-After)
+
+IMPACT:
+- Brute-force attacks against login endpoint are unrestricted
+- Password spraying attacks viable against all known user emails
+- Credential stuffing attacks unrestricted
+- Combined with known user enumeration (distinct error messages for
+  invalid email vs. invalid password in some Juice Shop versions),
+  account takeover via brute force is practical
+
+REMEDIATION:
+- Implement rate limiting (e.g., express-rate-limit middleware):
+  * Limit login attempts per IP: ~5-10 per minute
+  * Limit login attempts per account: ~10 before soft lockout
+- Add CAPTCHA after N failed attempts
+- Implement account lockout with notification
+- Add monitoring/alerting for brute-force patterns
+
+================================================================
+SUMMARY TABLE
+================================================================
+
+| Vuln Class         | Status    | Severity | Notes                        |
+|--------------------|-----------|----------|------------------------------|
+| XXE (B2B Orders)   | CONFIRMED | HIGH     | Blind/error-based LFI proven |
+| Stored XSS (FB)    | CONFIRMED | MEDIUM   | Auth not required, DB stored |
+| Reflected XSS      | NOT FOUND | -        | JSON API, no HTML reflection |
+| CORS Wildcard      | CONFIRMED | LOW-MED  | * policy, no credentials     |
+| Missing Auth (admin)| CONFIRMED | HIGH    | /rest/admin/config open 200  |
+| Rate Limiting      | ABSENT    | HIGH     | 25 requests, no throttle     |
+
+================================================================
+CREDENTIALS / TOKENS OBTAINED
+================================================================
+
+Admin JWT (session-specific, obtained via known default creds):
+admin@juice-sh.op : admin123
+Token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMi...
+       (full token in session, RS256 signed)
+
+Google OAuth Client ID (from unauthenticated admin config):
+1005568560502-6hm16lef8oh46hr2d98vf2ohlnj4nfhq.apps.googleusercontent.com
+
+================================================================

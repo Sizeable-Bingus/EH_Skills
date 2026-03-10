@@ -188,16 +188,8 @@ def delete_engagement(name: str):
         raise HTTPException(status_code=404, detail=f"Unknown engagement: {safe}")
 
     st = pipeline.get_state()
-    if st.status.value == "running" and st.target == safe:
+    if st.status.value == "running" and st.engagement == safe:
         raise HTTPException(status_code=409, detail="Cannot delete while pipeline is running for this target")
 
-    eid = db.get_latest_engagement_id(db_path)
-    db.delete_engagement(db_path, eid)
     shutil.rmtree(eng_dir)
     return {"status": "deleted", "engagement": safe}
-
-
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
