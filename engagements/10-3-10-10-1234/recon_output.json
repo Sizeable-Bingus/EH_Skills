@@ -1,0 +1,433 @@
+{
+  "meta": {
+    "target": "http://10.3.10.10:1234/",
+    "scan_date": "2026-03-09T17:22:00Z (initial); verification pass completed 2026-03-09T18:10:00Z",
+    "scope": {
+      "in_scope": ["10.3.10.10", "http://10.3.10.10:1234/"],
+      "out_of_scope": [],
+      "rules_of_engagement": "Authorized penetration test. Full active recon permitted."
+    },
+    "tools_used": ["nmap", "gobuster", "nuclei v3.7.1 (re-run with corrected URL format — 1 match)", "curl", "python3"],
+    "recon_duration_seconds": 420
+  },
+  "dns": {
+    "records": {
+      "A": ["10.3.10.10"],
+      "AAAA": [],
+      "MX": [],
+      "NS": [],
+      "TXT": [],
+      "SOA": [],
+      "CNAME": []
+    },
+    "zone_transfer_possible": false,
+    "nameservers": []
+  },
+  "whois": {
+    "registrar": null,
+    "creation_date": null,
+    "expiration_date": null,
+    "nameservers": [],
+    "registrant_org": null,
+    "raw": "Target is a private IP address (10.3.10.10). WHOIS not applicable."
+  },
+  "subdomains": [],
+  "ports": [
+    {
+      "host": "10.3.10.10",
+      "port": 22,
+      "state": "open",
+      "service": "ssh",
+      "version": "OpenSSH 10.0p2 Debian 7 (protocol 2.0)",
+      "banner": "SSH-2.0-OpenSSH_10.0p2 Debian-7"
+    },
+    {
+      "host": "10.3.10.10",
+      "port": 1234,
+      "state": "open",
+      "service": "http",
+      "version": "Node.js / Express 4.21.0",
+      "banner": "OWASP Juice Shop v19.1.1 running on Express ^4.21.0"
+    }
+  ],
+  "web_technologies": {
+    "server": "Node.js / Express 4.21.0",
+    "framework": "Angular (SPA, data-beasties-container)",
+    "language": "JavaScript / Node.js",
+    "cms": null,
+    "javascript_frameworks": ["Angular", "jQuery 2.2.4"],
+    "cdn": "Cloudflare CDN (cdnjs.cloudflare.com for cookieconsent 3.1.0 and jQuery 2.2.4)",
+    "waf": null,
+    "headers": {
+      "Access-Control-Allow-Origin": "*",
+      "X-Content-Type-Options": "nosniff",
+      "X-Frame-Options": "SAMEORIGIN",
+      "Feature-Policy": "payment 'self'",
+      "X-Recruiting": "/#/jobs",
+      "Cache-Control": "public, max-age=0",
+      "Content-Type": "text/html; charset=UTF-8"
+    },
+    "cookies": []
+  },
+  "tls": {
+    "certificate": {
+      "subject": null,
+      "issuer": null,
+      "sans": [],
+      "valid_from": null,
+      "valid_to": null
+    },
+    "protocols": [],
+    "weak_ciphers": [],
+    "issues": ["Target serves HTTP only — no TLS/HTTPS configured on port 1234"]
+  },
+  "endpoints": {
+    "directories": [
+      "/ftp/",
+      "/ftp/quarantine/",
+      "/api/",
+      "/rest/",
+      "/assets/",
+      "/assets/public/",
+      "/assets/i18n/",
+      "/assets/private/",
+      "/encryptionkeys/",
+      "/support/logs/",
+      "/.well-known/",
+      "/.well-known/csaf/"
+    ],
+    "api_endpoints": [
+      "/api/Users/",
+      "/api/Products/",
+      "/api/Challenges/",
+      "/api/Feedbacks/",
+      "/api/SecurityQuestions/",
+      "/api/BasketItems/",
+      "/api/Cards/",
+      "/api/Addresss/",
+      "/api/Complaints/",
+      "/api/Deliverys/",
+      "/api/Hints/",
+      "/api/Quantitys/",
+      "/api/Recycles/",
+      "/api/SecurityAnswers/",
+      "/rest/user/login",
+      "/rest/user/whoami",
+      "/rest/user/change-password",
+      "/rest/user/reset-password",
+      "/rest/user/security-question",
+      "/rest/user/authentication-details/",
+      "/rest/products/search",
+      "/rest/admin/application-configuration",
+      "/rest/admin/application-version",
+      "/rest/basket/",
+      "/rest/memories",
+      "/rest/order-history",
+      "/rest/wallet/balance",
+      "/rest/deluxe-membership",
+      "/rest/captcha",
+      "/rest/image-captcha/",
+      "/rest/chatbot/",
+      "/rest/web3/nftUnlocked",
+      "/rest/web3/walletNFTVerify",
+      "/rest/web3/walletExploitAddress",
+      "/rest/web3/submitKey",
+      "/rest/track-order",
+      "/rest/country-mapping",
+      "/rest/continue-code",
+      "/rest/continue-code/apply/",
+      "/rest/saveLoginIp",
+      "/rest/repeat-notification",
+      "/rest/languages",
+      "/b2b/v2/orders",
+      "/api-docs/swagger.json",
+      "/api-docs/swagger-ui-init.js"
+    ],
+    "admin_panels": [
+      "/rest/admin/application-configuration (unauthenticated, 200)",
+      "/rest/admin/application-version (unauthenticated, 200)",
+      "/api-docs/swagger.json (Swagger UI for NextGen B2B API v2.0, unauthenticated, 200)"
+    ],
+    "login_pages": [
+      "/rest/user/login",
+      "/#/login"
+    ],
+    "file_exposures": [
+      "/ftp/acquisitions.md — confidential acquisition document",
+      "/ftp/legal.md — legal/terms document",
+      "/ftp/announcement_encrypted.md — encrypted announcement (large integer content)",
+      "/ftp/eastere.gg%2500.md — easter egg via null-byte bypass",
+      "/ftp/package.json.bak%2500.md — dependency manifest via null-byte bypass (reveals old dep versions)",
+      "/ftp/package-lock.json.bak%2500.md — full lock file via null-byte bypass",
+      "/ftp/encrypt.pyc%2500.md — Python bytecode via null-byte bypass",
+      "/ftp/incident-support.kdbx — KeePass password database (direct download, 200 OK)",
+      "/ftp/incident-support.kdbx%2500.md — also accessible via null-byte bypass",
+      "/ftp/quarantine/juicy_malware_linux_amd_64.url",
+      "/ftp/quarantine/juicy_malware_linux_arm_64.url",
+      "/ftp/quarantine/juicy_malware_macos_64.url",
+      "/ftp/quarantine/juicy_malware_windows_64.exe.url",
+      "/encryptionkeys/jwt.pub — RSA public key used for JWT verification",
+      "/encryptionkeys/premium.key — premium feature key: 1337133713371337.EA99A61D92D2955B1E9285B55BF2AD42",
+      "/support/logs/access.log.2026-03-09 — live HTTP access log",
+      "/support/logs/audit.json — audit metadata with file paths and MD5 hashes",
+      "/.well-known/security.txt",
+      "/.well-known/csaf/"
+    ],
+    "js_files": [
+      "/runtime.js",
+      "/polyfills.js",
+      "/vendor.js",
+      "/main.js",
+      "//cdnjs.cloudflare.com/ajax/libs/cookieconsent2/3.1.0/cookieconsent.min.js",
+      "//cdnjs.cloudflare.com/ajax/libs/jquery/2.2.4/jquery.min.js"
+    ],
+    "from_wayback": [],
+    "from_robots_txt": ["/ftp"],
+    "from_sitemap": [],
+    "from_burp_spider": []
+  },
+  "js_analysis": {
+    "api_routes_found": [
+      "/rest/admin/application-configuration",
+      "/rest/admin",
+      "/rest/web3/nftUnlocked",
+      "/rest/web3/nftMintListen",
+      "/rest/web3/submitKey",
+      "/rest/web3/walletNFTVerify",
+      "/rest/web3/walletExploitAddress",
+      "/api/Challenges/?key=nftMintChallenge",
+      "/rest/user/login",
+      "/rest/user/whoami",
+      "/rest/user/change-password",
+      "/rest/user/reset-password",
+      "/rest/user/security-question",
+      "/rest/user/authentication-details/",
+      "/rest/continue-code",
+      "/rest/continue-code/apply/",
+      "/rest/continue-code-findIt",
+      "/rest/continue-code-fixIt",
+      "/rest/products",
+      "/rest/memories",
+      "/rest/order-history",
+      "/rest/wallet/balance",
+      "/rest/captcha",
+      "/rest/image-captcha/",
+      "/rest/chatbot",
+      "/rest/country-mapping",
+      "/rest/deluxe-membership",
+      "/rest/saveLoginIp",
+      "/rest/repeat-notification",
+      "/rest/track-order",
+      "/api/Addresss",
+      "/api/BasketItems",
+      "/api/Cards",
+      "/api/Complaints",
+      "/api/Deliverys",
+      "/api/Feedbacks",
+      "/api/Hints",
+      "/api/Products",
+      "/api/Quantitys",
+      "/api/Recycles",
+      "/api/SecurityAnswers",
+      "/api/SecurityQuestions",
+      "/api/Users",
+      "/b2b/v2/orders"
+    ],
+    "hardcoded_secrets": [
+      "Google OAuth Client ID exposed in /rest/admin/application-configuration: 1005568560502-6hm16lef8oh46hr2d98vf2ohlnj4nfhq.apps.googleusercontent.com",
+      "JWT RSA public key at /encryptionkeys/jwt.pub (enables RS256→HS256 algorithm confusion attack)",
+      "Premium feature key at /encryptionkeys/premium.key: 1337133713371337.EA99A61D92D2955B1E9285B55BF2AD42"
+    ],
+    "internal_hosts": [
+      "/opt/juice-shop/build/routes/fileServer.js (server path disclosed via verbose 403 error)",
+      "/opt/juice-shop/logs/access.log.2026-03-09 (absolute path from audit.json)"
+    ],
+    "websocket_endpoints": [
+      "/socket.io/ (400 on plain HTTP GET, expects WebSocket upgrade)"
+    ],
+    "interesting_comments": [
+      "Copyright 2014-2026 Bjoern Kimminich & OWASP Juice Shop contributors — confirms OWASP Juice Shop intentionally vulnerable app",
+      "B2B API description: 'New & secure JSON-based API for our enterprise customers. (Deprecates previously offered XML-based endpoints)' — parenthetical strongly implies legacy XML endpoint still exists and may be vulnerable to XXE"
+    ]
+  },
+  "security_headers": {
+    "hsts": null,
+    "csp": null,
+    "x_frame_options": "SAMEORIGIN",
+    "x_content_type_options": "nosniff",
+    "x_xss_protection": null,
+    "cors": "Access-Control-Allow-Origin: * (wildcard CORS — all origins allowed); Access-Control-Allow-Methods: GET,HEAD,PUT,PATCH,POST,DELETE (all HTTP methods exposed)",
+    "missing": [
+      "Strict-Transport-Security (HSTS)",
+      "Content-Security-Policy (CSP)",
+      "X-XSS-Protection",
+      "Referrer-Policy",
+      "Permissions-Policy (only Feature-Policy present, deprecated)"
+    ]
+  },
+  "potential_vulnerabilities": [
+    {
+      "type": "sql_injection",
+      "severity": "high",
+      "detail": "SQLite SQL injection confirmed on product search endpoint. Single quote causes SQLITE_ERROR response leak. Backslash-escaped quote and boolean injection (`' OR 1=1--`) produce different behavior indicating injectable parameter.",
+      "evidence": "GET /rest/products/search?q=\\' → HTTP 500 with body: SQLITE_ERROR: unrecognized token",
+      "affected_asset": "http://10.3.10.10:1234/rest/products/search"
+    },
+    {
+      "type": "sensitive_file_exposure",
+      "severity": "critical",
+      "detail": "KeePass password database (incident-support.kdbx) is directly downloadable without authentication. May contain credentials for internal systems.",
+      "evidence": "GET /ftp/incident-support.kdbx → HTTP 200, Content-Length: 3246 (binary KDBX file)",
+      "affected_asset": "http://10.3.10.10:1234/ftp/incident-support.kdbx"
+    },
+    {
+      "type": "path_traversal_filter_bypass",
+      "severity": "high",
+      "detail": "The /ftp file server restricts downloads to .md and .pdf files. This restriction is bypassable via double URL-encoded null byte (%2500) appended before a .md extension, allowing arbitrary file downloads including .bak, .pyc, .kdbx, and .gg files.",
+      "evidence": "GET /ftp/package.json.bak%2500.md → 200 4291b | GET /ftp/encrypt.pyc%2500.md → 200 573b | GET /ftp/incident-support.kdbx%2500.md → 200 3246b",
+      "affected_asset": "http://10.3.10.10:1234/ftp/*"
+    },
+    {
+      "type": "jwt_algorithm_confusion",
+      "severity": "high",
+      "detail": "RSA public key for JWT verification is exposed at /encryptionkeys/jwt.pub. If the server accepts HS256-signed tokens, an attacker can use the public key as the HMAC secret to forge valid admin JWTs (RS256→HS256 algorithm confusion).",
+      "evidence": "GET /encryptionkeys/jwt.pub → 200, returns PEM-encoded RSA public key (1024-bit)",
+      "affected_asset": "http://10.3.10.10:1234/encryptionkeys/jwt.pub"
+    },
+    {
+      "type": "unauthenticated_admin_api",
+      "severity": "high",
+      "detail": "Admin configuration and version endpoints are accessible without authentication, exposing server port, base URL, Google OAuth client ID, chatbot training data path, and full application configuration.",
+      "evidence": "GET /rest/admin/application-configuration → 200, full JSON config including googleOauth.clientId and server.baseUrl",
+      "affected_asset": "http://10.3.10.10:1234/rest/admin/application-configuration"
+    },
+    {
+      "type": "access_log_exposure",
+      "severity": "high",
+      "detail": "Live HTTP access logs are publicly accessible, revealing all request patterns, user-agent strings, and IP addresses of users. Also includes audit.json with file paths and MD5 hashes.",
+      "evidence": "GET /support/logs/access.log.2026-03-09 → 200, full Apache-format access log | GET /support/logs/audit.json → 200 with absolute server paths",
+      "affected_asset": "http://10.3.10.10:1234/support/logs/"
+    },
+    {
+      "type": "exposed_encryption_keys",
+      "severity": "critical",
+      "detail": "Premium feature key exposed at /encryptionkeys/premium.key. Combined with the JWT public key exposure, attackers have full cryptographic material to forge tokens and unlock premium features.",
+      "evidence": "GET /encryptionkeys/premium.key → 200: 1337133713371337.EA99A61D92D2955B1E9285B55BF2AD42",
+      "affected_asset": "http://10.3.10.10:1234/encryptionkeys/premium.key"
+    },
+    {
+      "type": "prometheus_metrics_exposure",
+      "severity": "medium",
+      "detail": "Prometheus metrics endpoint is publicly accessible, exposing process memory usage, CPU time, file descriptor counts, event loop lag, Node.js version details, and startup task durations.",
+      "evidence": "GET /metrics → 200, full Prometheus text exposition format with process_* and nodejs_* metrics",
+      "affected_asset": "http://10.3.10.10:1234/metrics"
+    },
+    {
+      "type": "directory_listing_enabled",
+      "severity": "medium",
+      "detail": "Multiple directories have directory listing enabled, exposing full file inventories including confidential documents, encryption keys, backup files, and logs.",
+      "evidence": "/ftp/ (11307b listing), /encryptionkeys/ (7951b listing), /support/logs/ (8891b listing), /ftp/quarantine/ (accessible)",
+      "affected_asset": "http://10.3.10.10:1234/ftp/, /encryptionkeys/, /support/logs/"
+    },
+    {
+      "type": "confidential_document_exposure",
+      "severity": "medium",
+      "detail": "Confidential business documents accessible without authentication: acquisitions.md (planned M&A details marked 'Do not distribute!'), legal.md (terms and legal info), coupons backup.",
+      "evidence": "GET /ftp/acquisitions.md → 200 with text '> This document is confidential! Do not distribute!'",
+      "affected_asset": "http://10.3.10.10:1234/ftp/acquisitions.md"
+    },
+    {
+      "type": "outdated_software",
+      "severity": "medium",
+      "detail": "Multiple outdated/vulnerable dependencies identified in package.json.bak: express-jwt 0.1.3 (multiple known CVEs), sanitize-html 1.4.2 (XSS bypass vulnerabilities), jQuery 2.2.4 (served from CDN, multiple XSS CVEs), sequelize ~4 (SQLi vulnerabilities), libxmljs ~0.18 (XXE vulnerability).",
+      "evidence": "/ftp/package.json.bak%2500.md reveals full dependency manifest with pinned old versions",
+      "affected_asset": "http://10.3.10.10:1234/"
+    },
+    {
+      "type": "server_path_disclosure",
+      "severity": "low",
+      "detail": "Full server filesystem path disclosed in error responses: /opt/juice-shop/build/routes/fileServer.js. Also exposed in audit.json: /opt/juice-shop/logs/access.log.2026-03-09.",
+      "evidence": "HTTP 403 error on /ftp/*.bak includes full stacktrace with paths; audit.json contains absolute path",
+      "affected_asset": "http://10.3.10.10:1234/ftp/"
+    },
+    {
+      "type": "cors_misconfiguration",
+      "severity": "low",
+      "detail": "Wildcard CORS policy (Access-Control-Allow-Origin: *) allows any origin to make cross-site requests. Combined with unauthenticated API endpoints, this enables cross-site data exfiltration.",
+      "evidence": "All responses include: Access-Control-Allow-Origin: *",
+      "affected_asset": "http://10.3.10.10:1234/"
+    },
+    {
+      "type": "missing_security_headers",
+      "severity": "low",
+      "detail": "Multiple important security headers are absent: Content-Security-Policy (no XSS mitigation), Strict-Transport-Security (no HTTPS enforcement), X-XSS-Protection, Referrer-Policy.",
+      "evidence": "curl -sI http://10.3.10.10:1234/ — no CSP, HSTS, or X-XSS-Protection headers present",
+      "affected_asset": "http://10.3.10.10:1234/"
+    },
+    {
+      "type": "api_enumeration",
+      "severity": "info",
+      "detail": "Full REST API and CRUD endpoints enumerable without authentication from Angular bundle (main.js). Endpoints include user management, order history, wallet, complaints, recycling, and Web3/NFT features.",
+      "evidence": "Extracted 40+ API routes from /main.js JavaScript bundle",
+      "affected_asset": "http://10.3.10.10:1234/main.js"
+    },
+    {
+      "type": "http_only",
+      "severity": "info",
+      "detail": "Application runs over HTTP only with no HTTPS. All data including credentials is transmitted in cleartext. SSH (port 22) is open on the same host.",
+      "evidence": "nmap top-1000 scan: port 22/tcp open OpenSSH 10.0p2 Debian 7, port 1234/tcp open http (Node.js/Express)",
+      "affected_asset": "http://10.3.10.10:1234/"
+    },
+    {
+      "type": "swagger_ui_exposed",
+      "severity": "medium",
+      "detail": "Swagger UI is publicly accessible at /api-docs/swagger.json, exposing the full NextGen B2B API v2.0 specification without authentication. The spec documents a POST /b2b/v2/orders endpoint. The API description notes it 'deprecates previously offered XML-based endpoints', implying a legacy XML endpoint may still be active and potentially vulnerable to XML External Entity (XXE) injection.",
+      "evidence": "GET /api-docs/swagger.json → HTTP 200, Swagger UI HTML. GET /api-docs/swagger-ui-init.js → full OpenAPI 3.0.0 spec inline: title='NextGen B2B API', paths={'/orders': ['post']}, servers=[{url: '/b2b/v2'}]",
+      "affected_asset": "http://10.3.10.10:1234/api-docs/swagger.json"
+    },
+    {
+      "type": "nuclei_finding",
+      "severity": "info",
+      "detail": "Nuclei v3.7.1 confirmed Swagger API documentation endpoint. Previous nuclei run was skipped entirely due to an IP:port URL parsing bug (target was misinterpreted as IPv6 address). Re-run with corrected URL format returned 1 match.",
+      "evidence": "[swagger-api] [http] [info] http://10.3.10.10:1234/api-docs/swagger.json [paths=\"/api-docs/swagger.json\"]",
+      "affected_asset": "http://10.3.10.10:1234/api-docs/swagger.json"
+    }
+  ],
+  "osint": {
+    "google_dorks_results": [],
+    "wayback_interesting_urls": [],
+    "leaked_credentials": false,
+    "paste_sites": [],
+    "notes": "Target is a private IP (RFC 1918 range 10.x.x.x). OSINT techniques (crt.sh, WHOIS, Wayback Machine, Google dorks, subfinder) are not applicable. Application is OWASP Juice Shop v19.1.1 — an intentionally vulnerable training application. All 'vulnerabilities' are by design for penetration testing practice."
+  },
+  "summary": {
+    "total_subdomains": 0,
+    "live_subdomains": 0,
+    "open_ports": 2,
+    "total_endpoints": 62,
+    "high_value_targets": [
+      "/ftp/incident-support.kdbx — KeePass database, direct download (CRITICAL)",
+      "/encryptionkeys/jwt.pub — RSA public key for JWT forge (CRITICAL)",
+      "/encryptionkeys/premium.key — premium unlock key exposed (CRITICAL)",
+      "/support/logs/access.log.2026-03-09 — live access log (HIGH)",
+      "/rest/admin/application-configuration — unauthenticated admin config (HIGH)",
+      "/rest/products/search — confirmed SQLite SQL injection (HIGH)",
+      "/ftp/*%2500.md — null-byte bypass on all /ftp files (HIGH)",
+      "/b2b/v2/orders — B2B orders API, likely accepts XML (XXE candidate, MEDIUM)",
+      "/api-docs/swagger.json — exposed Swagger UI with full B2B API spec (MEDIUM)",
+      "/api/Users/ — user enumeration (requires auth bypass to access)"
+    ],
+    "recommended_next_steps": [
+      "EXPLOIT: SQLite SQL injection on /rest/products/search?q= — attempt UNION-based data extraction to dump the Users table (emails, password hashes)",
+      "EXPLOIT: JWT algorithm confusion attack — use exposed RSA public key from /encryptionkeys/jwt.pub as HS256 HMAC secret to forge admin JWT token",
+      "EXPLOIT: Download and crack /ftp/incident-support.kdbx KeePass database using hashcat/john — may contain SSH or admin credentials",
+      "EXPLOIT: Null-byte filter bypass on /ftp — download package.json.bak and package-lock.json.bak to identify specific CVEs in pinned dependency versions",
+      "EXPLOIT: Test XXE on POST /b2b/v2/orders — API description explicitly says it replaces 'XML-based endpoints', strongly suggesting XML input is still accepted or parsed; send Content-Type: application/xml with DOCTYPE/ENTITY payload",
+      "EXPLOIT: Use premium.key (1337133713371337.EA99A61D92D2955B1E9285B55BF2AD42) to unlock premium/deluxe membership at /rest/deluxe-membership",
+      "EXPLOIT: XSS testing on feedback/product review endpoints using CDN-loaded jQuery 2.2.4 (multiple stored XSS vectors known in Juice Shop)",
+      "EXPLOIT: Attempt authentication bypass on /api/Users/ — likely requires JWT token; use forged admin JWT from algorithm confusion",
+      "EXPLOIT: Probe /rest/user/reset-password and /rest/user/security-question for account takeover via predictable security question answers (14 questions enumerated)",
+      "EXPLOIT: Attempt to access SSH (port 22) using any credentials recovered from KeePass database or SQL injection"
+    ]
+  }
+}

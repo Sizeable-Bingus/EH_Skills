@@ -1,0 +1,313 @@
+{
+  "meta": {
+    "target": "https://DUMMY_DATA/",
+    "scan_date": "2026-03-09T19:18:38.821074+00:00",
+    "scope": {
+      "in_scope": [
+        "https://DUMMY_DATA/"
+      ],
+      "out_of_scope": [],
+      "rules_of_engagement": "SYNTHETIC TEST DATA \u2014 not a real engagement"
+    },
+    "tools_used": [
+      "synthetic-test-generator"
+    ],
+    "recon_duration_seconds": 0
+  },
+  "dns": {
+    "records": {
+      "A": [
+        "192.0.2.1"
+      ],
+      "AAAA": [],
+      "MX": [
+        "mail.test.synthetic.example"
+      ],
+      "NS": [
+        "ns1.test.synthetic.example"
+      ],
+      "TXT": [
+        "v=spf1 include:_spf.synthetic.example ~all"
+      ],
+      "SOA": [
+        "ns1.test.synthetic.example admin.test.synthetic.example"
+      ],
+      "CNAME": []
+    },
+    "zone_transfer_possible": false,
+    "nameservers": [
+      "ns1.test.synthetic.example"
+    ]
+  },
+  "whois": {
+    "registrar": "Synthetic Test Registrar Inc.",
+    "creation_date": "2020-01-01T00:00:00Z",
+    "expiration_date": "2030-01-01T00:00:00Z",
+    "nameservers": [
+      "ns1.test.synthetic.example"
+    ],
+    "registrant_org": "Synthetic Test Corp",
+    "raw": "SYNTHETIC WHOIS DATA \u2014 not real"
+  },
+  "subdomains": [
+    {
+      "hostname": "www.DUMMY_DATA",
+      "ip": "192.0.2.1",
+      "source": "crt.sh",
+      "http_status": 200,
+      "title": "SYNTHETIC Test Application",
+      "server": "nginx/1.18.0",
+      "technologies": [
+        "nginx",
+        "PHP/8.1",
+        "jQuery/3.6"
+      ]
+    },
+    {
+      "hostname": "api.DUMMY_DATA",
+      "ip": "192.0.2.2",
+      "source": "subfinder",
+      "http_status": 200,
+      "title": "SYNTHETIC API Gateway",
+      "server": "Express",
+      "technologies": [
+        "Node.js",
+        "Express"
+      ]
+    },
+    {
+      "hostname": "admin.DUMMY_DATA",
+      "ip": "192.0.2.1",
+      "source": "dns_bruteforce",
+      "http_status": 403,
+      "title": "SYNTHETIC Admin Panel",
+      "server": "nginx/1.18.0",
+      "technologies": [
+        "nginx",
+        "PHP/8.1"
+      ]
+    }
+  ],
+  "ports": [
+    {
+      "host": "192.0.2.1",
+      "port": 80,
+      "state": "open",
+      "service": "http",
+      "version": "nginx 1.18.0",
+      "banner": null
+    },
+    {
+      "host": "192.0.2.1",
+      "port": 443,
+      "state": "open",
+      "service": "https",
+      "version": "nginx 1.18.0",
+      "banner": null
+    },
+    {
+      "host": "192.0.2.1",
+      "port": 22,
+      "state": "filtered",
+      "service": "ssh",
+      "version": null,
+      "banner": null
+    },
+    {
+      "host": "192.0.2.1",
+      "port": 3306,
+      "state": "filtered",
+      "service": "mysql",
+      "version": null,
+      "banner": null
+    },
+    {
+      "host": "192.0.2.2",
+      "port": 443,
+      "state": "open",
+      "service": "https",
+      "version": "Node.js Express",
+      "banner": null
+    }
+  ],
+  "web_technologies": {
+    "server": "nginx/1.18.0",
+    "framework": "Laravel",
+    "language": "PHP 8.1",
+    "cms": null,
+    "javascript_frameworks": [
+      "jQuery 3.6",
+      "Vue.js 3.2"
+    ],
+    "cdn": null,
+    "waf": null,
+    "headers": {
+      "Server": "nginx/1.18.0",
+      "X-Powered-By": "PHP/8.1",
+      "Content-Type": "text/html; charset=UTF-8"
+    },
+    "cookies": [
+      {
+        "name": "PHPSESSID",
+        "flags": [
+          "HttpOnly"
+        ]
+      },
+      {
+        "name": "remember_token",
+        "flags": []
+      }
+    ]
+  },
+  "tls": {
+    "certificate": {
+      "subject": "CN=DUMMY_DATA",
+      "issuer": "CN=Synthetic Test CA",
+      "sans": [
+        "DUMMY_DATA"
+      ],
+      "valid_from": "2024-01-01T00:00:00Z",
+      "valid_to": "2026-12-31T23:59:59Z"
+    },
+    "protocols": [
+      "TLSv1.2",
+      "TLSv1.3"
+    ],
+    "weak_ciphers": [],
+    "issues": []
+  },
+  "endpoints": {
+    "directories": [
+      "/admin",
+      "/api",
+      "/uploads",
+      "/static"
+    ],
+    "api_endpoints": [
+      "/api/v1/users",
+      "/api/v1/products",
+      "/api/v1/orders",
+      "/api/v1/auth/login"
+    ],
+    "admin_panels": [
+      "/admin/login",
+      "/admin/dashboard"
+    ],
+    "login_pages": [
+      "/login",
+      "/admin/login"
+    ],
+    "file_exposures": [
+      "/robots.txt",
+      "/.env.example"
+    ],
+    "js_files": [
+      "/static/js/app.js",
+      "/static/js/vendor.js"
+    ],
+    "from_wayback": [
+      "/old-admin",
+      "/backup"
+    ],
+    "from_robots_txt": [
+      "/admin",
+      "/api/internal"
+    ],
+    "from_sitemap": [
+      "/products",
+      "/about",
+      "/contact"
+    ],
+    "from_burp_spider": [
+      "/api/v1/health",
+      "/api/v1/debug"
+    ]
+  },
+  "js_analysis": {
+    "api_routes_found": [
+      "/api/v1/users",
+      "/api/v1/internal/config"
+    ],
+    "hardcoded_secrets": [
+      "SYNTHETIC_API_KEY=sk-test-not-real-12345"
+    ],
+    "internal_hosts": [
+      "192.0.2.10"
+    ],
+    "websocket_endpoints": [
+      "wss://ws.synthetic.example/live"
+    ],
+    "interesting_comments": [
+      "// TODO: SYNTHETIC remove debug endpoint before prod"
+    ]
+  },
+  "security_headers": {
+    "hsts": null,
+    "csp": null,
+    "x_frame_options": "SAMEORIGIN",
+    "x_content_type_options": "nosniff",
+    "x_xss_protection": null,
+    "cors": "Access-Control-Allow-Origin: *",
+    "missing": [
+      "Strict-Transport-Security",
+      "Content-Security-Policy",
+      "X-XSS-Protection"
+    ]
+  },
+  "potential_vulnerabilities": [
+    {
+      "type": "missing_header",
+      "severity": "low",
+      "detail": "SYNTHETIC: Missing HSTS header allows potential downgrade attacks",
+      "evidence": "No Strict-Transport-Security header in response",
+      "affected_asset": "https://DUMMY_DATA/"
+    },
+    {
+      "type": "exposed_config",
+      "severity": "medium",
+      "detail": "SYNTHETIC: .env.example file exposed \u2014 may leak configuration patterns",
+      "evidence": "HTTP 200 on /.env.example",
+      "affected_asset": "https://DUMMY_DATA//.env.example"
+    },
+    {
+      "type": "cors_wildcard",
+      "severity": "medium",
+      "detail": "SYNTHETIC: Wildcard CORS policy allows any origin",
+      "evidence": "Access-Control-Allow-Origin: *",
+      "affected_asset": "https://DUMMY_DATA//api/v1/"
+    },
+    {
+      "type": "hardcoded_secret",
+      "severity": "high",
+      "detail": "SYNTHETIC: API key found hardcoded in JavaScript bundle",
+      "evidence": "SYNTHETIC_API_KEY=sk-test-not-real-12345 in /static/js/app.js",
+      "affected_asset": "https://DUMMY_DATA//static/js/app.js"
+    }
+  ],
+  "osint": {
+    "google_dorks_results": [
+      "SYNTHETIC: site:example found test page at /debug"
+    ],
+    "wayback_interesting_urls": [
+      "https://DUMMY_DATA//old-admin"
+    ],
+    "leaked_credentials": false,
+    "paste_sites": [],
+    "notes": "SYNTHETIC TEST DATA \u2014 no real OSINT was performed"
+  },
+  "summary": {
+    "total_subdomains": 3,
+    "live_subdomains": 2,
+    "open_ports": 4,
+    "total_endpoints": 18,
+    "high_value_targets": [
+      "admin.DUMMY_DATA \u2014 admin panel",
+      "api.DUMMY_DATA \u2014 API gateway"
+    ],
+    "recommended_next_steps": [
+      "SYNTHETIC: Test /admin/login for default credentials",
+      "SYNTHETIC: Test API endpoints for injection vulnerabilities",
+      "SYNTHETIC: Investigate hardcoded API key in JS bundle"
+    ]
+  }
+}

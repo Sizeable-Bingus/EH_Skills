@@ -8,6 +8,10 @@ from enum import Enum
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+PIPELINE_SCRIPTS = {
+    "real": "pentest_pipeline.py",
+    "synthetic": "pentest_pipeline_test.py",
+}
 
 PHASE_RE = re.compile(r"PHASE:\s*(.+)")
 
@@ -23,6 +27,7 @@ class PipelineStatus(str, Enum):
 class PipelineState:
     status: PipelineStatus = PipelineStatus.idle
     target: str = ""
+    engagement: str = ""
     current_phase: str = ""
     log_lines: list[str] = field(default_factory=list)
     subscribers: list[asyncio.Queue[str | None]] = field(default_factory=list)
@@ -35,6 +40,31 @@ _state = PipelineState()
 
 def get_state() -> PipelineState:
     return _state
+
+
+def sanitize_target(target: str) -> str:
+    """Sanitize target for use as the engagement directory name."""
+    name = target.lower()
+    for prefix in ("https://", "http://"):
+        name = name.removeprefix(prefix)
+    name = name.rstrip("/")
+    for ch in ".:/":
+        name = name.replace(ch, "-")
+    return name
+
+
+def _get_pipeline_script() -> str:
+    mode = os.getenv("PENTEST_PIPELINE_MODE", "real").strip().lower()
+    try:
+        script_name = PIPELINE_SCRIPTS[mode]
+    except KeyError as exc:
+        valid_modes = ", ".join(sorted(PIPELINE_SCRIPTS))
+        raise ValueError(
+            f"Unsupported PENTEST_PIPELINE_MODE {mode!r}. Expected one of: {valid_modes}"
+        ) from exc
+    if not (PROJECT_ROOT / script_name).is_file():
+        raise FileNotFoundError(f"Configured pipeline script does not exist: {script_name}")
+    return script_name
 
 
 async def start_pipeline(
@@ -52,6 +82,7 @@ async def start_pipeline(
 
     _state.status = PipelineStatus.running
     _state.target = target
+    _state.engagement = sanitize_target(target)
     _state.current_phase = "Starting"
     _state.log_lines.clear()
 
@@ -61,9 +92,9 @@ async def start_pipeline(
     if password:
         env["PENTEST_CRED_PASSWORD"] = password
 
+    script_name = _get_pipeline_script()
     proc = await asyncio.create_subprocess_exec(
-        "uv", "run", "python3", "pentest_pipeline_test.py", target,
-        #"uv", "run", "python3", "pentest_pipeline.py", target,
+        "uv", "run", "python3", script_name, target,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
         cwd=str(PROJECT_ROOT),

