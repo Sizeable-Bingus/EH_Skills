@@ -5,3 +5,5 @@ SecLists/
 *.db
 *.db.bak
 *.json.bak
+uv.lock
+.python-version
