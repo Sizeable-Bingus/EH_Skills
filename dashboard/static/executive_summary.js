@@ -63,7 +63,6 @@ document.addEventListener("DOMContentLoaded", () => {
                             font: { size: 12, weight: 500 },
                             padding: 14,
                             usePointStyle: true,
-                            pointStyleWidth: 10,
                         },
                     },
                 },
