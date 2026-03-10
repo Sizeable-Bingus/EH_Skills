@@ -114,12 +114,14 @@ def loot(request: Request, engagement: str = Query(default=None)):
 
 class StartRequest(BaseModel):
     target: str
+    username: str | None = None
+    password: str | None = None
 
 
 @app.post("/api/pipeline/start")
 async def pipeline_start(body: StartRequest):
     try:
-        await pipeline.start_pipeline(body.target)
+        await pipeline.start_pipeline(body.target, body.username, body.password)
     except RuntimeError as exc:
         raise HTTPException(status_code=409, detail=str(exc))
     return {"status": "started", "target": body.target}

@@ -3,6 +3,8 @@
 (function () {
   const modal = document.getElementById("scan-modal");
   const targetInput = document.getElementById("scan-target");
+  const usernameInput = document.getElementById("scan-username");
+  const passwordInput = document.getElementById("scan-password");
   const startBtn = document.getElementById("scan-start");
   const cancelBtn = document.getElementById("scan-cancel");
   const openBtn = document.getElementById("scan-open");
@@ -26,6 +28,8 @@
   openBtn.addEventListener("click", () => {
     modal.classList.remove("hidden");
     targetInput.value = "";
+    usernameInput.value = "";
+    passwordInput.value = "";
     targetInput.focus();
   });
 
@@ -36,10 +40,16 @@
     if (!target) return;
     modal.classList.add("hidden");
 
+    const payload = { target };
+    const username = usernameInput.value.trim();
+    const password = passwordInput.value.trim();
+    if (username) payload.username = username;
+    if (password) payload.password = password;
+
     const res = await fetch("/api/pipeline/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ target }),
+      body: JSON.stringify(payload),
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

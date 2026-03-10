@@ -1,6 +1,7 @@
 """Subprocess manager for the pentest pipeline (one-at-a-time)."""
 
 import asyncio
+import os
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -36,7 +37,11 @@ def get_state() -> PipelineState:
     return _state
 
 
-async def start_pipeline(target: str) -> PipelineState:
+async def start_pipeline(
+    target: str,
+    username: str | None = None,
+    password: str | None = None,
+) -> PipelineState:
     if _state.status == PipelineStatus.running:
         raise RuntimeError("Pipeline already running")
 
@@ -50,11 +55,19 @@ async def start_pipeline(target: str) -> PipelineState:
     _state.current_phase = "Starting"
     _state.log_lines.clear()
 
+    env = os.environ.copy()
+    if username:
+        env["PENTEST_CRED_USERNAME"] = username
+    if password:
+        env["PENTEST_CRED_PASSWORD"] = password
+
     proc = await asyncio.create_subprocess_exec(
-        "uv", "run", "python3", "pentest_pipeline_test.py", target,
+        #"uv", "run", "python3", "pentest_pipeline_test.py", target,
+        "uv", "run", "python3", "pentest_pipeline.py", target,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
         cwd=str(PROJECT_ROOT),
+        env=env,
     )
     _state.process = proc
     _state._task = asyncio.create_task(_read_output(proc))
