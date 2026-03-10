@@ -9,8 +9,8 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 PIPELINE_SCRIPTS = {
-    "real": "pentest_pipeline.py",
-    "synthetic": "pentest_pipeline_test.py",
+    "real": Path("pentest_pipeline") / "pentest_pipeline.py",
+    "synthetic": Path("pentest_pipeline") / "pentest_pipeline_test.py",
 }
 
 PHASE_RE = re.compile(r"PHASE:\s*(.+)")
@@ -53,7 +53,7 @@ def sanitize_target(target: str) -> str:
     return name
 
 
-def _get_pipeline_script() -> str:
+def _get_pipeline_script() -> Path:
     mode = os.getenv("PENTEST_PIPELINE_MODE", "real").strip().lower()
     try:
         script_name = PIPELINE_SCRIPTS[mode]
@@ -94,7 +94,7 @@ async def start_pipeline(
 
     script_name = _get_pipeline_script()
     proc = await asyncio.create_subprocess_exec(
-        "uv", "run", "python3", script_name, target,
+        "uv", "run", "python3", str(script_name), target,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.STDOUT,
         cwd=str(PROJECT_ROOT),
