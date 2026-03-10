@@ -8,8 +8,8 @@ Ship small, correct changes with minimal drift from documented product and archi
 
 Before editing code, read:
 
-1. `docs/product.md`
-2. `docs/architecture.md`
+1. `PRODUCT.md`
+2. `ARCHITECTURE.md`
 3. the newest relevant file in `docs/plans/`
 
 ## Repo map

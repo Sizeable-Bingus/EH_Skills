@@ -38,9 +38,9 @@
             <tr>
                 <th style="width:36px;"></th>
                 <th>Severity</th>
+                <th>Finding</th>
                 <th>Category</th>
                 <th>URL</th>
-                <th>Technique</th>
             </tr>
         </thead>
         <tbody>
@@ -59,13 +59,25 @@
                     </button>
                 </td>
                 <td>{{ severity_badge(f.severity) }}</td>
+                <td class="truncate" style="max-width:280px;" title="{{ f.name or f.technique or '' }}">{{ f.name or f.technique or '—' }}</td>
                 <td>{{ f.category }}</td>
                 <td class="mono truncate" style="font-size:0.75rem;max-width:240px;" title="{{ f.url or '' }}">{{ f.url or '—' }}</td>
-                <td class="truncate" style="max-width:240px;" title="{{ f.technique or '' }}">{{ f.technique or '—' }}</td>
             </tr>
             <tr id="detail-{{ f.id }}" class="hidden">
                 <td colspan="5" class="detail-cell">
                     <div class="detail-grid">
+                        {% if f.name %}
+                        <div>
+                            <p class="detail-field-label">Finding</p>
+                            <p class="detail-field-value">{{ f.name }}</p>
+                        </div>
+                        {% endif %}
+                        {% if f.technique %}
+                        <div>
+                            <p class="detail-field-label">Technique</p>
+                            <p class="detail-field-value">{{ f.technique }}</p>
+                        </div>
+                        {% endif %}
                         {% if f.detail %}
                         <div>
                             <p class="detail-field-label">Detail</p>
