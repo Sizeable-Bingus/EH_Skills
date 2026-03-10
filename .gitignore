@@ -5,5 +5,7 @@ SecLists/
 *.db
 *.db.bak
 *.json.bak
-uv.lock
 .python-version
+.DS_Store
+dist/
+node_modules/
