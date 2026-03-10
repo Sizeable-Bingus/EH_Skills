@@ -265,9 +265,50 @@
     }
   }
 
+  /* --- Delete engagement --- */
+  const deleteBtn = document.getElementById("delete-engagement");
+  const deleteModal = document.getElementById("delete-modal");
+  const deleteCancel = document.getElementById("delete-cancel");
+  const deleteConfirm = document.getElementById("delete-confirm");
+  const deleteTargetName = document.getElementById("delete-target-name");
+
+  function updateDeleteBtnVisibility() {
+    const params = new URLSearchParams(window.location.search);
+    const eng = params.get("engagement");
+    if (eng) {
+      deleteBtn.classList.remove("hidden");
+    } else {
+      deleteBtn.classList.add("hidden");
+    }
+  }
+
+  deleteBtn.addEventListener("click", () => {
+    const params = new URLSearchParams(window.location.search);
+    const eng = params.get("engagement") || "";
+    deleteTargetName.textContent = eng;
+    deleteModal.classList.remove("hidden");
+  });
+
+  deleteCancel.addEventListener("click", () => deleteModal.classList.add("hidden"));
+
+  deleteConfirm.addEventListener("click", async () => {
+    const params = new URLSearchParams(window.location.search);
+    const eng = params.get("engagement");
+    if (!eng) return;
+    deleteModal.classList.add("hidden");
+    const res = await fetch(`/api/engagements/${encodeURIComponent(eng)}`, { method: "DELETE" });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(err.detail || "Failed to delete engagement");
+      return;
+    }
+    window.location.href = "/";
+  });
+
   /* --- Init --- */
   async function init() {
     await loadEngagements();
+    updateDeleteBtnVisibility();
     try {
       const res = await fetch("/api/pipeline/status");
       const info = await res.json();

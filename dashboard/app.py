@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import shutil
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query, Request
@@ -176,6 +177,24 @@ def list_engagements():
         and d.name.lower() != "default"
     )
     return JSONResponse(results)
+
+
+@app.delete("/api/engagements/{name}")
+def delete_engagement(name: str):
+    safe = Path(name).name
+    eng_dir = ENGAGEMENTS_DIR / safe
+    db_path = eng_dir / "pentest_data.db"
+    if not db_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Unknown engagement: {safe}")
+
+    st = pipeline.get_state()
+    if st.status.value == "running" and st.target == safe:
+        raise HTTPException(status_code=409, detail="Cannot delete while pipeline is running for this target")
+
+    eid = db.get_latest_engagement_id(db_path)
+    db.delete_engagement(db_path, eid)
+    shutil.rmtree(eng_dir)
+    return {"status": "deleted", "engagement": safe}
 
 
 if __name__ == "__main__":

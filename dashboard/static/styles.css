@@ -470,6 +470,44 @@ a:hover { text-decoration: underline; }
   background: #a31f1f;
 }
 
+.cnh-btn-danger-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cnh-btn-danger-icon:hover {
+  color: var(--sev-critical);
+  background: rgba(212, 42, 42, 0.15);
+  border-color: rgba(212, 42, 42, 0.3);
+}
+
+.cnh-btn-modal-danger {
+  padding: 8px 20px;
+  background: var(--sev-critical);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.cnh-btn-modal-danger:hover {
+  background: #b91c1c;
+}
+
 /* ---- Main Content ---- */
 .cnh-main {
   max-width: 1280px;

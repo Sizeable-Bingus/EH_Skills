@@ -39,6 +39,21 @@ def connect(db_path=DEFAULT_DB):
     return conn
 
 
+def delete_engagement(db_path=DEFAULT_DB, eid=DEFAULT_ENGAGEMENT_ID):
+    with closing(connect(db_path)) as conn:
+        conn.execute(
+            "DELETE FROM chain_steps WHERE chain_id IN "
+            "(SELECT id FROM exploitation_chains WHERE engagement_id = ?)",
+            (eid,),
+        )
+        conn.execute("DELETE FROM data_exfiltrated WHERE engagement_id = ?", (eid,))
+        conn.execute("DELETE FROM credentials WHERE engagement_id = ?", (eid,))
+        conn.execute("DELETE FROM exploitation_chains WHERE engagement_id = ?", (eid,))
+        conn.execute("DELETE FROM findings WHERE engagement_id = ?", (eid,))
+        conn.execute("DELETE FROM engagements WHERE id = ?", (eid,))
+        conn.commit()
+
+
 def get_latest_engagement_id(db_path=DEFAULT_DB, fallback=DEFAULT_ENGAGEMENT_ID):
     if not Path(db_path).exists():
         return fallback
