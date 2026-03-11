@@ -75,6 +75,32 @@ describe("pipeline manager", () => {
       });
     }
   });
+
+  test("rejects unsupported configured pipeline modes without mutating state", () => {
+    const previousMode = process.env.PENTEST_PIPELINE_MODE;
+    process.env.PENTEST_PIPELINE_MODE = "synth";
+
+    try {
+      const manager = createPipelineManager();
+
+      expect(() => manager.startPipeline("https://example.com")).toThrow(
+        'Unsupported pipeline mode: synth. Expected "real" or "synthetic".'
+      );
+      expect(manager.getState()).toMatchObject({
+        status: "idle",
+        target: "",
+        engagement: "",
+        currentPhase: "",
+        logLines: []
+      });
+    } finally {
+      if (previousMode === undefined) {
+        delete process.env.PENTEST_PIPELINE_MODE;
+      } else {
+        process.env.PENTEST_PIPELINE_MODE = previousMode;
+      }
+    }
+  });
 });
 
 describe("synthetic pipeline", () => {

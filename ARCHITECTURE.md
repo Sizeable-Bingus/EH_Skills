@@ -127,7 +127,7 @@ The app still treats an engagement directory as selectable when `pentest_data.db
 Current environment variables used by the code:
 
 - `PORT`: HTTP port for the Bun server
-- `PENTEST_PIPELINE_MODE`: selects `real` or `synthetic`
+- `PENTEST_PIPELINE_MODE`: selects `real` or `synthetic`; other values fail fast
 - `PENTEST_DASHBOARD_DB`: overrides the default SQLite path
 - `PENTEST_DASHBOARD_ENGAGEMENT_ID`: fallback engagement ID when the DB is missing or empty
 - `PENTEST_CLAUDE_MODEL`: optional Claude model override for the real pipeline
