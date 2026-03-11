@@ -106,6 +106,35 @@ export interface LootPageModel {
   credentials: LootCredentialModel[];
 }
 
+export interface DashboardEngagementRow {
+  name: string;
+  target: string;
+  scan_date: string;
+  total_findings: number;
+  critical: number;
+  high: number;
+  medium: number;
+  low: number;
+  info: number;
+  total_credentials: number;
+  total_chains: number;
+}
+
+export interface DashboardPageModel {
+  engagements: DashboardEngagementRow[];
+  severityCounts: Record<
+    "critical" | "high" | "medium" | "low" | "info",
+    number
+  >;
+  categoryCounts: Array<{ category: string; count: number }>;
+  totals: {
+    engagements: number;
+    findings: number;
+    credentials: number;
+    chains: number;
+  };
+}
+
 export interface ReconOutput {
   meta: {
     target: string;

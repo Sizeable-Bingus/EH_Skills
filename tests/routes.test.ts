@@ -15,10 +15,20 @@ const fixtureDb = join(
 );
 
 describe("route responses", () => {
-  test("renders all four dashboard pages", async () => {
+  test("renders cross-engagement dashboard at root", async () => {
+    const app = createApp();
+    const response = await app.request("/");
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Cross-Engagement Dashboard");
+    expect(html).toContain("dashboard.js");
+  });
+
+  test("renders all four engagement pages", async () => {
     const app = createApp();
 
-    const summary = await app.request("/");
+    const summary = await app.request("/summary");
     const findings = await app.request("/findings?engagement=example-com");
     const chains = await app.request("/chains?engagement=example-com");
     const loot = await app.request("/loot?engagement=example-com");
@@ -76,7 +86,7 @@ describe("engagement APIs", () => {
 
   test("loads the latest engagement from the configured root by default", async () => {
     const app = createApp({ engagementsDir: engagementRoot });
-    const response = await app.request("/");
+    const response = await app.request("/summary");
 
     expect(response.status).toBe(200);
     expect(await response.text()).toContain("https://example.com");
@@ -126,11 +136,21 @@ describe("engagement APIs", () => {
     });
   });
 
+  test("renders cross-engagement dashboard with configured root", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/");
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Cross-Engagement Dashboard");
+    expect(html).toContain("demo");
+  });
+
   test("returns 404 for unknown engagements on page routes", async () => {
     const app = createApp({ engagementsDir: engagementRoot });
 
     for (const path of [
-      "/?engagement=missing",
+      "/summary?engagement=missing",
       "/findings?engagement=missing",
       "/chains?engagement=missing",
       "/loot?engagement=missing"
