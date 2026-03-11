@@ -296,7 +296,7 @@ export function createSyntheticArtifacts(
     findings: [
       makeFinding(
         "Admin panel accepts default credentials",
-        "default_creds",
+        "authentication",
         "high",
         "SYNTHETIC: /admin/login accepts the default admin credential set.",
         {
@@ -317,7 +317,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "JWT none algorithm accepted",
-        "auth_bypass",
+        "authentication",
         "high",
         "SYNTHETIC: The API accepts unsigned JWT tokens.",
         {
@@ -335,7 +335,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Session cookie missing Secure and HttpOnly flags",
-        "session_issue",
+        "authentication",
         "low",
         "SYNTHETIC: remember_token is issued without Secure or HttpOnly protections.",
         {
@@ -351,7 +351,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "JWT validation allows unsafe algorithm configuration",
-        "jwt_issue",
+        "authentication",
         "low",
         "SYNTHETIC: Token validation accepts an unsafe algorithm choice.",
         {
@@ -365,7 +365,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Union SQL injection in product id",
-        "sqli",
+        "injection",
         "critical",
         "SYNTHETIC: The product id parameter is injectable with UNION queries.",
         {
@@ -389,7 +389,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Reflected XSS in product search",
-        "xss",
+        "injection",
         "medium",
         "SYNTHETIC: The search parameter is reflected without output encoding.",
         {
@@ -411,7 +411,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Stored XSS in order notes",
-        "xss",
+        "injection",
         "high",
         "SYNTHETIC: Order note content is stored and later rendered in the admin dashboard.",
         {
@@ -434,7 +434,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Path traversal in file API",
-        "path_traversal",
+        "file_access",
         "high",
         "SYNTHETIC: The file path parameter allows directory traversal outside the intended root.",
         {
@@ -455,7 +455,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "IDOR exposes other user profiles",
-        "idor",
+        "authorization",
         "medium",
         "SYNTHETIC: Sequential user IDs expose other users' profile records.",
         {
@@ -475,7 +475,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Mass assignment enables admin role escalation",
-        "priv_esc",
+        "authorization",
         "critical",
         "SYNTHETIC: A standard user can set their own role to admin through the profile API.",
         {
@@ -497,7 +497,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Internal config endpoint exposed without authentication",
-        "missing_auth",
+        "authorization",
         "medium",
         "SYNTHETIC: The internal configuration endpoint is reachable without authentication.",
         {
@@ -515,7 +515,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Login API missing rate limiting",
-        "rate_limit_missing",
+        "configuration",
         "low",
         "SYNTHETIC: The login API accepts rapid credential attempts without throttling.",
         {
@@ -558,7 +558,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "CORS reflects arbitrary origins with credentials",
-        "cors",
+        "configuration",
         "medium",
         "SYNTHETIC: The API reflects attacker-controlled Origin headers while allowing credentials.",
         {
@@ -576,7 +576,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Server version disclosed in headers",
-        "information_disclosure",
+        "configuration",
         "low",
         "SYNTHETIC: Response headers disclose precise server and framework versions.",
         {
@@ -588,7 +588,7 @@ export function createSyntheticArtifacts(
       ),
       makeFinding(
         "Outdated client-side library with known exposure",
-        "outdated_software",
+        "configuration",
         "medium",
         "SYNTHETIC: jQuery 3.6 appears outdated relative to known client-side issues.",
         {
@@ -719,7 +719,7 @@ export async function runSyntheticPipeline(
     artifacts.exploitation.findings.push(
       makeFinding(
         "Supplied credentials validated",
-        "authenticated_access",
+        "authentication",
         "info",
         "SYNTHETIC: User-supplied credentials authenticated successfully during setup.",
         {
