@@ -74,6 +74,14 @@ describe("engagement APIs", () => {
     expect(await response.text()).toContain("Findings");
   });
 
+  test("loads the latest engagement from the configured root by default", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/");
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("https://example.com");
+  });
+
   test("blocks deleting the running engagement", async () => {
     const manager = createPipelineManager({
       modeResolver: () => "synthetic",
