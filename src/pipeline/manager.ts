@@ -61,6 +61,23 @@ export interface PipelineManagerOptions {
   syntheticRunner?: PipelineRunner;
 }
 
+function resolvePipelineRunner(
+  mode: string,
+  realRunner: PipelineRunner,
+  syntheticRunner: PipelineRunner
+): PipelineRunner {
+  switch (mode) {
+    case "synthetic":
+      return syntheticRunner;
+    case "real":
+      return realRunner;
+    default:
+      throw new Error(
+        `Unsupported pipeline mode: ${mode}. Expected "real" or "synthetic".`
+      );
+  }
+}
+
 export function createPipelineManager(options: PipelineManagerOptions = {}) {
   const state: PipelineState = {
     status: "idle",
@@ -99,6 +116,12 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
       return Promise.reject(new Error("Pipeline already running"));
     }
 
+    const runner = resolvePipelineRunner(
+      modeResolver(),
+      realRunner,
+      syntheticRunner
+    );
+
     for (const queue of subscribers) {
       queue.push(null);
       queue.close();
@@ -113,9 +136,6 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
 
     const engagementDir = join(engagementsDir, state.engagement);
     mkdirSync(engagementDir, { recursive: true });
-
-    const runner =
-      modeResolver() === "synthetic" ? syntheticRunner : realRunner;
 
     void (async () => {
       try {
@@ -170,7 +190,16 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
 }
 
 function defaultModeResolver(): "real" | "synthetic" {
-  return process.env.PENTEST_PIPELINE_MODE?.trim().toLowerCase() === "synthetic"
-    ? "synthetic"
-    : "real";
+  const configuredMode =
+    process.env.PENTEST_PIPELINE_MODE?.trim().toLowerCase();
+  if (!configuredMode || configuredMode === "real") {
+    return "real";
+  }
+  if (configuredMode === "synthetic") {
+    return "synthetic";
+  }
+
+  throw new Error(
+    `Unsupported pipeline mode: ${configuredMode}. Expected "real" or "synthetic".`
+  );
 }
