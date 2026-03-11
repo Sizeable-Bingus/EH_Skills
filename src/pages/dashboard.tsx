@@ -26,18 +26,66 @@ export function DashboardPage(props: { model: DashboardPageModel }) {
 
         <div class="cnh-stat-grid cnh-stat-grid--4" style="margin-bottom:24px;">
           <div class="cnh-card cnh-card-pad cnh-stat-card cnh-stat-card--purple animate-in animate-in-2">
+            <svg
+              class="cnh-stat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+              <rect x="8" y="2" width="8" height="4" rx="1" />
+            </svg>
             <p class="cnh-stat-label">Engagements</p>
             <p class="cnh-stat-value">{model.totals.engagements}</p>
           </div>
           <div class="cnh-card cnh-card-pad cnh-stat-card cnh-stat-card--blue animate-in animate-in-3">
+            <svg
+              class="cnh-stat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
             <p class="cnh-stat-label">Total Findings</p>
             <p class="cnh-stat-value">{model.totals.findings}</p>
           </div>
           <div class="cnh-card cnh-card-pad cnh-stat-card cnh-stat-card--orange animate-in animate-in-4">
+            <svg
+              class="cnh-stat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+            </svg>
             <p class="cnh-stat-label">Credentials</p>
             <p class="cnh-stat-value">{model.totals.credentials}</p>
           </div>
           <div class="cnh-card cnh-card-pad cnh-stat-card cnh-stat-card--amber animate-in animate-in-5">
+            <svg
+              class="cnh-stat-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
             <p class="cnh-stat-label">Attack Chains</p>
             <p class="cnh-stat-value">{model.totals.chains}</p>
           </div>
