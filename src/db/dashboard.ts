@@ -49,6 +49,27 @@ function fetchOne(
   );
 }
 
+function getLatestEngagementRecord(
+  dbPath: string
+): { engagementId: number; scanDate: string } | null {
+  if (!existsSync(dbPath)) {
+    return null;
+  }
+
+  const row = fetchOne(
+    dbPath,
+    "SELECT id, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+  );
+  if (typeof row?.id !== "number") {
+    return null;
+  }
+
+  return {
+    engagementId: row.id,
+    scanDate: stringValue(row.scan_date)
+  };
+}
+
 function normalizeScope(engagement: Row): ScopeModel | string | null {
   if ("scope" in engagement) {
     const scope = parseJson<ScopeModel>(engagement.scope);
@@ -127,6 +148,37 @@ export function resolveEngagementDbInDir(
       throw new UnknownEngagementError(safeName);
     }
     return { dbPath, engagementId: getLatestEngagementId(dbPath) };
+  }
+
+  const latestDatabase = listEngagements(engagementsDir)
+    .map((name) => {
+      const dbPath = join(engagementsDir, name, "pentest_data.db");
+      const latestRecord = getLatestEngagementRecord(dbPath);
+      if (!latestRecord) {
+        return null;
+      }
+      return {
+        dbPath,
+        engagementId: latestRecord.engagementId,
+        scanDate: latestRecord.scanDate
+      };
+    })
+    .filter((record) => record !== null)
+    .sort((left, right) => {
+      if (left.scanDate !== right.scanDate) {
+        return right.scanDate.localeCompare(left.scanDate);
+      }
+      if (left.engagementId !== right.engagementId) {
+        return right.engagementId - left.engagementId;
+      }
+      return left.dbPath.localeCompare(right.dbPath);
+    })[0];
+
+  if (latestDatabase) {
+    return {
+      dbPath: latestDatabase.dbPath,
+      engagementId: latestDatabase.engagementId
+    };
   }
 
   return {
