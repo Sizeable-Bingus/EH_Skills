@@ -66,6 +66,14 @@ describe("engagement APIs", () => {
     expect(await response.json()).toEqual(["demo"]);
   });
 
+  test("renders dashboard pages from the configured engagements root", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/findings?engagement=demo");
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("Findings");
+  });
+
   test("blocks deleting the running engagement", async () => {
     const manager = createPipelineManager({
       modeResolver: () => "synthetic",
@@ -108,5 +116,20 @@ describe("engagement APIs", () => {
       status: "deleted",
       engagement: "demo"
     });
+  });
+
+  test("returns 404 for unknown engagements on page routes", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+
+    for (const path of [
+      "/?engagement=missing",
+      "/findings?engagement=missing",
+      "/chains?engagement=missing",
+      "/loot?engagement=missing"
+    ]) {
+      const response = await app.request(path);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toContain("Unknown engagement: missing");
+    }
   });
 });

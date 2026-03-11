@@ -20,6 +20,13 @@ import { withReadOnlyDatabase } from "./sqlite.ts";
 
 type Row = Record<string, unknown>;
 
+export class UnknownEngagementError extends Error {
+  constructor(engagement: string) {
+    super(`Unknown engagement: ${engagement}`);
+    this.name = "UnknownEngagementError";
+  }
+}
+
 function stringValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
@@ -103,11 +110,21 @@ export function resolveEngagementDb(engagement?: string | null): {
   dbPath: string;
   engagementId: number;
 } {
+  return resolveEngagementDbInDir(engagement, ENGAGEMENTS_DIR);
+}
+
+export function resolveEngagementDbInDir(
+  engagement: string | null | undefined,
+  engagementsDir: string = ENGAGEMENTS_DIR
+): {
+  dbPath: string;
+  engagementId: number;
+} {
   if (engagement) {
     const safeName = safeEngagementName(engagement);
-    const dbPath = join(ENGAGEMENTS_DIR, safeName, "pentest_data.db");
+    const dbPath = join(engagementsDir, safeName, "pentest_data.db");
     if (!existsSync(dbPath)) {
-      throw new Error(`Unknown engagement: ${safeName}`);
+      throw new UnknownEngagementError(safeName);
     }
     return { dbPath, engagementId: getLatestEngagementId(dbPath) };
   }
