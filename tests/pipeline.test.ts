@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 
@@ -43,6 +43,37 @@ describe("pipeline manager", () => {
     expect(lines).toContain("one");
     expect(lines).toContain("two");
     expect(manager.getState().status).toBe("complete");
+  });
+
+  test("uses the configured engagements root for new runs", async () => {
+    const engagementsDir = mkdtempSync(join(tmpdir(), "eh-skills-manager-"));
+    const manager = createPipelineManager({
+      engagementsDir,
+      modeResolver: () => "synthetic",
+      syntheticRunner: async ({ engagementDir }) => {
+        await Bun.write(join(engagementDir, "pentest_data.db"), "fixture");
+      }
+    });
+
+    try {
+      await manager.startPipeline("https://demo.example");
+      await new Promise((resolve) => setTimeout(resolve, 5));
+
+      expect(
+        existsSync(join(engagementsDir, "demo-example", "pentest_data.db"))
+      ).toBe(true);
+      expect(
+        existsSync(
+          join(process.cwd(), "engagements", "demo-example", "pentest_data.db")
+        )
+      ).toBe(false);
+    } finally {
+      rmSync(engagementsDir, { recursive: true, force: true });
+      rmSync(join(process.cwd(), "engagements", "demo-example"), {
+        recursive: true,
+        force: true
+      });
+    }
   });
 });
 

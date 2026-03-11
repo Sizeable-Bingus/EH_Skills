@@ -1,6 +1,7 @@
 import { mkdirSync } from "node:fs";
 import { join } from "node:path";
 
+import { ENGAGEMENTS_DIR } from "../constants.ts";
 import type { PipelineState } from "../types.ts";
 import { getErrorMessage, sanitizeTarget } from "../utils.ts";
 import { runRealPipeline } from "./real.ts";
@@ -54,6 +55,7 @@ class AsyncQueue<T> implements AsyncIterable<T> {
 }
 
 export interface PipelineManagerOptions {
+  engagementsDir?: string;
   modeResolver?: () => "real" | "synthetic";
   realRunner?: PipelineRunner;
   syntheticRunner?: PipelineRunner;
@@ -68,6 +70,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     logLines: []
   };
   const subscribers = new Set<AsyncQueue<string | null>>();
+  const engagementsDir = options.engagementsDir ?? ENGAGEMENTS_DIR;
   const modeResolver = options.modeResolver ?? defaultModeResolver;
   const realRunner = options.realRunner ?? runRealPipeline;
   const syntheticRunner = options.syntheticRunner ?? runSyntheticPipeline;
@@ -108,7 +111,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     state.currentPhase = "Starting";
     state.logLines = [];
 
-    const engagementDir = join(process.cwd(), "engagements", state.engagement);
+    const engagementDir = join(engagementsDir, state.engagement);
     mkdirSync(engagementDir, { recursive: true });
 
     const runner =

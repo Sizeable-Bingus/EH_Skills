@@ -16,7 +16,8 @@ import {
   getLootPage,
   getSummaryPage,
   listEngagements,
-  resolveEngagementDb
+  resolveEngagementDbInDir,
+  UnknownEngagementError
 } from "./db/dashboard.ts";
 import { SummaryPage } from "./pages/summary.tsx";
 import { FindingsPage } from "./pages/findings.tsx";
@@ -35,9 +36,14 @@ export interface AppOptions {
 export function createApp(options: AppOptions = {}): Hono {
   const engagementsDir = options.engagementsDir ?? ENGAGEMENTS_DIR;
   const assetRoot = options.assetRoot ?? DIST_PUBLIC_DIR;
-  const pipelineManager = options.pipelineManager ?? createPipelineManager();
+  const pipelineManager =
+    options.pipelineManager ?? createPipelineManager({ engagementsDir });
 
   const app = new Hono();
+
+  function resolvePageEngagement(engagement: string) {
+    return resolveEngagementDbInDir(engagement, engagementsDir);
+  }
 
   app.use(
     "/static/*",
@@ -55,49 +61,77 @@ export function createApp(options: AppOptions = {}): Hono {
 
   app.get("/", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    const resolved = resolveEngagementDb(currentEngagement);
-    return c.html(
-      <SummaryPage
-        model={getSummaryPage(resolved.dbPath, resolved.engagementId)}
-        currentEngagement={currentEngagement}
-      />
-    );
+    try {
+      const resolved = resolvePageEngagement(currentEngagement);
+      return c.html(
+        <SummaryPage
+          model={getSummaryPage(resolved.dbPath, resolved.engagementId)}
+          currentEngagement={currentEngagement}
+        />
+      );
+    } catch (error) {
+      if (error instanceof UnknownEngagementError) {
+        return c.text(error.message, 404);
+      }
+      throw error;
+    }
   });
 
   app.get("/findings", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    const resolved = resolveEngagementDb(currentEngagement);
-    return c.html(
-      <FindingsPage
-        model={getFindingsPage(resolved.dbPath, resolved.engagementId, {
-          severity: c.req.query("severity") ?? null,
-          category: c.req.query("category") ?? null
-        })}
-        currentEngagement={currentEngagement}
-      />
-    );
+    try {
+      const resolved = resolvePageEngagement(currentEngagement);
+      return c.html(
+        <FindingsPage
+          model={getFindingsPage(resolved.dbPath, resolved.engagementId, {
+            severity: c.req.query("severity") ?? null,
+            category: c.req.query("category") ?? null
+          })}
+          currentEngagement={currentEngagement}
+        />
+      );
+    } catch (error) {
+      if (error instanceof UnknownEngagementError) {
+        return c.text(error.message, 404);
+      }
+      throw error;
+    }
   });
 
   app.get("/chains", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    const resolved = resolveEngagementDb(currentEngagement);
-    return c.html(
-      <ChainsPage
-        model={getChainsPage(resolved.dbPath, resolved.engagementId)}
-        currentEngagement={currentEngagement}
-      />
-    );
+    try {
+      const resolved = resolvePageEngagement(currentEngagement);
+      return c.html(
+        <ChainsPage
+          model={getChainsPage(resolved.dbPath, resolved.engagementId)}
+          currentEngagement={currentEngagement}
+        />
+      );
+    } catch (error) {
+      if (error instanceof UnknownEngagementError) {
+        return c.text(error.message, 404);
+      }
+      throw error;
+    }
   });
 
   app.get("/loot", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    const resolved = resolveEngagementDb(currentEngagement);
-    return c.html(
-      <LootPage
-        model={getLootPage(resolved.dbPath, resolved.engagementId)}
-        currentEngagement={currentEngagement}
-      />
-    );
+    try {
+      const resolved = resolvePageEngagement(currentEngagement);
+      return c.html(
+        <LootPage
+          model={getLootPage(resolved.dbPath, resolved.engagementId)}
+          currentEngagement={currentEngagement}
+        />
+      );
+    } catch (error) {
+      if (error instanceof UnknownEngagementError) {
+        return c.text(error.message, 404);
+      }
+      throw error;
+    }
   });
 
   app.post("/api/pipeline/start", async (c) => {
