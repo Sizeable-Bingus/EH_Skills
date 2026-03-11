@@ -50,6 +50,10 @@ Repeat steps 2–5 until the code review comes back clean.
 Use the script for the polling loop instead of retyping `gh api` queries in the
 prompt.
 
+## ExecPlans
+
+When writing complex features or significant refactors, use an ExecPlan (as described in PLANS.md) from design to implementation.
+
 ## Definition of done
 
 A task is done when:

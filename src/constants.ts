@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -53,7 +52,3 @@ export const SECURITY_HEADERS = {
   "X-Content-Type-Options": "nosniff",
   "X-Frame-Options": "DENY"
 } as const;
-
-export function databaseExists(dbPath: string): boolean {
-  return existsSync(dbPath);
-}

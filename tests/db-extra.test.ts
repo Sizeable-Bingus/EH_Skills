@@ -11,7 +11,6 @@ import {
   getLootPage,
   getSummaryPage as getSummaryPageDefault,
   getSummaryPage,
-  resolveEngagementDb,
   listEngagements,
   resolveEngagementDbInDir,
   UnknownEngagementError
@@ -282,9 +281,9 @@ describe("dashboard shaping edge cases", () => {
   });
 
   test("covers default engagement resolution helpers", () => {
-    expect(resolveEngagementDb(null).dbPath.endsWith("pentest_data.db")).toBe(
-      true
-    );
+    expect(
+      resolveEngagementDbInDir(null).dbPath.endsWith("pentest_data.db")
+    ).toBe(true);
     expect(getSummaryPageDefault()).toBeDefined();
   });
 

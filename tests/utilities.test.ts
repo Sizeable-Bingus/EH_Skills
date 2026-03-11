@@ -128,10 +128,8 @@ describe("constants", () => {
 
       expect(constants.DEFAULT_DB.endsWith("pentest_data.db")).toBe(true);
       expect(constants.DEFAULT_ENGAGEMENT_ID).toBe(1);
-      expect(constants.databaseExists(dbPath)).toBe(true);
-      expect(
-        constants.databaseExists(join(dirname(dbPath), "missing.db"))
-      ).toBe(false);
+      expect(existsSync(dbPath)).toBe(true);
+      expect(existsSync(join(dirname(dbPath), "missing.db"))).toBe(false);
     } finally {
       process.env.PENTEST_DASHBOARD_DB = previous.db;
       process.env.PENTEST_DASHBOARD_ENGAGEMENT_ID = previous.engagementId;
