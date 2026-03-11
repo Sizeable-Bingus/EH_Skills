@@ -13,6 +13,8 @@ class AsyncQueue<T> implements AsyncIterable<T> {
   private resolvers: Array<(result: IteratorResult<T>) => void> = [];
   private closed = false;
 
+  constructor() {}
+
   push(item: T): void {
     if (this.closed) {
       return;
@@ -46,9 +48,9 @@ class AsyncQueue<T> implements AsyncIterable<T> {
         if (this.closed) {
           return Promise.resolve({ value: undefined as T, done: true });
         }
-        return new Promise<IteratorResult<T>>((resolve) => {
-          this.resolvers.push(resolve);
-        });
+        const deferred = Promise.withResolvers<IteratorResult<T>>();
+        this.resolvers.push(deferred.resolve);
+        return deferred.promise;
       }
     };
   }
@@ -61,23 +63,6 @@ export interface PipelineManagerOptions {
   syntheticRunner?: PipelineRunner;
 }
 
-function resolvePipelineRunner(
-  mode: string,
-  realRunner: PipelineRunner,
-  syntheticRunner: PipelineRunner
-): PipelineRunner {
-  switch (mode) {
-    case "synthetic":
-      return syntheticRunner;
-    case "real":
-      return realRunner;
-    default:
-      throw new Error(
-        `Unsupported pipeline mode: ${mode}. Expected "real" or "synthetic".`
-      );
-  }
-}
-
 export function createPipelineManager(options: PipelineManagerOptions = {}) {
   const state: PipelineState = {
     status: "idle",
@@ -88,15 +73,9 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
   };
   const subscribers = new Set<AsyncQueue<string | null>>();
   const engagementsDir = options.engagementsDir ?? ENGAGEMENTS_DIR;
-  const modeResolver = options.modeResolver ?? defaultModeResolver;
+  const modeResolver = options.modeResolver;
   const realRunner = options.realRunner ?? runRealPipeline;
   const syntheticRunner = options.syntheticRunner ?? runSyntheticPipeline;
-
-  function broadcast(line: string | null): void {
-    for (const queue of subscribers) {
-      queue.push(line);
-    }
-  }
 
   function log(line: string): void {
     state.logLines.push(line);
@@ -104,7 +83,9 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     if (match) {
       state.currentPhase = match[1]?.trim() ?? state.currentPhase;
     }
-    broadcast(line);
+    for (const queue of subscribers) {
+      queue.push(line);
+    }
   }
 
   function startPipeline(
@@ -116,11 +97,35 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
       return Promise.reject(new Error("Pipeline already running"));
     }
 
-    const runner = resolvePipelineRunner(
-      modeResolver(),
-      realRunner,
-      syntheticRunner
-    );
+    let mode: "real" | "synthetic";
+    if (modeResolver) {
+      mode = modeResolver();
+    } else {
+      const configuredMode =
+        process.env.PENTEST_PIPELINE_MODE?.trim().toLowerCase();
+      if (!configuredMode || configuredMode === "real") {
+        mode = "real";
+      } else if (configuredMode === "synthetic") {
+        mode = "synthetic";
+      } else {
+        throw new Error(
+          `Unsupported pipeline mode: ${configuredMode}. Expected "real" or "synthetic".`
+        );
+      }
+    }
+    let runner: PipelineRunner;
+    switch (mode) {
+      case "synthetic":
+        runner = syntheticRunner;
+        break;
+      case "real":
+        runner = realRunner;
+        break;
+      default:
+        throw new Error(
+          `Unsupported pipeline mode: ${String(mode)}. Expected "real" or "synthetic".`
+        );
+    }
 
     for (const queue of subscribers) {
       queue.push(null);
@@ -137,7 +142,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     const engagementDir = join(engagementsDir, state.engagement);
     mkdirSync(engagementDir, { recursive: true });
 
-    void (async () => {
+    async function executePipeline(): Promise<void> {
       try {
         await runner({
           target,
@@ -154,9 +159,13 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
         state.currentPhase = `Error: ${getErrorMessage(error)}`;
         log(`ERROR: ${getErrorMessage(error)}`);
       } finally {
-        broadcast(null);
+        for (const queue of subscribers) {
+          queue.push(null);
+        }
       }
-    })();
+    }
+
+    void executePipeline();
 
     return Promise.resolve(state);
   }
@@ -187,19 +196,4 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     subscribe,
     unsubscribe
   };
-}
-
-function defaultModeResolver(): "real" | "synthetic" {
-  const configuredMode =
-    process.env.PENTEST_PIPELINE_MODE?.trim().toLowerCase();
-  if (!configuredMode || configuredMode === "real") {
-    return "real";
-  }
-  if (configuredMode === "synthetic") {
-    return "synthetic";
-  }
-
-  throw new Error(
-    `Unsupported pipeline mode: ${configuredMode}. Expected "real" or "synthetic".`
-  );
 }

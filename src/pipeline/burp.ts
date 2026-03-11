@@ -27,8 +27,12 @@ export async function runBurpScan(
   const spawnFn = dependencies.spawnFn ?? defaultSpawn;
   const sleepFn = dependencies.sleepFn ?? sleep;
   const readJsonFile = dependencies.readJsonFile ?? readJsonViaBun;
+  const nowFn = dependencies.nowFn ?? Date.now;
+  const pollIntervalMs = dependencies.pollIntervalMs ?? BURP_POLL_INTERVAL_MS;
+  const startupTimeoutMs =
+    dependencies.startupTimeoutMs ?? BURP_STARTUP_TIMEOUT_MS;
 
-  await killStaleBurp(spawnFn);
+  await killStaleBurp(spawnFn, sleepFn);
   const process = spawnFn({
     cmd: [
       BURP_JAVA,
@@ -43,9 +47,22 @@ export async function runBurpScan(
 
   try {
     log("Starting Burp Suite headless...");
-    await waitForBurp(fetchFn, sleepFn, log);
+    await waitForBurp(
+      fetchFn,
+      sleepFn,
+      log,
+      nowFn,
+      startupTimeoutMs,
+      pollIntervalMs
+    );
     const scanId = await createBurpScan(target, fetchFn, readJsonFile, log);
-    const scanData = await pollScan(scanId, fetchFn, sleepFn, log);
+    const scanData = await pollScan(
+      scanId,
+      fetchFn,
+      sleepFn,
+      log,
+      pollIntervalMs
+    );
 
     mkdirSync(engagementDir, { recursive: true });
     const outputPath = join(engagementDir, "burp_scan.json");
@@ -61,7 +78,11 @@ export async function runBurpScan(
     return { process, outputPath };
   } catch (error) {
     process.kill();
-    await process.exited.catch(() => undefined);
+    try {
+      await process.exited;
+    } catch {
+      // Ignore shutdown errors after a scan failure.
+    }
     log(`Burp scan failed: ${getErrorMessage(error)}`);
     throw error;
   }
@@ -72,15 +93,20 @@ async function killStaleBurp(
     cmd: string[];
     stdout?: "ignore" | "pipe";
     stderr?: "ignore" | "pipe";
-  }) => BurpProcessLike
+  }) => BurpProcessLike,
+  sleepFn: (ms: number) => Promise<void>
 ): Promise<void> {
   const process = spawnFn({
     cmd: ["pkill", "-f", "burpsuite_pro.jar"],
     stdout: "ignore",
     stderr: "ignore"
   });
-  await process.exited.catch(() => undefined);
-  await sleep(2_000);
+  try {
+    await process.exited;
+  } catch {
+    // Ignore stale-process shutdown errors.
+  }
+  await sleepFn(2_000);
 }
 
 async function waitForBurp(
@@ -89,13 +115,16 @@ async function waitForBurp(
     init?: RequestInit
   ) => Promise<Response>,
   sleepFn: (ms: number) => Promise<void>,
-  log: (line: string) => void
+  log: (line: string) => void,
+  nowFn: () => number,
+  startupTimeoutMs: number,
+  pollIntervalMs: number
 ): Promise<void> {
-  const start = Date.now();
+  const start = nowFn();
   let restReady = false;
   let mcpReady = false;
 
-  while (Date.now() - start < BURP_STARTUP_TIMEOUT_MS) {
+  while (nowFn() - start < startupTimeoutMs) {
     if (!restReady) {
       try {
         const response = await fetchFn(`${BURP_REST_API}/`, {
@@ -128,11 +157,11 @@ async function waitForBurp(
       return;
     }
 
-    await sleepFn(BURP_POLL_INTERVAL_MS);
+    await sleepFn(pollIntervalMs);
   }
 
   throw new Error(
-    `Burp Suite did not become ready within ${BURP_STARTUP_TIMEOUT_MS}ms`
+    `Burp Suite did not become ready within ${startupTimeoutMs}ms`
   );
 }
 
@@ -179,11 +208,13 @@ async function pollScan(
     init?: RequestInit
   ) => Promise<Response>,
   sleepFn: (ms: number) => Promise<void>,
-  log: (line: string) => void
+  log: (line: string) => void,
+  pollIntervalMs: number
 ): Promise<Record<string, unknown>> {
   log("Polling Burp scan status...");
 
-  for (;;) {
+  let finalScanData: Record<string, unknown> | null = null;
+  while (finalScanData === null) {
     const response = await fetchFn(`${BURP_REST_API}/v0.1/scan/${scanId}`);
     if (!response.ok) {
       throw new Error(`Burp scan poll failed with status ${response.status}`);
@@ -196,11 +227,14 @@ async function pollScan(
         : "unknown";
     log(`  Scan status: ${status}`);
     if (status === "succeeded" || status === "failed") {
-      return scanData;
+      finalScanData = scanData;
+      continue;
     }
 
-    await sleepFn(BURP_POLL_INTERVAL_MS);
+    await sleepFn(pollIntervalMs);
   }
+
+  return finalScanData;
 }
 
 function defaultSpawn(options: {

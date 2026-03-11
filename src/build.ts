@@ -3,10 +3,24 @@ import { join } from "node:path";
 
 import { DIST_PUBLIC_DIR, PROJECT_ROOT } from "./constants.ts";
 
-export async function buildClientAssets(): Promise<void> {
-  mkdirSync(DIST_PUBLIC_DIR, { recursive: true });
+export interface BuildClientAssetsDependencies {
+  mkdirFn?: typeof mkdirSync;
+  buildFn?: typeof Bun.build;
+  writeFn?: typeof Bun.write;
+  fileFn?: typeof Bun.file;
+}
 
-  const result = await Bun.build({
+export async function buildClientAssets(
+  dependencies: BuildClientAssetsDependencies = {}
+): Promise<void> {
+  const mkdirFn = dependencies.mkdirFn ?? mkdirSync;
+  const buildFn = dependencies.buildFn ?? Bun.build;
+  const writeFn = dependencies.writeFn ?? Bun.write;
+  const fileFn = dependencies.fileFn ?? Bun.file;
+
+  mkdirFn(DIST_PUBLIC_DIR, { recursive: true });
+
+  const result = await buildFn({
     entrypoints: [
       join(PROJECT_ROOT, "src", "client", "pipeline.ts"),
       join(PROJECT_ROOT, "src", "client", "findings.ts"),
@@ -26,12 +40,8 @@ export async function buildClientAssets(): Promise<void> {
     throw new Error(`Asset build failed:\n${logs}`);
   }
 
-  await Bun.write(
+  await writeFn(
     join(DIST_PUBLIC_DIR, "styles.css"),
-    Bun.file(join(PROJECT_ROOT, "src", "assets", "styles.css"))
+    fileFn(join(PROJECT_ROOT, "src", "assets", "styles.css"))
   );
-}
-
-if (import.meta.main) {
-  await buildClientAssets();
 }

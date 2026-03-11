@@ -54,10 +54,6 @@ function fetchOne(
 function getLatestEngagementRecord(
   dbPath: string
 ): { engagementId: number; scanDate: string } | null {
-  if (!existsSync(dbPath)) {
-    return null;
-  }
-
   const row = fetchOne(
     dbPath,
     "SELECT id, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
@@ -74,7 +70,10 @@ function getLatestEngagementRecord(
 
 function normalizeScope(engagement: Row): ScopeModel | string | null {
   if ("scope" in engagement) {
-    const scope = parseJson<ScopeModel>(engagement.scope);
+    const scope = parseJson<ScopeModel | string>(engagement.scope);
+    if (typeof scope === "string" && scope.length > 0) {
+      return scope;
+    }
     if (scope && typeof scope === "object" && !Array.isArray(scope)) {
       return scope;
     }

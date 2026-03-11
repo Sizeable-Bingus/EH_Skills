@@ -98,21 +98,39 @@ export function ingestExploitationOutput(
   return withWritableDatabase(dbPath, (db) => {
     const target = data.meta.target;
     const scanDate = data.meta.scan_date;
+    const existing = db
+      .query("SELECT id FROM engagements WHERE target = ? AND scan_date = ?")
+      .get(target, scanDate) as { id?: number } | null;
 
-    if (!options.force) {
-      const existing = db
-        .query("SELECT id FROM engagements WHERE target = ? AND scan_date = ?")
-        .get(target, scanDate) as { id?: number } | null;
-      if (existing?.id) {
-        throw new Error(
-          `Engagement already exists for ${target} at ${scanDate}`
-        );
-      }
+    if (existing?.id && !options.force) {
+      throw new Error(`Engagement already exists for ${target} at ${scanDate}`);
     }
 
     db.exec("BEGIN");
 
     try {
+      if (existing?.id && options.force) {
+        db.query("DELETE FROM findings WHERE engagement_id = ?").run(
+          existing.id
+        );
+        db.query("DELETE FROM credentials WHERE engagement_id = ?").run(
+          existing.id
+        );
+        db.query("DELETE FROM data_exfiltrated WHERE engagement_id = ?").run(
+          existing.id
+        );
+        const chainIds = db
+          .query("SELECT id FROM exploitation_chains WHERE engagement_id = ?")
+          .all(existing.id) as Array<{ id: number }>;
+        for (const chain of chainIds) {
+          db.query("DELETE FROM chain_steps WHERE chain_id = ?").run(chain.id);
+        }
+        db.query("DELETE FROM exploitation_chains WHERE engagement_id = ?").run(
+          existing.id
+        );
+        db.query("DELETE FROM engagements WHERE id = ?").run(existing.id);
+      }
+
       const scope = data.meta.scope ?? {};
       const rules =
         typeof (scope as { rules_of_engagement?: unknown })
