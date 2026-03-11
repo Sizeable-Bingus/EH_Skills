@@ -613,10 +613,31 @@ a:hover {
   background: var(--sev-high);
 }
 .cnh-stat-card--amber::before {
-  background: var(--sev-medium);
+  background: #0d9488;
 }
 .cnh-stat-card--purple::before {
   background: #7c3aed;
+}
+
+.cnh-stat-icon {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.45;
+}
+.cnh-stat-card--purple .cnh-stat-icon {
+  color: #7c3aed;
+}
+.cnh-stat-card--blue .cnh-stat-icon {
+  color: var(--cnh-blue);
+}
+.cnh-stat-card--orange .cnh-stat-icon {
+  color: var(--sev-high);
+}
+.cnh-stat-card--amber .cnh-stat-icon {
+  color: #0d9488;
 }
 
 .cnh-stat-label {
