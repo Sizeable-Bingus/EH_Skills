@@ -18,6 +18,14 @@ function pageHref(path: string, engagement: string): string {
   return `${path}?engagement=${encodeURIComponent(engagement)}`;
 }
 
+const pageLabels: Record<PageKey, string> = {
+  dashboard: "Dashboard",
+  summary: "Executive Summary",
+  findings: "Findings",
+  chains: "Attack Chains",
+  loot: "Compromised Credentials"
+};
+
 export function BaseLayout({
   page,
   currentEngagement,
@@ -25,14 +33,6 @@ export function BaseLayout({
   children,
   scripts = []
 }: LayoutProps) {
-  const navItems: Array<[PageKey, string, string, boolean]> = [
-    ["dashboard", "/", "Dashboard", false],
-    ["summary", "/summary", "Executive Summary", true],
-    ["findings", "/findings", "Findings", true],
-    ["chains", "/chains", "Attack Chains", true],
-    ["loot", "/loot", "Compromised Credentials", true]
-  ];
-
   return (
     <html lang="en">
       <head>
@@ -42,112 +42,216 @@ export function BaseLayout({
         <link rel="stylesheet" href="/static/styles.css" />
       </head>
       <body>
-        <nav class="cnh-nav">
-          <div class="cnh-nav-inner">
-            <div class="cnh-logo">
-              <div class="cnh-logo-mark">CNH</div>
-              <span class="cnh-logo-sub">Security Operations</span>
-              <div class="cnh-logo-divider" />
-            </div>
-
-            <div style="display:flex;align-items:center;">
-              <div class="cnh-nav-links">
-                {navItems.map(([key, href, label, useEngagement]) => (
-                  <a
-                    href={
-                      useEngagement ? pageHref(href, currentEngagement) : href
-                    }
-                    class={`cnh-nav-link ${page === key ? "cnh-nav-link--active" : ""}`}
-                  >
-                    {label}
-                  </a>
-                ))}
-              </div>
-
-              <div class="cnh-nav-controls">
-                <div class="combobox" id="engagement-combobox">
-                  <svg
-                    class="combobox-search-icon"
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="rgba(255,255,255,0.4)"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle cx="11" cy="11" r="7" />
-                    <path d="m20 20-3.5-3.5" />
-                  </svg>
-                  <input
-                    type="text"
-                    id="engagement-input"
-                    class="combobox-input"
-                    placeholder="Search engagements..."
-                    autoComplete="off"
-                    role="combobox"
-                    aria-expanded="false"
-                    aria-controls="engagement-listbox"
-                  />
-                  <ul
-                    id="engagement-listbox"
-                    class="combobox-listbox hidden"
-                    role="listbox"
-                  />
-                </div>
-                <button
-                  id="delete-engagement"
-                  class="cnh-btn-danger-icon hidden"
-                  title="Delete engagement"
-                  type="button"
-                >
-                  <svg
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M3 6h18" />
-                    <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                    <path d="M10 11v6" />
-                    <path d="M14 11v6" />
-                  </svg>
-                </button>
-                <button id="scan-open" class="cnh-btn-primary" type="button">
-                  <svg
-                    width="14"
-                    height="14"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path d="M12 5v14M5 12h14" />
-                  </svg>
-                  New Scan
-                </button>
-              </div>
-            </div>
+        {/* ---- Sidebar ---- */}
+        <aside class="vui-sidebar">
+          <div class="vui-sidebar-logo">
+            <div class="cnh-logo-mark">CNH</div>
+            <span class="vui-sidebar-logo-text">Security Operations</span>
           </div>
-        </nav>
 
-        <div id="pipeline-status" class="hidden pipeline-bar">
-          <div class="pipeline-bar-inner">
-            <span id="pipeline-dot" class="pipeline-dot pipeline-dot--idle" />
-            <span id="pipeline-text" class="pipeline-text">
-              Idle
-            </span>
-            <button id="log-toggle" class="pipeline-log-toggle" type="button">
-              Show Log
+          <nav class="vui-sidebar-nav">
+            <div class="vui-nav-section-label">Main Pages</div>
+            <a
+              href="/"
+              class={`vui-nav-link ${page === "dashboard" ? "vui-nav-link--active" : ""}`}
+            >
+              <svg
+                class="vui-nav-icon"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+              </svg>
+              Dashboard
+            </a>
+            <a
+              href={pageHref("/findings", currentEngagement)}
+              class={`vui-nav-link ${page === "findings" ? "vui-nav-link--active" : ""}`}
+            >
+              <svg
+                class="vui-nav-icon"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4" />
+                <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+              </svg>
+              Findings
+            </a>
+            <a
+              href={pageHref("/chains", currentEngagement)}
+              class={`vui-nav-link ${page === "chains" ? "vui-nav-link--active" : ""}`}
+            >
+              <svg
+                class="vui-nav-icon"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+              </svg>
+              Attack Chains
+            </a>
+
+            <div class="vui-nav-section-label">Reports</div>
+            <a
+              href={pageHref("/summary", currentEngagement)}
+              class={`vui-nav-link ${page === "summary" ? "vui-nav-link--active" : ""}`}
+            >
+              <svg
+                class="vui-nav-icon"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+              </svg>
+              Executive Summary
+            </a>
+            <a
+              href={pageHref("/loot", currentEngagement)}
+              class={`vui-nav-link ${page === "loot" ? "vui-nav-link--active" : ""}`}
+            >
+              <svg
+                class="vui-nav-icon"
+                width="18"
+                height="18"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+              >
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+              </svg>
+              Credentials
+            </a>
+          </nav>
+
+          <div class="vui-sidebar-bottom">
+            <button
+              id="scan-open"
+              class="cnh-btn-primary vui-scan-btn"
+              type="button"
+            >
+              <svg
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+              >
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              New Scan
             </button>
           </div>
-          <div id="log-panel" class="hidden pipeline-log-panel">
-            <pre id="log-pre" class="pipeline-log-pre" />
+        </aside>
+
+        {/* ---- Content Area ---- */}
+        <div class="vui-content-area">
+          <header class="vui-top-header">
+            <div class="vui-breadcrumb">
+              <span class="vui-breadcrumb-prefix">Pages</span>
+              <span class="vui-breadcrumb-sep">/</span>
+              <span class="vui-breadcrumb-current">{pageLabels[page]}</span>
+            </div>
+            <div class="vui-header-controls">
+              <div class="combobox" id="engagement-combobox">
+                <svg
+                  class="combobox-search-icon"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="var(--text-tertiary)"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" />
+                </svg>
+                <input
+                  type="text"
+                  id="engagement-input"
+                  class="combobox-input"
+                  placeholder="Search engagements..."
+                  autoComplete="off"
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-controls="engagement-listbox"
+                />
+                <ul
+                  id="engagement-listbox"
+                  class="combobox-listbox hidden"
+                  role="listbox"
+                />
+              </div>
+              <button
+                id="delete-engagement"
+                class="cnh-btn-danger-icon hidden"
+                title="Delete engagement"
+                type="button"
+              >
+                <svg
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M3 6h18" />
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                  <path d="M10 11v6" />
+                  <path d="M14 11v6" />
+                </svg>
+              </button>
+            </div>
+          </header>
+
+          <div id="pipeline-status" class="hidden pipeline-bar">
+            <div class="pipeline-bar-inner">
+              <span id="pipeline-dot" class="pipeline-dot pipeline-dot--idle" />
+              <span id="pipeline-text" class="pipeline-text">
+                Idle
+              </span>
+              <button id="log-toggle" class="pipeline-log-toggle" type="button">
+                Show Log
+              </button>
+            </div>
+            <div id="log-panel" class="hidden pipeline-log-panel">
+              <pre id="log-pre" class="pipeline-log-pre" />
+            </div>
           </div>
+
+          <main class="cnh-main">{children}</main>
         </div>
 
+        {/* ---- Modals (body level) ---- */}
         <div id="scan-modal" class="hidden cnh-modal-overlay">
           <div class="cnh-modal" style="max-width:520px;">
             <h2>Start New Scan</h2>
@@ -254,7 +358,6 @@ export function BaseLayout({
           </div>
         </div>
 
-        <main class="cnh-main">{children}</main>
         <script type="module" src="/static/pipeline.js" />
         {scripts.map((script) => (
           <script type="module" src={script} />
