@@ -8,11 +8,12 @@
 - `src/db/`: `bun:sqlite` query shaping plus shared SQLite schema/ingestion logic
 - `src/pipeline/`: in-process pipeline manager, Burp adapter, Claude adapter, real pipeline, and synthetic pipeline
 - `src/assets/`: static styles copied into `dist/public/` by the Bun build
+- `scripts/`: stable helper commands, including the PR review loop watcher/resolver
 - `docs/`: durable product, architecture, and planning notes
 - `engagements/`: on-disk scan artifacts and per-target SQLite databases
 - `burp_headless_scanner/deep.json`: Burp scan configuration consumed by the real pipeline
 
-`AGENTS.md` still references `scripts/` and `tests/e2e/`, but those directories do not exist in the current repo state.
+`tests/e2e/` still does not exist in the current repo state.
 
 ## Runtime Components
 
@@ -134,6 +135,16 @@ Current environment variables used by the code:
 - `BURP_JAR`, `BURP_JAVA`, `BURP_REST_API`, `BURP_MCP_SSE`: Burp runtime overrides
 - `PENTEST_SKIP_ASSET_BUILD`: skips the client bundle step on server startup
 
+## Development Workflow
+
+`scripts/pr-review-loop.sh` provides a stable GitHub review workflow for the
+current PR. It can:
+
+- print a one-shot JSON snapshot with `status`
+- poll unresolved review threads on an interval with `watch`, resetting its
+  timeout after each local commit
+- resolve a known thread ID with `resolve`
+
 ## Security And Operational Constraints
 
 - Path traversal for engagement selection/deletion is reduced by normalizing names with `basename(...)`.
@@ -145,5 +156,4 @@ Current environment variables used by the code:
 ## Known Gaps
 
 - No automated end-to-end browser suite exists under `tests/e2e/` yet.
-- No stable helper scripts exist under `scripts/` yet.
 - Artifact/schema documentation still relies on code plus the exploitation skill references rather than a standalone schema document in `docs/`.

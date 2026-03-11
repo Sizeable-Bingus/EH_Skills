@@ -1,7 +1,7 @@
 /** @jsxImportSource hono/jsx */
 import type { Child } from "hono/jsx";
 
-type PageKey = "summary" | "findings" | "chains" | "loot";
+type PageKey = "dashboard" | "summary" | "findings" | "chains" | "loot";
 
 interface LayoutProps {
   page: PageKey;
@@ -25,11 +25,12 @@ export function BaseLayout({
   children,
   scripts = []
 }: LayoutProps) {
-  const navItems: Array<[PageKey, string, string]> = [
-    ["summary", "/", "Executive Summary"],
-    ["findings", "/findings", "Findings"],
-    ["chains", "/chains", "Attack Chains"],
-    ["loot", "/loot", "Compromised Credentials"]
+  const navItems: Array<[PageKey, string, string, boolean]> = [
+    ["dashboard", "/", "Dashboard", false],
+    ["summary", "/summary", "Executive Summary", true],
+    ["findings", "/findings", "Findings", true],
+    ["chains", "/chains", "Attack Chains", true],
+    ["loot", "/loot", "Compromised Credentials", true]
   ];
 
   return (
@@ -51,9 +52,11 @@ export function BaseLayout({
 
             <div style="display:flex;align-items:center;">
               <div class="cnh-nav-links">
-                {navItems.map(([key, href, label]) => (
+                {navItems.map(([key, href, label, useEngagement]) => (
                   <a
-                    href={pageHref(href, currentEngagement)}
+                    href={
+                      useEngagement ? pageHref(href, currentEngagement) : href
+                    }
                     class={`cnh-nav-link ${page === key ? "cnh-nav-link--active" : ""}`}
                   >
                     {label}

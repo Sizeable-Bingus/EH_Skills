@@ -10,7 +10,8 @@ export async function buildClientAssets(): Promise<void> {
     entrypoints: [
       join(PROJECT_ROOT, "src", "client", "pipeline.ts"),
       join(PROJECT_ROOT, "src", "client", "findings.ts"),
-      join(PROJECT_ROOT, "src", "client", "executive_summary.ts")
+      join(PROJECT_ROOT, "src", "client", "executive_summary.ts"),
+      join(PROJECT_ROOT, "src", "client", "dashboard.ts")
     ],
     outdir: DIST_PUBLIC_DIR,
     target: "browser",

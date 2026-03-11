@@ -12,6 +12,7 @@ import {
 import {
   deleteEngagementDirectory,
   getChainsPage,
+  getDashboardPage,
   getFindingsPage,
   getLootPage,
   getSummaryPage,
@@ -19,6 +20,7 @@ import {
   resolveEngagementDbInDir,
   UnknownEngagementError
 } from "./db/dashboard.ts";
+import { DashboardPage } from "./pages/dashboard.tsx";
 import { SummaryPage } from "./pages/summary.tsx";
 import { FindingsPage } from "./pages/findings.tsx";
 import { ChainsPage } from "./pages/chains.tsx";
@@ -60,6 +62,10 @@ export function createApp(options: AppOptions = {}): Hono {
   });
 
   app.get("/", (c) => {
+    return c.html(<DashboardPage model={getDashboardPage(engagementsDir)} />);
+  });
+
+  app.get("/summary", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
     try {
       const resolved = resolvePageEngagement(currentEngagement);

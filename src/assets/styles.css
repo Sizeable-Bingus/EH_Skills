@@ -615,6 +615,9 @@ a:hover {
 .cnh-stat-card--amber::before {
   background: var(--sev-medium);
 }
+.cnh-stat-card--purple::before {
+  background: #7c3aed;
+}
 
 .cnh-stat-label {
   font-size: 0.68rem;
@@ -1165,9 +1168,26 @@ a:hover {
 }
 
 /* ---- Responsive ---- */
+/* ---- Dashboard ---- */
+.dash-sev-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-right: 4px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.dashboard-engagement-row:hover {
+  background: var(--surface-hover);
+}
+
 @media (min-width: 768px) {
   .cnh-stat-grid--3 {
     grid-template-columns: repeat(3, 1fr);
+  }
+  .cnh-stat-grid--4 {
+    grid-template-columns: repeat(4, 1fr);
   }
   .detail-grid {
     grid-template-columns: 1fr 1fr;
@@ -1196,7 +1216,8 @@ a:hover {
   .detail-grid {
     grid-template-columns: 1fr;
   }
-  .cnh-stat-grid--3 {
+  .cnh-stat-grid--3,
+  .cnh-stat-grid--4 {
     grid-template-columns: 1fr;
   }
 }
