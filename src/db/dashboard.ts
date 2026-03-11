@@ -33,6 +33,16 @@ function stringValue(value: unknown, fallback = ""): string {
   return typeof value === "string" ? value : fallback;
 }
 
+function emptySeverityCounts(): DashboardPageModel["severityCounts"] {
+  return {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+    info: 0
+  };
+}
+
 function fetchAll(dbPath: string, sql: string, params: unknown[] = []): Row[] {
   return withReadOnlyDatabase(
     dbPath,
@@ -128,13 +138,6 @@ export function getLatestEngagementId(
   return typeof row?.id === "number" ? row.id : fallback;
 }
 
-export function resolveEngagementDb(engagement?: string | null): {
-  dbPath: string;
-  engagementId: number;
-} {
-  return resolveEngagementDbInDir(engagement, ENGAGEMENTS_DIR);
-}
-
 export function resolveEngagementDbInDir(
   engagement: string | null | undefined,
   engagementsDir: string = ENGAGEMENTS_DIR
@@ -196,13 +199,8 @@ export function getSummaryPage(
     fetchOne(dbPath, "SELECT * FROM engagements WHERE id = ?", [engagementId])
   );
 
-  const severityCounts: EngagementSummaryViewModel["severityCounts"] = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-    info: 0
-  };
+  const severityCounts: EngagementSummaryViewModel["severityCounts"] =
+    emptySeverityCounts();
 
   for (const row of fetchAll(
     dbPath,
@@ -439,14 +437,7 @@ export function getDashboardPage(
   engagementsDir: string = ENGAGEMENTS_DIR
 ): DashboardPageModel {
   const names = listEngagements(engagementsDir);
-
-  const severityCounts: DashboardPageModel["severityCounts"] = {
-    critical: 0,
-    high: 0,
-    medium: 0,
-    low: 0,
-    info: 0
-  };
+  const severityCounts = emptySeverityCounts();
   const categoryMap = new Map<string, number>();
   const engagements: DashboardEngagementRow[] = [];
 
@@ -456,78 +447,22 @@ export function getDashboardPage(
 
   for (const name of names) {
     const dbPath = join(engagementsDir, name, "pentest_data.db");
-    if (!existsSync(dbPath)) {
-      continue;
-    }
+    const summary = getDashboardEngagementSummary(dbPath, name);
 
-    const engRow = fetchOne(
-      dbPath,
-      "SELECT target, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
-    );
-
-    const sevRows = fetchAll(
-      dbPath,
-      "SELECT severity, COUNT(*) AS count FROM findings GROUP BY severity"
-    );
-    const rowSeverity = {
-      critical: 0,
-      high: 0,
-      medium: 0,
-      low: 0,
-      info: 0
-    };
-    let engFindingTotal = 0;
-    for (const row of sevRows) {
-      const sev = stringValue(row.severity);
-      const count = Number(row.count ?? 0);
-      engFindingTotal += count;
-      if (sev in rowSeverity) {
-        rowSeverity[sev as keyof typeof rowSeverity] = count;
-      }
-    }
-
-    for (const sev of Object.keys(severityCounts) as Array<
+    for (const severity of Object.keys(severityCounts) as Array<
       keyof typeof severityCounts
     >) {
-      severityCounts[sev] += rowSeverity[sev] ?? 0;
+      severityCounts[severity] += summary.severityCounts[severity];
     }
 
-    const catRows = fetchAll(
-      dbPath,
-      "SELECT category, COUNT(*) AS count FROM findings GROUP BY category ORDER BY count DESC"
-    );
-    for (const row of catRows) {
-      const cat = stringValue(row.category);
-      const count = Number(row.count ?? 0);
-      categoryMap.set(cat, (categoryMap.get(cat) ?? 0) + count);
+    for (const { category, count } of summary.categoryCounts) {
+      categoryMap.set(category, (categoryMap.get(category) ?? 0) + count);
     }
 
-    const statsRow = fetchOne(
-      dbPath,
-      `SELECT
-        (SELECT COUNT(*) FROM credentials) AS cred_count,
-        (SELECT COUNT(*) FROM exploitation_chains) AS chain_count`
-    );
-    const credCount = Number(statsRow?.cred_count ?? 0);
-    const chainCount = Number(statsRow?.chain_count ?? 0);
-
-    totalFindings += engFindingTotal;
-    totalCredentials += credCount;
-    totalChains += chainCount;
-
-    engagements.push({
-      name,
-      target: stringValue(engRow?.target, name),
-      scan_date: stringValue(engRow?.scan_date),
-      total_findings: engFindingTotal,
-      critical: rowSeverity.critical,
-      high: rowSeverity.high,
-      medium: rowSeverity.medium,
-      low: rowSeverity.low,
-      info: rowSeverity.info,
-      total_credentials: credCount,
-      total_chains: chainCount
-    });
+    totalFindings += summary.row.total_findings;
+    totalCredentials += summary.row.total_credentials;
+    totalChains += summary.row.total_chains;
+    engagements.push(summary.row);
   }
 
   const categoryCounts = Array.from(categoryMap.entries())
@@ -545,6 +480,79 @@ export function getDashboardPage(
       chains: totalChains
     }
   };
+}
+
+function getDashboardEngagementSummary(
+  dbPath: string,
+  name: string
+): {
+  row: DashboardEngagementRow;
+  severityCounts: DashboardPageModel["severityCounts"];
+  categoryCounts: Array<{ category: string; count: number }>;
+} {
+  return withReadOnlyDatabase(dbPath, (db) => {
+    const latestEngagement =
+      (db
+        .query(
+          "SELECT target, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+        )
+        .get() as Row | null) ?? null;
+
+    const severityCounts = emptySeverityCounts();
+    let totalFindings = 0;
+    for (const row of db
+      .query(
+        "SELECT severity, COUNT(*) AS count FROM findings GROUP BY severity"
+      )
+      .all() as Row[]) {
+      const severity = stringValue(row.severity);
+      const count = Number(row.count ?? 0);
+      totalFindings += count;
+      if (severity in severityCounts) {
+        severityCounts[severity as keyof typeof severityCounts] = count;
+      }
+    }
+
+    const categoryCounts = (
+      db
+        .query(
+          "SELECT category, COUNT(*) AS count FROM findings GROUP BY category ORDER BY count DESC"
+        )
+        .all() as Row[]
+    ).map((row) => ({
+      category: stringValue(row.category),
+      count: Number(row.count ?? 0)
+    }));
+
+    const stats =
+      (db
+        .query(
+          `SELECT
+          (SELECT COUNT(*) FROM credentials) AS cred_count,
+          (SELECT COUNT(*) FROM exploitation_chains) AS chain_count`
+        )
+        .get() as Row | null) ?? {};
+    const totalCredentials = Number(stats.cred_count ?? 0);
+    const totalChains = Number(stats.chain_count ?? 0);
+
+    return {
+      row: {
+        name,
+        target: stringValue(latestEngagement?.target, name),
+        scan_date: stringValue(latestEngagement?.scan_date),
+        total_findings: totalFindings,
+        critical: severityCounts.critical,
+        high: severityCounts.high,
+        medium: severityCounts.medium,
+        low: severityCounts.low,
+        info: severityCounts.info,
+        total_credentials: totalCredentials,
+        total_chains: totalChains
+      },
+      severityCounts,
+      categoryCounts
+    };
+  });
 }
 
 export function deleteEngagementDirectory(
