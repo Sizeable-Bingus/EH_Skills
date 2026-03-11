@@ -38,6 +38,7 @@ Repeat steps 2–5 until the code review comes back clean.
 2. Watch unresolved code review comments with the repo script:
    - `scripts/pr-review-loop.sh watch --interval 30 --timeout 600`
    - The script defaults to the current branch's PR via `gh pr view`.
+   - The watch timeout resets after each local commit so the loop stays alive while fixes are being pushed.
    - Use `scripts/pr-review-loop.sh status` for a one-shot snapshot.
 3. Implement fixes for each comment.
 4. Resolve review threads after the fix is pushed:
@@ -55,5 +56,5 @@ A task is done when:
 
 - the requested behavior is implemented
 - relevant docs are updated
-- `bun x tsc --noEmit`, `bun x eslint .`, `bun x prettier --check .`, and `bun test` pass
+- `bun run validate` passes
 - remaining risks or unknowns are written down

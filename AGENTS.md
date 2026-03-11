@@ -56,5 +56,5 @@ A task is done when:
 
 - the requested behavior is implemented
 - relevant docs are updated
-- `bun x tsc --noEmit`, `bun x eslint .`, `bun x prettier --check .`, and `bun test` pass
+- `bun run validate` passes
 - remaining risks or unknowns are written down
