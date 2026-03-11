@@ -70,18 +70,15 @@ export function SummaryPage(props: {
         >
           <div class="cnh-card cnh-card-pad cnh-chart-card animate-in animate-in-4">
             <p class="cnh-section-label">Findings by Severity</p>
-            <div
-              class="chart-container"
-              style="display:flex;justify-content:center;"
-            >
-              <canvas id="severityChart" style="max-height:280px" />
+            <div class="chart-container">
+              <canvas id="severityChart" />
             </div>
           </div>
 
           <div class="cnh-card cnh-card-pad cnh-chart-card animate-in animate-in-5">
             <p class="cnh-section-label">Findings by Category</p>
             <div class="chart-container">
-              <canvas id="categoryChart" style="max-height:280px" />
+              <canvas id="categoryChart" />
             </div>
           </div>
         </div>

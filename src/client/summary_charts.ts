@@ -49,6 +49,12 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
     Array<{ category: string; count: number }>
   >(chartData.getAttribute("data-category-counts") ?? undefined, []);
 
+  const rootStyles =
+    documentRef.defaultView?.getComputedStyle?.(documentRef.documentElement) ??
+    null;
+  const sevColor = (name: string, fallback: string) =>
+    rootStyles?.getPropertyValue(`--sev-${name}`).trim() || fallback;
+
   const severityChart = documentRef.getElementById("severityChart");
   if (severityChart instanceof CanvasElement) {
     new ChartRef(severityChart, {
@@ -65,11 +71,11 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
               severityData.info ?? 0
             ],
             backgroundColor: [
-              "#d42a2a",
-              "#e07314",
-              "#c59f07",
-              "#2567cf",
-              "#9ca3af"
+              sevColor("critical", "#d42a2a"),
+              sevColor("high", "#e07314"),
+              sevColor("medium", "#f5c542"),
+              sevColor("low", "#2567cf"),
+              sevColor("info", "#6b7280")
             ],
             borderWidth: 0,
             hoverOffset: 6
@@ -79,13 +85,14 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { bottom: 4 } },
         plugins: {
           legend: {
-            position: "right",
+            position: "bottom",
             labels: {
               color: "#5a6170",
               font: { size: 12, weight: 500 },
-              padding: 14,
+              padding: 16,
               usePointStyle: true
             }
           }
@@ -107,7 +114,9 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
             backgroundColor: "#8b1a1a",
             hoverBackgroundColor: "#c62828",
             borderRadius: 4,
-            borderSkipped: false
+            borderSkipped: false,
+            barPercentage: 0.5,
+            categoryPercentage: 0.8
           }
         ]
       },
@@ -122,7 +131,11 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
             grid: { color: "#e2e5ea", lineWidth: 0.5 }
           },
           y: {
-            ticks: { color: "#5a6170", font: { size: 11, weight: 500 } },
+            ticks: {
+              color: "#5a6170",
+              font: { size: 13, weight: 500 },
+              autoSkip: false
+            },
             grid: { display: false }
           }
         }
