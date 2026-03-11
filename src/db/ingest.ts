@@ -3,6 +3,7 @@ import { dirname } from "node:path";
 
 import type { ExploitationOutput, ExploitationFinding } from "../types.ts";
 import { jsonStringify } from "../utils.ts";
+import { normalizeCategory } from "./categories.ts";
 import { withWritableDatabase } from "./sqlite.ts";
 
 const SEVERITIES = new Set([
@@ -182,7 +183,7 @@ export function ingestExploitationOutput(
         ).run(
           engagementId,
           item.name,
-          item.category,
+          normalizeCategory(item.category),
           SEVERITIES.has(item.severity as Severity) ? item.severity : "info",
           item.status ?? "confirmed",
           item.url ?? null,

@@ -168,7 +168,7 @@ describe("synthetic pipeline credential branches", () => {
       (db) => {
         const row = db
           .query(
-            "SELECT COUNT(*) AS count FROM findings WHERE category = 'authenticated_access'"
+            "SELECT COUNT(*) AS count FROM findings WHERE category = 'authentication' AND technique = 'interactive_login'"
           )
           .get() as { count: number };
         return row.count;

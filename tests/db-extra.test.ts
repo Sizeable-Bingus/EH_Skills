@@ -15,6 +15,12 @@ import {
   resolveEngagementDbInDir,
   UnknownEngagementError
 } from "../src/db/dashboard.ts";
+import {
+  CATEGORY_MAP,
+  VALID_CATEGORIES,
+  migrateCategories,
+  normalizeCategory
+} from "../src/db/categories.ts";
 import { ingestExploitationOutput } from "../src/db/ingest.ts";
 import { createSyntheticArtifacts } from "../src/pipeline/synthetic.ts";
 import { withReadOnlyDatabase } from "../src/db/sqlite.ts";
@@ -300,6 +306,105 @@ describe("dashboard shaping edge cases", () => {
       total_credentials: 0,
       total_chains: 0
     });
+  });
+});
+
+describe("category normalization", () => {
+  test("maps all 19 legacy categories to the 7 consolidated ones", () => {
+    const expected: Record<string, string> = {
+      sqli: "injection",
+      xss: "injection",
+      cmd_injection: "injection",
+      ssti: "injection",
+      xxe: "injection",
+      deserialization: "injection",
+      default_creds: "authentication",
+      auth_bypass: "authentication",
+      session_issue: "authentication",
+      jwt_issue: "authentication",
+      authenticated_access: "authentication",
+      idor: "authorization",
+      priv_esc: "authorization",
+      missing_auth: "authorization",
+      ssrf: "ssrf",
+      cors: "configuration",
+      rate_limit_missing: "configuration",
+      information_disclosure: "configuration",
+      outdated_software: "configuration",
+      path_traversal: "file_access",
+      file_upload: "file_access",
+      business_logic: "business_logic",
+      websocket: "business_logic"
+    };
+
+    for (const [old, consolidated] of Object.entries(expected)) {
+      expect(normalizeCategory(old)).toBe(consolidated);
+    }
+  });
+
+  test("passes through unknown categories unchanged", () => {
+    expect(normalizeCategory("custom_thing")).toBe("custom_thing");
+    expect(normalizeCategory("zero_day")).toBe("zero_day");
+  });
+
+  test("all mapped values are valid categories", () => {
+    const validSet = new Set<string>(VALID_CATEGORIES);
+    for (const value of Object.values(CATEGORY_MAP)) {
+      expect(validSet.has(value)).toBe(true);
+    }
+  });
+
+  test("migrateCategories updates rows in existing databases", () => {
+    const dbPath = join(makeTempDir("eh-migrate-"), "pentest_data.db");
+    const output = createOutput();
+    // Force old-style categories for migration test
+    output.findings = output.findings.map((f) => {
+      if (f.category === "injection") return { ...f, category: "sqli" };
+      if (f.category === "authentication")
+        return { ...f, category: "default_creds" };
+      if (f.category === "authorization") return { ...f, category: "idor" };
+      if (f.category === "file_access")
+        return { ...f, category: "path_traversal" };
+      if (f.category === "configuration") return { ...f, category: "cors" };
+      return f;
+    });
+
+    // Ingest with raw categories (bypass normalizeCategory by writing directly)
+    const db = new Database(dbPath, { create: true });
+    db.exec(`CREATE TABLE IF NOT EXISTS findings (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      engagement_id INTEGER,
+      name TEXT, category TEXT, severity TEXT, status TEXT,
+      url TEXT, parameter TEXT, http_method TEXT, technique TEXT,
+      detail TEXT, evidence TEXT, impact TEXT, remediation TEXT,
+      affected_asset TEXT, raw TEXT
+    )`);
+    for (const f of output.findings) {
+      db.query(
+        "INSERT INTO findings (engagement_id, name, category, severity, status, detail, raw) VALUES (1, ?, ?, ?, ?, ?, '{}')"
+      ).run(f.name, f.category, f.severity, f.status ?? "confirmed", f.detail);
+    }
+    db.close();
+
+    const updated = migrateCategories(dbPath);
+    expect(updated).toBeGreaterThan(0);
+
+    // Verify no old categories remain
+    const remaining = withReadOnlyDatabase(dbPath, (rdb) => {
+      const rows = rdb
+        .query("SELECT DISTINCT category FROM findings")
+        .all() as Array<{ category: string }>;
+      return rows.map((r) => r.category);
+    });
+
+    const changedCats = new Set(
+      Object.entries(CATEGORY_MAP)
+        .filter(([k, v]) => k !== v)
+        .map(([k]) => k)
+    );
+    for (const cat of remaining) {
+      expect(changedCats.has(cat)).toBe(false);
+    }
   });
 });
 
