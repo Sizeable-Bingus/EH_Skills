@@ -35,6 +35,19 @@ export interface AppOptions {
   pipelineManager?: ReturnType<typeof createPipelineManager>;
 }
 
+export interface StartServerOptions extends AppOptions {
+  buildAssets?: () => Promise<void>;
+  skipAssetBuild?: boolean;
+  port?: number;
+  hostname?: string;
+  serveFn?: (options: {
+    fetch: typeof Hono.prototype.fetch;
+    port: number;
+    hostname: string;
+  }) => unknown;
+  logger?: (message: string) => void;
+}
+
 export function createApp(options: AppOptions = {}): Hono {
   const engagementsDir = options.engagementsDir ?? ENGAGEMENTS_DIR;
   const assetRoot = options.assetRoot ?? DIST_PUBLIC_DIR;
@@ -42,11 +55,23 @@ export function createApp(options: AppOptions = {}): Hono {
     options.pipelineManager ?? createPipelineManager({ engagementsDir });
 
   const app = new Hono();
+  app.onError((error, c) => {
+    if (error instanceof UnknownEngagementError) {
+      return c.text(error.message, 404);
+    }
+    return c.text("Internal Server Error", 500);
+  });
 
   function resolvePageEngagement(engagement: string) {
     return resolveEngagementDbInDir(engagement, engagementsDir);
   }
 
+  app.use(async (c, next) => {
+    await next();
+    for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
+      c.res.headers.set(header, value);
+    }
+  });
   app.use(
     "/static/*",
     serveStatic({
@@ -54,12 +79,6 @@ export function createApp(options: AppOptions = {}): Hono {
       rewriteRequestPath: (path) => path.replace(/^\/static\//, "/")
     })
   );
-  app.use(async (c, next) => {
-    await next();
-    for (const [header, value] of Object.entries(SECURITY_HEADERS)) {
-      c.res.headers.set(header, value);
-    }
-  });
 
   app.get("/", (c) => {
     return c.html(<DashboardPage model={getDashboardPage(engagementsDir)} />);
@@ -67,77 +86,49 @@ export function createApp(options: AppOptions = {}): Hono {
 
   app.get("/summary", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    try {
-      const resolved = resolvePageEngagement(currentEngagement);
-      return c.html(
-        <SummaryPage
-          model={getSummaryPage(resolved.dbPath, resolved.engagementId)}
-          currentEngagement={currentEngagement}
-        />
-      );
-    } catch (error) {
-      if (error instanceof UnknownEngagementError) {
-        return c.text(error.message, 404);
-      }
-      throw error;
-    }
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.html(
+      <SummaryPage
+        model={getSummaryPage(resolved.dbPath, resolved.engagementId)}
+        currentEngagement={currentEngagement}
+      />
+    );
   });
 
   app.get("/findings", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    try {
-      const resolved = resolvePageEngagement(currentEngagement);
-      return c.html(
-        <FindingsPage
-          model={getFindingsPage(resolved.dbPath, resolved.engagementId, {
-            severity: c.req.query("severity") ?? null,
-            category: c.req.query("category") ?? null
-          })}
-          currentEngagement={currentEngagement}
-        />
-      );
-    } catch (error) {
-      if (error instanceof UnknownEngagementError) {
-        return c.text(error.message, 404);
-      }
-      throw error;
-    }
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.html(
+      <FindingsPage
+        model={getFindingsPage(resolved.dbPath, resolved.engagementId, {
+          severity: c.req.query("severity") ?? null,
+          category: c.req.query("category") ?? null
+        })}
+        currentEngagement={currentEngagement}
+      />
+    );
   });
 
   app.get("/chains", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    try {
-      const resolved = resolvePageEngagement(currentEngagement);
-      return c.html(
-        <ChainsPage
-          model={getChainsPage(resolved.dbPath, resolved.engagementId)}
-          currentEngagement={currentEngagement}
-        />
-      );
-    } catch (error) {
-      if (error instanceof UnknownEngagementError) {
-        return c.text(error.message, 404);
-      }
-      throw error;
-    }
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.html(
+      <ChainsPage
+        model={getChainsPage(resolved.dbPath, resolved.engagementId)}
+        currentEngagement={currentEngagement}
+      />
+    );
   });
 
   app.get("/loot", (c) => {
     const currentEngagement = c.req.query("engagement") ?? "";
-    try {
-      const resolved = resolvePageEngagement(currentEngagement);
-      return c.html(
-        <LootPage
-          model={getLootPage(resolved.dbPath, resolved.engagementId)}
-          currentEngagement={currentEngagement}
-        />
-      );
-    } catch (error) {
-      if (error instanceof UnknownEngagementError) {
-        return c.text(error.message, 404);
-      }
-      throw error;
-    }
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.html(
+      <LootPage
+        model={getLootPage(resolved.dbPath, resolved.engagementId)}
+        currentEngagement={currentEngagement}
+      />
+    );
   });
 
   app.post("/api/pipeline/start", async (c) => {
@@ -225,21 +216,36 @@ export function createApp(options: AppOptions = {}): Hono {
   return app;
 }
 
-const app = createApp();
-
-if (import.meta.main) {
-  if (!process.env.PENTEST_SKIP_ASSET_BUILD) {
-    await buildClientAssets();
+export async function startServer(
+  options: StartServerOptions = {}
+): Promise<{ app: Hono; server: unknown; port: number; hostname: string }> {
+  const app = createApp(options);
+  const buildAssets = options.buildAssets ?? buildClientAssets;
+  const skipAssetBuild =
+    options.skipAssetBuild ?? Boolean(process.env.PENTEST_SKIP_ASSET_BUILD);
+  if (!skipAssetBuild) {
+    await buildAssets();
   }
 
-  const port = Number(process.env.PORT ?? 8000);
-  Bun.serve({
+  const port = options.port ?? Number(process.env.PORT ?? 8000);
+  const hostname = options.hostname ?? "0.0.0.0";
+  const serveFn =
+    options.serveFn ??
+    ((serveOptions) =>
+      Bun.serve({
+        fetch: serveOptions.fetch,
+        port: serveOptions.port,
+        hostname: serveOptions.hostname
+      }));
+  const logger = options.logger ?? console.log;
+  const server = serveFn({
     fetch: app.fetch,
     port,
-    hostname: "0.0.0.0"
+    hostname
   });
-  // Keep the startup line explicit for local operators.
-  console.log(`Pentest dashboard listening on http://0.0.0.0:${port}`);
+
+  logger(`Pentest dashboard listening on http://${hostname}:${port}`);
+  return { app, server, port, hostname };
 }
 
-export default app;
+export default createApp;

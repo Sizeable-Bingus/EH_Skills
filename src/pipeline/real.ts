@@ -7,14 +7,25 @@ import { getErrorMessage, phaseHeader } from "../utils.ts";
 import { runBurpScan } from "./burp.ts";
 import { runClaudePhase } from "./claude.ts";
 import type {
-  ClaudePhaseDependencies,
-  PipelineExecutionContext
+  PipelineExecutionContext,
+  RealPipelineDependencies
 } from "./types.ts";
 
 export async function runRealPipeline(
   context: PipelineExecutionContext,
-  dependencies: ClaudePhaseDependencies = {}
+  dependencies: RealPipelineDependencies = {}
 ): Promise<void> {
+  const claudeDependencies = dependencies.queryFn
+    ? { queryFn: dependencies.queryFn }
+    : undefined;
+  const runBurpScanFn = dependencies.runBurpScanFn ?? runBurpScan;
+  const runClaudePhaseFn = dependencies.runClaudePhaseFn ?? runClaudePhase;
+  const fileExistsFn = dependencies.fileExistsFn ?? existsSync;
+  const readJsonFile =
+    dependencies.readJsonFile ??
+    (async <T>(path: string): Promise<T> => (await Bun.file(path).json()) as T);
+  const ingestExploitationOutputFn =
+    dependencies.ingestExploitationOutputFn ?? ingestExploitationOutput;
   const reconPath = join(context.engagementDir, "recon_output.json");
   const exploitationPath = join(
     context.engagementDir,
@@ -26,7 +37,7 @@ export async function runRealPipeline(
     context.log(line);
   }
 
-  const burp = await runBurpScan(
+  const burp = await runBurpScanFn(
     context.target,
     context.engagementDir,
     context.log
@@ -39,7 +50,7 @@ export async function runRealPipeline(
       : "";
 
   try {
-    await runClaudePhase({
+    await runClaudePhaseFn({
       name: "Web Reconnaissance",
       prompt: [
         `Use the web-recon skill to perform thorough enumeration of the target web application at ${context.target}.`,
@@ -47,10 +58,10 @@ export async function runRealPipeline(
         `Burp Suite scan results are available at ${burp.outputPath} and must be incorporated into the recon.${credentialsText}`
       ].join(" "),
       log: context.log,
-      dependencies
+      ...(claudeDependencies ? { dependencies: claudeDependencies } : {})
     });
 
-    await runClaudePhase({
+    await runClaudePhaseFn({
       name: "Recon Verification",
       prompt: [
         `Use the web-recon skill to verify that the recon artifact stored at ${reconPath} did not miss anything.`,
@@ -58,10 +69,10 @@ export async function runRealPipeline(
         `Burp Suite scan results are also available at ${burp.outputPath}.${credentialsText}`
       ].join(" "),
       log: context.log,
-      dependencies
+      ...(claudeDependencies ? { dependencies: claudeDependencies } : {})
     });
 
-    await runClaudePhase({
+    await runClaudePhaseFn({
       name: "Web Exploitation",
       prompt: [
         `/web-exploitation Perform web exploitation against ${context.target}.`,
@@ -72,18 +83,17 @@ export async function runRealPipeline(
         `Burp Suite scan results are at ${burp.outputPath}.${credentialsText}`
       ].join(" "),
       log: context.log,
-      dependencies
+      ...(claudeDependencies ? { dependencies: claudeDependencies } : {})
     });
 
-    if (!existsSync(exploitationPath)) {
+    if (!fileExistsFn(exploitationPath)) {
       throw new Error(`Expected exploitation output at ${exploitationPath}`);
     }
 
-    const exploitation = (await Bun.file(
-      exploitationPath
-    ).json()) as ExploitationOutput;
+    const exploitation =
+      await readJsonFile<ExploitationOutput>(exploitationPath);
     try {
-      ingestExploitationOutput(exploitation, dbPath, { includeAll: true });
+      ingestExploitationOutputFn(exploitation, dbPath, { includeAll: true });
     } catch (error) {
       context.log(`SQLite ingestion warning: ${getErrorMessage(error)}`);
       throw error;
@@ -97,6 +107,10 @@ export async function runRealPipeline(
   } finally {
     context.log("Shutting down Burp Suite...");
     burp.process.kill();
-    await burp.process.exited.catch(() => undefined);
+    try {
+      await burp.process.exited;
+    } catch {
+      // Ignore shutdown errors after the pipeline exits.
+    }
   }
 }

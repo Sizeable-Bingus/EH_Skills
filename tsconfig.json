@@ -18,7 +18,9 @@
   "include": [
     "src/**/*.ts",
     "src/**/*.tsx",
+    "scripts/**/*.ts",
     "tests/**/*.ts",
+    "playwright.config.ts",
     "eslint.config.mjs"
   ]
 }

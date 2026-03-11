@@ -42,9 +42,33 @@ export interface BurpDependencies {
   }) => BurpProcessLike;
   sleepFn?: (ms: number) => Promise<void>;
   readJsonFile?: <T>(path: string) => Promise<T>;
+  nowFn?: () => number;
+  pollIntervalMs?: number;
+  startupTimeoutMs?: number;
 }
 
 export interface SyntheticArtifacts {
   recon: Record<string, unknown>;
   exploitation: ExploitationOutput;
+}
+
+export interface RealPipelineDependencies extends ClaudePhaseDependencies {
+  runBurpScanFn?: (
+    target: string,
+    engagementDir: string,
+    log: (line: string) => void
+  ) => Promise<BurpScanResult>;
+  runClaudePhaseFn?: (options: {
+    name: string;
+    prompt: string;
+    log: (line: string) => void;
+    dependencies?: ClaudePhaseDependencies;
+  }) => Promise<void>;
+  fileExistsFn?: (path: string) => boolean;
+  readJsonFile?: <T>(path: string) => Promise<T>;
+  ingestExploitationOutputFn?: (
+    data: ExploitationOutput,
+    dbPath: string,
+    options?: { force?: boolean; includeAll?: boolean }
+  ) => number;
 }

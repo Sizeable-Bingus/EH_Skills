@@ -1,25 +1,10 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const buttons = document.querySelectorAll<HTMLButtonElement>(
-    "[data-detail-toggle]"
-  );
+export {
+  initializeFindingsPage,
+  type FindingsPageDependencies
+} from "./findings_page.ts";
 
-  for (const button of buttons) {
-    button.addEventListener("click", () => {
-      const id = button.dataset.id;
-      if (!id) {
-        return;
-      }
+import { initializeFindingsPage } from "./findings_page.ts";
 
-      const row = document.getElementById(`detail-${id}`);
-      const arrow = document.getElementById(`arrow-${id}`);
-      if (!row || !arrow) {
-        return;
-      }
-
-      const isHidden = row.classList.contains("hidden");
-      row.classList.toggle("hidden", !isHidden);
-      arrow.setAttribute("style", isHidden ? "transform:rotate(90deg)" : "");
-      button.setAttribute("aria-expanded", String(isHidden));
-    });
-  }
-});
+if (typeof document !== "undefined") {
+  initializeFindingsPage();
+}

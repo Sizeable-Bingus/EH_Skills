@@ -9,11 +9,10 @@
 - `src/pipeline/`: in-process pipeline manager, Burp adapter, Claude adapter, real pipeline, and synthetic pipeline
 - `src/assets/`: static styles copied into `dist/public/` by the Bun build
 - `scripts/`: stable helper commands, including the PR review loop watcher/resolver
+- `tests/e2e/`: Playwright smoke coverage for the documented browser-critical flows
 - `docs/`: durable product, architecture, and planning notes
 - `engagements/`: on-disk scan artifacts and per-target SQLite databases
 - `burp_headless_scanner/deep.json`: Burp scan configuration consumed by the real pipeline
-
-`tests/e2e/` still does not exist in the current repo state.
 
 ## Runtime Components
 
@@ -42,6 +41,8 @@ The server keeps the existing multi-page route shape and adds the same security 
 - `dist/public/styles.css`
 
 Chart rendering now uses the bundled `chart.js` npm dependency instead of a CDN script.
+The browser entrypoints in `src/client/*.ts` are thin auto-bootstrap wrappers over
+testable implementation modules in the same folder.
 
 ### Query layer
 
@@ -137,6 +138,11 @@ Current environment variables used by the code:
 
 ## Development Workflow
 
+`scripts/build-assets.ts` is the stable asset-build entrypoint.
+`scripts/start-server.ts` is the stable Bun server entrypoint.
+`scripts/prepare-e2e-fixtures.ts` prepares the synthetic Playwright fixture data.
+`scripts/coverage-check.ts` enforces the LCOV-based Bun coverage gate.
+
 `scripts/pr-review-loop.sh` provides a stable GitHub review workflow for the
 current PR. It can:
 
@@ -155,5 +161,4 @@ current PR. It can:
 
 ## Known Gaps
 
-- No automated end-to-end browser suite exists under `tests/e2e/` yet.
 - Artifact/schema documentation still relies on code plus the exploitation skill references rather than a standalone schema document in `docs/`.
