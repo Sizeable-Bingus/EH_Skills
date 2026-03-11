@@ -31,7 +31,7 @@
   --sev-critical-bg: #fef2f2;
   --sev-high: #e07314;
   --sev-high-bg: #fff8f0;
-  --sev-medium: #c59f07;
+  --sev-medium: #f5c542;
   --sev-medium-bg: #fefce8;
   --sev-low: #2567cf;
   --sev-low-bg: #eff6ff;
@@ -577,7 +577,7 @@ a:hover {
 
 /* ---- Section Title ---- */
 .cnh-section-label {
-  font-size: 0.68rem;
+  font-size: 0.85rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
@@ -668,11 +668,11 @@ a:hover {
 /* ---- Charts ---- */
 .chart-container {
   position: relative;
-  max-height: 300px;
+  height: 340px;
 }
 
 .cnh-chart-card {
-  min-height: 340px;
+  min-height: 400px;
 }
 
 /* ---- Severity Badges ---- */
