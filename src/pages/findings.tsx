@@ -114,62 +114,54 @@ export function FindingsPage(props: {
                   <tr id={`detail-${finding.id}`} class="hidden">
                     <td colSpan={5} class="detail-cell">
                       <div class="detail-grid">
-                        {finding.name ? (
-                          <div>
-                            <p class="detail-field-label">Finding</p>
-                            <p class="detail-field-value">{finding.name}</p>
-                          </div>
-                        ) : null}
-                        {finding.technique ? (
-                          <div>
-                            <p class="detail-field-label">Technique</p>
-                            <p class="detail-field-value">
-                              {finding.technique}
-                            </p>
-                          </div>
-                        ) : null}
-                        {finding.detail ? (
-                          <div>
-                            <p class="detail-field-label">Detail</p>
-                            <p class="detail-field-value">{finding.detail}</p>
-                          </div>
-                        ) : null}
-                        {finding.evidence ? (
-                          <div>
-                            <p class="detail-field-label">Evidence</p>
-                            <p class="detail-field-value">{finding.evidence}</p>
-                          </div>
-                        ) : null}
-                        {finding.impact ? (
-                          <div>
-                            <p class="detail-field-label">Impact</p>
-                            <p class="detail-field-value">{finding.impact}</p>
-                          </div>
-                        ) : null}
-                        {finding.remediation ? (
-                          <div>
-                            <p class="detail-field-label">Remediation</p>
-                            <p class="detail-field-value">
-                              {finding.remediation}
-                            </p>
-                          </div>
-                        ) : null}
-                        {finding.parameter ? (
-                          <div>
-                            <p class="detail-field-label">Parameter</p>
-                            <p class="detail-field-value mono">
-                              {finding.parameter}
-                            </p>
-                          </div>
-                        ) : null}
-                        {finding.affected_asset ? (
-                          <div>
-                            <p class="detail-field-label">Affected Asset</p>
-                            <p class="detail-field-value mono">
-                              {finding.affected_asset}
-                            </p>
-                          </div>
-                        ) : null}
+                        <div>
+                          <p class="detail-field-label">Finding</p>
+                          <p class="detail-field-value">
+                            {finding.name ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Technique</p>
+                          <p class="detail-field-value">
+                            {finding.technique ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Detail</p>
+                          <p class="detail-field-value">
+                            {finding.detail ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Evidence</p>
+                          <p class="detail-field-value">
+                            {finding.evidence ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Impact</p>
+                          <p class="detail-field-value">
+                            {finding.impact ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Remediation</p>
+                          <p class="detail-field-value">
+                            {finding.remediation ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Parameter</p>
+                          <p class="detail-field-value mono">
+                            {finding.parameter ?? "—"}
+                          </p>
+                        </div>
+                        <div>
+                          <p class="detail-field-label">Affected Asset</p>
+                          <p class="detail-field-value mono">
+                            {finding.affected_asset ?? "—"}
+                          </p>
+                        </div>
                       </div>
                       {finding.raw ? (
                         <details class="detail-raw-toggle">
