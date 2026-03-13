@@ -5,14 +5,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: [
-      ".claude/**",
-      "dist/**",
-      "node_modules/**",
-      ".venv/**",
-      "dashboard/**",
-      "pentest_pipeline/**",
-    ],
+    ignores: [".claude/**", "dist/**", "node_modules/**"],
   },
   eslint.configs.recommended,
   {

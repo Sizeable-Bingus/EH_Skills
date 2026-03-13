@@ -77,7 +77,6 @@ export async function runRealPipeline(
       prompt: [
         `/web-exploitation Perform web exploitation against ${context.target}.`,
         `Recon data is at ${reconPath}.`,
-        `This is an authorized penetration test.`,
         `Write output to ${exploitationPath}.`,
         `Do not write to SQLite directly; the application will ingest the JSON after the phase completes.`,
         `Burp Suite scan results are at ${burp.outputPath}.${credentialsText}`,
