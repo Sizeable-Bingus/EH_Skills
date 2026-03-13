@@ -1,33 +1,51 @@
 {
   "meta": {
     "target": "https://zeta.example",
-    "scan_date": "2026-03-13T18:00:52.929Z",
+    "scan_date": "2026-03-13T18:10:04.981Z",
     "scope": {
-      "in_scope": ["https://zeta.example"],
+      "in_scope": [
+        "https://zeta.example"
+      ],
       "out_of_scope": [],
       "rules_of_engagement": "SYNTHETIC TEST DATA — not a real engagement"
     },
-    "tools_used": ["synthetic-test-generator"],
+    "tools_used": [
+      "synthetic-test-generator"
+    ],
     "recon_duration_seconds": 0
   },
   "dns": {
     "records": {
-      "A": ["192.0.2.1"],
+      "A": [
+        "192.0.2.1"
+      ],
       "AAAA": [],
-      "MX": ["mail.test.synthetic.example"],
-      "NS": ["ns1.test.synthetic.example"],
-      "TXT": ["v=spf1 include:_spf.synthetic.example ~all"],
-      "SOA": ["ns1.test.synthetic.example admin.test.synthetic.example"],
+      "MX": [
+        "mail.test.synthetic.example"
+      ],
+      "NS": [
+        "ns1.test.synthetic.example"
+      ],
+      "TXT": [
+        "v=spf1 include:_spf.synthetic.example ~all"
+      ],
+      "SOA": [
+        "ns1.test.synthetic.example admin.test.synthetic.example"
+      ],
       "CNAME": []
     },
     "zone_transfer_possible": false,
-    "nameservers": ["ns1.test.synthetic.example"]
+    "nameservers": [
+      "ns1.test.synthetic.example"
+    ]
   },
   "whois": {
     "registrar": "Synthetic Test Registrar Inc.",
     "creation_date": "2020-01-01T00:00:00Z",
     "expiration_date": "2030-01-01T00:00:00Z",
-    "nameservers": ["ns1.test.synthetic.example"],
+    "nameservers": [
+      "ns1.test.synthetic.example"
+    ],
     "registrant_org": "Synthetic Test Corp",
     "raw": "SYNTHETIC WHOIS DATA — not real"
   },
@@ -39,7 +57,11 @@
       "http_status": 200,
       "title": "SYNTHETIC Test Application",
       "server": "nginx/1.18.0",
-      "technologies": ["nginx", "PHP/8.1", "jQuery/3.6"]
+      "technologies": [
+        "nginx",
+        "PHP/8.1",
+        "jQuery/3.6"
+      ]
     },
     {
       "hostname": "api.zeta.example",
@@ -48,7 +70,10 @@
       "http_status": 200,
       "title": "SYNTHETIC API Gateway",
       "server": "Express",
-      "technologies": ["Node.js", "Express"]
+      "technologies": [
+        "Node.js",
+        "Express"
+      ]
     },
     {
       "hostname": "admin.zeta.example",
@@ -57,7 +82,10 @@
       "http_status": 403,
       "title": "SYNTHETIC Admin Panel",
       "server": "nginx/1.18.0",
-      "technologies": ["nginx", "PHP/8.1"]
+      "technologies": [
+        "nginx",
+        "PHP/8.1"
+      ]
     }
   ],
   "ports": [
@@ -107,7 +135,10 @@
     "framework": "Laravel",
     "language": "PHP 8.1",
     "cms": null,
-    "javascript_frameworks": ["jQuery 3.6", "Vue.js 3.2"],
+    "javascript_frameworks": [
+      "jQuery 3.6",
+      "Vue.js 3.2"
+    ],
     "cdn": null,
     "waf": null,
     "headers": {
@@ -118,7 +149,9 @@
     "cookies": [
       {
         "name": "PHPSESSID",
-        "flags": ["HttpOnly"]
+        "flags": [
+          "HttpOnly"
+        ]
       },
       {
         "name": "remember_token",
@@ -130,36 +163,80 @@
     "certificate": {
       "subject": "CN=zeta.example",
       "issuer": "CN=Synthetic Test CA",
-      "sans": ["zeta.example"],
+      "sans": [
+        "zeta.example"
+      ],
       "valid_from": "2024-01-01T00:00:00Z",
       "valid_to": "2026-12-31T23:59:59Z"
     },
-    "protocols": ["TLSv1.2", "TLSv1.3"],
+    "protocols": [
+      "TLSv1.2",
+      "TLSv1.3"
+    ],
     "weak_ciphers": [],
     "issues": []
   },
   "endpoints": {
-    "directories": ["/admin", "/api", "/uploads", "/static"],
+    "directories": [
+      "/admin",
+      "/api",
+      "/uploads",
+      "/static"
+    ],
     "api_endpoints": [
       "/api/v1/users",
       "/api/v1/products",
       "/api/v1/orders",
       "/api/v1/auth/login"
     ],
-    "admin_panels": ["/admin/login", "/admin/dashboard"],
-    "login_pages": ["/login", "/admin/login"],
-    "file_exposures": ["/robots.txt", "/.env.example"],
-    "js_files": ["/static/js/app.js", "/static/js/vendor.js"],
-    "from_wayback": ["/old-admin", "/backup"],
-    "from_robots_txt": ["/admin", "/api/internal"],
-    "from_sitemap": ["/products", "/about", "/contact"],
-    "from_burp_spider": ["/api/v1/health", "/api/v1/debug"]
+    "admin_panels": [
+      "/admin/login",
+      "/admin/dashboard"
+    ],
+    "login_pages": [
+      "/login",
+      "/admin/login"
+    ],
+    "file_exposures": [
+      "/robots.txt",
+      "/.env.example"
+    ],
+    "js_files": [
+      "/static/js/app.js",
+      "/static/js/vendor.js"
+    ],
+    "from_wayback": [
+      "/old-admin",
+      "/backup"
+    ],
+    "from_robots_txt": [
+      "/admin",
+      "/api/internal"
+    ],
+    "from_sitemap": [
+      "/products",
+      "/about",
+      "/contact"
+    ],
+    "from_burp_spider": [
+      "/api/v1/health",
+      "/api/v1/debug"
+    ]
   },
   "js_analysis": {
-    "api_routes_found": ["/api/v1/users", "/api/v1/internal/config"],
-    "hardcoded_secrets": ["SYNTHETIC_API_KEY=sk-test-not-real-12345"],
-    "internal_hosts": ["192.0.2.10"],
-    "websocket_endpoints": ["wss://ws.synthetic.example/live"],
+    "api_routes_found": [
+      "/api/v1/users",
+      "/api/v1/internal/config"
+    ],
+    "hardcoded_secrets": [
+      "SYNTHETIC_API_KEY=sk-test-not-real-12345"
+    ],
+    "internal_hosts": [
+      "192.0.2.10"
+    ],
+    "websocket_endpoints": [
+      "wss://ws.synthetic.example/live"
+    ],
     "interesting_comments": [
       "// TODO: SYNTHETIC remove debug endpoint before prod"
     ]
@@ -211,7 +288,9 @@
     "google_dorks_results": [
       "SYNTHETIC: site:example found test page at /debug"
     ],
-    "wayback_interesting_urls": ["https://zeta.example/old-admin"],
+    "wayback_interesting_urls": [
+      "https://zeta.example/old-admin"
+    ],
     "leaked_credentials": false,
     "paste_sites": [],
     "notes": "SYNTHETIC TEST DATA — no real OSINT was performed"
