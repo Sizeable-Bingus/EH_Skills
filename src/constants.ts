@@ -12,7 +12,7 @@ export const DEFAULT_DB = process.env.PENTEST_DASHBOARD_DB
 
 const rawFallback = Number.parseInt(
   process.env.PENTEST_DASHBOARD_ENGAGEMENT_ID ?? "1",
-  10
+  10,
 );
 export const DEFAULT_ENGAGEMENT_ID = Number.isFinite(rawFallback)
   ? rawFallback
@@ -31,7 +31,7 @@ export const BURP_MCP_SSE =
 export const BURP_SCAN_CONFIG = resolve(
   PROJECT_ROOT,
   "burp_headless_scanner",
-  "deep.json"
+  "deep.json",
 );
 export const BURP_STARTUP_TIMEOUT_MS = 120_000;
 export const BURP_POLL_INTERVAL_MS = 5_000;
@@ -46,9 +46,9 @@ export const SECURITY_HEADERS = {
     "connect-src 'self'",
     "object-src 'none'",
     "base-uri 'self'",
-    "frame-ancestors 'none'"
+    "frame-ancestors 'none'",
   ].join("; "),
   "Referrer-Policy": "no-referrer",
   "X-Content-Type-Options": "nosniff",
-  "X-Frame-Options": "DENY"
+  "X-Frame-Options": "DENY",
 } as const;

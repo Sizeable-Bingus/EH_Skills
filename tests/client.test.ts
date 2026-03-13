@@ -4,7 +4,7 @@ import {
   ChartStub,
   createDom,
   EventSourceStub,
-  installDomGlobals
+  installDomGlobals,
 } from "./helpers/dom.ts";
 import { initializeDashboardPage } from "../src/client/dashboard_page.ts";
 import { initializeExecutiveSummaryPage } from "../src/client/executive_summary_page.ts";
@@ -84,20 +84,20 @@ describe("client findings page", () => {
       initializeFindingsPage({ document: dom.document });
 
       const button = dom.document.querySelector(
-        '[data-id="1"]'
+        '[data-id="1"]',
       ) as HTMLButtonElement;
       button.click();
       expect(
-        dom.document.getElementById("detail-1")?.classList.contains("hidden")
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
       ).toBe(false);
       expect(
-        dom.document.getElementById("arrow-1")?.getAttribute("style")
+        dom.document.getElementById("arrow-1")?.getAttribute("style"),
       ).toBe("transform:rotate(90deg)");
       expect(button.getAttribute("aria-expanded")).toBe("true");
 
       button.click();
       expect(
-        dom.document.getElementById("detail-1")?.classList.contains("hidden")
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
       ).toBe(true);
     } finally {
       restore();
@@ -118,7 +118,7 @@ describe("client findings page", () => {
       expect(
         (
           dom.document.getElementById("missing-id") as HTMLButtonElement
-        ).getAttribute("aria-expanded")
+        ).getAttribute("aria-expanded"),
       ).toBe("false");
     } finally {
       restore();
@@ -146,12 +146,12 @@ describe("client chart pages", () => {
           <canvas id="severityChart"></canvas>
           <canvas id="categoryChart"></canvas>
           <div class="dashboard-engagement-row" data-engagement="demo"></div>
-        `
+        `,
       );
       initializeDashboardPage({
         document: dom.document,
         window: dom.window,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
 
       expect(ChartStub.instances).toHaveLength(2);
@@ -182,7 +182,7 @@ describe("client chart pages", () => {
       initializeDashboardPage({
         document: invalid.document,
         window: invalid.window,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(2);
 
@@ -191,7 +191,7 @@ describe("client chart pages", () => {
       initializeDashboardPage({
         document: missing.document,
         window: missing.window,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(0);
     } finally {
@@ -214,14 +214,14 @@ describe("client chart pages", () => {
       initializeDashboardPage({
         document: dom.document,
         window: dom.window,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(2);
 
       ChartStub.reset();
       initializeExecutiveSummaryPage({
         document: dom.document,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(2);
     } finally {
@@ -244,7 +244,7 @@ describe("client chart pages", () => {
       initializeDashboardPage({
         document: dom.document,
         window: dom.window,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       (
         dom.document.querySelector(".dashboard-engagement-row") as HTMLElement
@@ -269,11 +269,11 @@ describe("client chart pages", () => {
           ></div>
           <canvas id="severityChart"></canvas>
           <canvas id="categoryChart"></canvas>
-        `
+        `,
       );
       initializeExecutiveSummaryPage({
         document: valid.document,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(2);
 
@@ -289,9 +289,54 @@ describe("client chart pages", () => {
       `);
       initializeExecutiveSummaryPage({
         document: invalid.document,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(2);
+    } finally {
+      restore();
+    }
+  });
+
+  test("chart onClick navigates to findings page with engagement param", () => {
+    const dom = createDom(
+      `
+        <div
+          id="summary-chart-data"
+          data-severity-counts='{"critical":1}'
+          data-category-counts='[{"category":"xss","count":1}]'
+          data-engagement="test-engagement"
+        ></div>
+        <canvas id="severityChart"></canvas>
+        <canvas id="categoryChart"></canvas>
+      `,
+    );
+    const restore = installDomGlobals(dom.window);
+
+    try {
+      initializeExecutiveSummaryPage({
+        document: dom.document,
+        chartConstructor: ChartStub,
+      });
+      expect(ChartStub.instances).toHaveLength(2);
+
+      const sevConfig = ChartStub.instances[0]!.config as {
+        options: { onClick: () => void };
+      };
+      const catConfig = ChartStub.instances[1]!.config as {
+        options: { onClick: () => void };
+      };
+
+      sevConfig.options.onClick();
+      expect(dom.window.location.href).toBe(
+        "/findings?engagement=test-engagement",
+      );
+
+      // Reset location and test the category chart click
+      dom.window.location.href = "https://example.test/";
+      catConfig.options.onClick();
+      expect(dom.window.location.href).toBe(
+        "/findings?engagement=test-engagement",
+      );
     } finally {
       restore();
     }
@@ -304,7 +349,7 @@ describe("client chart pages", () => {
     try {
       initializeExecutiveSummaryPage({
         document: dom.document,
-        chartConstructor: ChartStub
+        chartConstructor: ChartStub,
       });
       expect(ChartStub.instances).toHaveLength(0);
     } finally {
@@ -334,14 +379,14 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
       expect(
         dom.document
           .getElementById("delete-engagement")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(true);
     } finally {
       restore();
@@ -353,7 +398,7 @@ describe("pipeline UI", () => {
   test("opens the scan modal, starts a scan, streams logs, and auto-hides status", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -371,14 +416,14 @@ describe("pipeline UI", () => {
       };
       globalThis.fetch = (async (
         input: string | URL | Request,
-        init?: RequestInit
+        init?: RequestInit,
       ) => {
         const url = String(input);
         const method = init?.method ?? "GET";
         requests.push({
           url,
           method,
-          body: typeof init?.body === "string" ? init.body : undefined
+          body: typeof init?.body === "string" ? init.body : undefined,
         });
         if (url === "/api/engagements") {
           return Response.json(["demo", "beta", "default"]);
@@ -387,7 +432,7 @@ describe("pipeline UI", () => {
           return Response.json({
             status: "idle",
             target: "",
-            current_phase: ""
+            current_phase: "",
           });
         }
         if (url === "/api/pipeline/start") {
@@ -401,13 +446,13 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
       (dom.document.getElementById("scan-open") as HTMLButtonElement).click();
       expect(
-        dom.document.getElementById("scan-modal")?.classList.contains("hidden")
+        dom.document.getElementById("scan-modal")?.classList.contains("hidden"),
       ).toBe(false);
 
       (dom.document.getElementById("scan-target") as HTMLInputElement).value =
@@ -424,11 +469,11 @@ describe("pipeline UI", () => {
 
       expect(alerts).toEqual([]);
       expect(
-        requests.find((request) => request.url === "/api/pipeline/start")
+        requests.find((request) => request.url === "/api/pipeline/start"),
       ).toEqual({
         url: "/api/pipeline/start",
         method: "POST",
-        body: '{"target":"https://demo.example","username":"demo-user","password":"secret"}'
+        body: '{"target":"https://demo.example","username":"demo-user","password":"secret"}',
       });
       expect(EventSourceStub.instances).toHaveLength(1);
 
@@ -439,31 +484,31 @@ describe("pipeline UI", () => {
         JSON.stringify({
           status: "complete",
           current_phase: "Complete",
-          target: "https://demo.example"
-        })
+          target: "https://demo.example",
+        }),
       );
       await flushMicrotasks();
 
       expect(
-        dom.document.getElementById("pipeline-text")?.textContent
+        dom.document.getElementById("pipeline-text")?.textContent,
       ).toContain("Complete");
       expect(dom.document.getElementById("log-pre")?.textContent).toContain(
-        "PHASE: Demo"
+        "PHASE: Demo",
       );
 
       const toggle = dom.document.getElementById(
-        "log-toggle"
+        "log-toggle",
       ) as HTMLButtonElement;
       toggle.click();
       expect(
-        dom.document.getElementById("log-panel")?.classList.contains("hidden")
+        dom.document.getElementById("log-panel")?.classList.contains("hidden"),
       ).toBe(false);
       toggle.click();
       dom.runTimers();
       expect(
         dom.document
           .getElementById("pipeline-status")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(true);
     } finally {
       restore();
@@ -475,7 +520,7 @@ describe("pipeline UI", () => {
   test("handles combobox navigation and blur reset", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -489,7 +534,7 @@ describe("pipeline UI", () => {
         return Response.json({
           status: "idle",
           target: "",
-          current_phase: ""
+          current_phase: "",
         });
       }) as unknown as typeof fetch;
       globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
@@ -498,33 +543,33 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
       const input = dom.document.getElementById(
-        "engagement-input"
+        "engagement-input",
       ) as HTMLInputElement;
       input.dispatchEvent(new dom.window.Event("focus"));
       expect(
         dom.document
           .getElementById("engagement-listbox")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(false);
 
       input.value = "be";
       input.dispatchEvent(new dom.window.Event("input"));
       expect(
-        dom.document.getElementById("engagement-listbox")?.textContent
+        dom.document.getElementById("engagement-listbox")?.textContent,
       ).toContain("beta");
 
       const arrowDown = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       arrowDown.key = "ArrowDown";
       input.dispatchEvent(arrowDown);
       const enter = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       enter.key = "Enter";
       input.dispatchEvent(enter);
@@ -544,7 +589,7 @@ describe("pipeline UI", () => {
   test("keeps the status visible when logs are open and supports mouse and escape branches", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -558,7 +603,7 @@ describe("pipeline UI", () => {
         return Response.json({
           status: "idle",
           target: "",
-          current_phase: ""
+          current_phase: "",
         });
       }) as unknown as typeof fetch;
       globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
@@ -567,20 +612,20 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
       const input = dom.document.getElementById(
-        "engagement-input"
+        "engagement-input",
       ) as HTMLInputElement;
       const toggle = dom.document.getElementById(
-        "log-toggle"
+        "log-toggle",
       ) as HTMLButtonElement;
 
       toggle.click();
       expect(
-        dom.document.getElementById("log-panel")?.classList.contains("hidden")
+        dom.document.getElementById("log-panel")?.classList.contains("hidden"),
       ).toBe(false);
 
       (dom.document.getElementById("scan-open") as HTMLButtonElement).click();
@@ -598,20 +643,20 @@ describe("pipeline UI", () => {
         JSON.stringify({
           status: "complete",
           current_phase: "Complete",
-          target: "https://demo.example"
-        })
+          target: "https://demo.example",
+        }),
       );
       await flushMicrotasks();
       dom.runTimers();
       expect(
         dom.document
           .getElementById("pipeline-status")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(false);
 
       input.dispatchEvent(new dom.window.Event("focus"));
       const arrowDown = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       arrowDown.key = "ArrowDown";
       input.dispatchEvent(arrowDown);
@@ -624,19 +669,19 @@ describe("pipeline UI", () => {
       option.dispatchEvent(
         new dom.window.Event("mousedown", {
           bubbles: true,
-          cancelable: true
-        })
+          cancelable: true,
+        }),
       );
       expect(dom.window.location.search.startsWith("engagement=")).toBe(true);
 
       dom.window.location.search = "?engagement=demo";
       const listbox = dom.document.getElementById(
-        "engagement-listbox"
+        "engagement-listbox",
       ) as HTMLUListElement;
       listbox.innerHTML = '<li class="combobox-option"></li>';
       input.dispatchEvent(arrowDown);
       const enter = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       enter.key = "Enter";
       input.dispatchEvent(enter);
@@ -645,7 +690,7 @@ describe("pipeline UI", () => {
       listbox.innerHTML = '<li class="combobox-option">demo</li>';
       input.dispatchEvent(new dom.window.Event("focus", { bubbles: true }));
       const escape = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       escape.key = "Escape";
       input.dispatchEvent(escape);
@@ -660,7 +705,7 @@ describe("pipeline UI", () => {
   test("shows pipeline start and delete errors without crashing", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -673,7 +718,7 @@ describe("pipeline UI", () => {
       };
       globalThis.fetch = (async (
         input: string | URL | Request,
-        init?: RequestInit
+        init?: RequestInit,
       ) => {
         const url = String(input);
         if (url === "/api/engagements") {
@@ -683,19 +728,19 @@ describe("pipeline UI", () => {
           return Response.json({
             status: "running",
             target: "https://demo.example",
-            current_phase: "Queued"
+            current_phase: "Queued",
           });
         }
         if (url === "/api/pipeline/start") {
           return new Response(JSON.stringify({ detail: "start failed" }), {
             status: 409,
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           });
         }
         if (url === "/api/engagements/demo" && init?.method === "DELETE") {
           return new Response(JSON.stringify({ detail: "delete failed" }), {
             status: 409,
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           });
         }
         throw new Error(`Unexpected request: ${url}`);
@@ -706,7 +751,7 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
@@ -723,7 +768,7 @@ describe("pipeline UI", () => {
         dom.document.getElementById("delete-engagement") as HTMLButtonElement
       ).click();
       expect(
-        dom.document.getElementById("delete-target-name")?.textContent
+        dom.document.getElementById("delete-target-name")?.textContent,
       ).toBe("demo");
       (
         dom.document.getElementById("delete-cancel") as HTMLButtonElement
@@ -748,7 +793,7 @@ describe("pipeline UI", () => {
   test("falls back to generic error messages for non-JSON failures", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -761,7 +806,7 @@ describe("pipeline UI", () => {
       };
       globalThis.fetch = (async (
         input: string | URL | Request,
-        init?: RequestInit
+        init?: RequestInit,
       ) => {
         const url = String(input);
         if (url === "/api/engagements") {
@@ -771,7 +816,7 @@ describe("pipeline UI", () => {
           return Response.json({
             status: "idle",
             target: "",
-            current_phase: ""
+            current_phase: "",
           });
         }
         if (url === "/api/pipeline/start") {
@@ -788,7 +833,7 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
       await flushMicrotasks();
@@ -813,7 +858,7 @@ describe("pipeline UI", () => {
 
       expect(alerts).toEqual([
         "Failed to start pipeline",
-        "Failed to delete engagement"
+        "Failed to delete engagement",
       ]);
     } finally {
       restore();
@@ -825,7 +870,7 @@ describe("pipeline UI", () => {
   test("deletes the current engagement and redirects to the dashboard", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -834,7 +879,7 @@ describe("pipeline UI", () => {
     try {
       globalThis.fetch = (async (
         input: string | URL | Request,
-        init?: RequestInit
+        init?: RequestInit,
       ) => {
         const url = String(input);
         if (url === "/api/engagements") {
@@ -844,7 +889,7 @@ describe("pipeline UI", () => {
           return Response.json({
             status: "idle",
             target: "",
-            current_phase: ""
+            current_phase: "",
           });
         }
         if (url === "/api/engagements/demo" && init?.method === "DELETE") {
@@ -858,7 +903,7 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
@@ -894,7 +939,7 @@ describe("pipeline UI", () => {
         return Response.json({
           status: "idle",
           target: "",
-          current_phase: ""
+          current_phase: "",
         });
       }) as unknown as typeof fetch;
       globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
@@ -903,7 +948,7 @@ describe("pipeline UI", () => {
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
       await flushMicrotasks();
@@ -923,7 +968,7 @@ describe("pipeline UI", () => {
   test("covers remaining guards and keyboard branches", async () => {
     const dom = createDom(
       createPipelineHtml(),
-      "https://example.test/?engagement=demo"
+      "https://example.test/?engagement=demo",
     );
     const restore = installDomGlobals(dom.window);
     const previousFetch = globalThis.fetch;
@@ -941,7 +986,7 @@ describe("pipeline UI", () => {
         return Response.json({
           status: "error",
           target: "https://demo.example",
-          current_phase: "Failed"
+          current_phase: "Failed",
         });
       }) as unknown as typeof fetch;
       globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;
@@ -951,22 +996,22 @@ describe("pipeline UI", () => {
           document: createDom("<div></div>").document,
           window: dom.window,
           fetchFn: globalThis.fetch,
-          createEventSource: (url) => new EventSourceStub(url)
-        })
+          createEventSource: (url) => new EventSourceStub(url),
+        }),
       ).toThrow("Missing expected element #scan-modal");
 
       initializePipelineUi({
         document: dom.document,
         window: dom.window,
         fetchFn: globalThis.fetch,
-        createEventSource: (url) => new EventSourceStub(url)
+        createEventSource: (url) => new EventSourceStub(url),
       });
       await flushMicrotasks();
 
       (dom.document.getElementById("scan-open") as HTMLButtonElement).click();
       (dom.document.getElementById("scan-cancel") as HTMLButtonElement).click();
       expect(
-        dom.document.getElementById("scan-modal")?.classList.contains("hidden")
+        dom.document.getElementById("scan-modal")?.classList.contains("hidden"),
       ).toBe(true);
 
       (
@@ -975,18 +1020,18 @@ describe("pipeline UI", () => {
       expect(alerts).toEqual([]);
 
       const input = dom.document.getElementById(
-        "engagement-input"
+        "engagement-input",
       ) as HTMLInputElement;
       input.dispatchEvent(new dom.window.Event("focus"));
       input.dispatchEvent(new dom.window.Event("mouseup"));
       input.value = "zzz";
       input.dispatchEvent(new dom.window.Event("input"));
       expect(
-        dom.document.getElementById("engagement-listbox")?.textContent
+        dom.document.getElementById("engagement-listbox")?.textContent,
       ).toContain("No matches");
 
       const escape = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       escape.key = "Escape";
       input.dispatchEvent(escape);
@@ -994,12 +1039,12 @@ describe("pipeline UI", () => {
       input.value = "";
       input.dispatchEvent(new dom.window.Event("input"));
       const up = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       up.key = "ArrowUp";
       input.dispatchEvent(up);
       const enter = new dom.window.Event("keydown", {
-        bubbles: true
+        bubbles: true,
       }) as Event & { key: string };
       enter.key = "Enter";
       input.dispatchEvent(enter);
@@ -1017,7 +1062,7 @@ describe("pipeline UI", () => {
           return Response.json({
             status: "running",
             target: "https://demo.example",
-            current_phase: "Queued"
+            current_phase: "Queued",
           });
         },
         createEventSource: (() => {
@@ -1027,7 +1072,7 @@ describe("pipeline UI", () => {
             first = false;
             return eventSource;
           };
-        })()
+        })(),
       });
       await flushMicrotasks();
       await flushMicrotasks();
@@ -1042,7 +1087,7 @@ describe("pipeline UI", () => {
       expect(sourceB.closed).toBe(true);
 
       const toggle = dom.document.getElementById(
-        "log-toggle"
+        "log-toggle",
       ) as HTMLButtonElement;
       toggle.click();
       sourceB.emit(
@@ -1050,21 +1095,21 @@ describe("pipeline UI", () => {
         JSON.stringify({
           status: "error",
           current_phase: "Failed",
-          target: "https://demo.example"
-        })
+          target: "https://demo.example",
+        }),
       );
       dom.runTimers();
       expect(
         dom.document
           .getElementById("pipeline-status")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(false);
       toggle.click();
       dom.runTimers();
       expect(
         dom.document
           .getElementById("pipeline-status")
-          ?.classList.contains("hidden")
+          ?.classList.contains("hidden"),
       ).toBe(false);
     } finally {
       restore();
@@ -1097,7 +1142,7 @@ describe("client auto-bootstrap", () => {
       return Response.json({
         status: "running",
         target: "https://demo.example",
-        current_phase: "Queued"
+        current_phase: "Queued",
       });
     }) as unknown as typeof fetch;
     globalThis.EventSource = EventSourceStub as unknown as typeof EventSource;

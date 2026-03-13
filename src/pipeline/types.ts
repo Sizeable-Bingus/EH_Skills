@@ -10,7 +10,7 @@ export interface PipelineExecutionContext {
 }
 
 export type PipelineRunner = (
-  context: PipelineExecutionContext
+  context: PipelineExecutionContext,
 ) => Promise<void>;
 
 export interface ClaudePhaseDependencies {
@@ -33,7 +33,7 @@ export interface BurpProcessLike {
 export interface BurpDependencies {
   fetchFn?: (
     input: string | URL | Request,
-    init?: RequestInit
+    init?: RequestInit,
   ) => Promise<Response>;
   spawnFn?: (options: {
     cmd: string[];
@@ -56,7 +56,7 @@ export interface RealPipelineDependencies extends ClaudePhaseDependencies {
   runBurpScanFn?: (
     target: string,
     engagementDir: string,
-    log: (line: string) => void
+    log: (line: string) => void,
   ) => Promise<BurpScanResult>;
   runClaudePhaseFn?: (options: {
     name: string;
@@ -69,6 +69,6 @@ export interface RealPipelineDependencies extends ClaudePhaseDependencies {
   ingestExploitationOutputFn?: (
     data: ExploitationOutput,
     dbPath: string,
-    options?: { force?: boolean; includeAll?: boolean }
+    options?: { force?: boolean; includeAll?: boolean },
   ) => number;
 }

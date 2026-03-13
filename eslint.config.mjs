@@ -10,8 +10,8 @@ export default [
       "node_modules/**",
       ".venv/**",
       "dashboard/**",
-      "pentest_pipeline/**"
-    ]
+      "pentest_pipeline/**",
+    ],
   },
   eslint.configs.recommended,
   {
@@ -19,32 +19,32 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: "./tsconfig.json"
+        project: "./tsconfig.json",
       },
       globals: {
         ...globals.browser,
         ...globals.bun,
         ...globals.node,
         ...globals.es2024,
-        ...globals.serviceworker
-      }
+        ...globals.serviceworker,
+      },
     },
     plugins: {
-      "@typescript-eslint": tseslint
+      "@typescript-eslint": tseslint,
     },
     rules: {
       ...tseslint.configs["recommended-type-checked"].rules,
       "@typescript-eslint/consistent-type-imports": [
         "error",
-        { prefer: "type-imports" }
+        { prefer: "type-imports" },
       ],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": [
         "error",
-        { checksVoidReturn: false }
+        { checksVoidReturn: false },
       ],
-      "no-undef": "off"
-    }
+      "no-undef": "off",
+    },
   },
   {
     files: ["tests/**/*.ts", "scripts/**/*.ts", "playwright.config.ts"],
@@ -55,7 +55,7 @@ export default [
       "@typescript-eslint/no-unsafe-call": "off",
       "@typescript-eslint/no-unsafe-member-access": "off",
       "@typescript-eslint/no-unsafe-return": "off",
-      "@typescript-eslint/require-await": "off"
-    }
-  }
+      "@typescript-eslint/require-await": "off",
+    },
+  },
 ];

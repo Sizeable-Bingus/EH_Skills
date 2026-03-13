@@ -7,11 +7,11 @@ export interface ExecutiveSummaryDependencies {
 }
 
 export function initializeExecutiveSummaryPage(
-  dependencies: ExecutiveSummaryDependencies = {}
+  dependencies: ExecutiveSummaryDependencies = {},
 ): void {
   initializeSummaryCharts({
     chartDataId: "summary-chart-data",
     document: dependencies.document,
-    chartConstructor: dependencies.chartConstructor
+    chartConstructor: dependencies.chartConstructor,
   });
 }

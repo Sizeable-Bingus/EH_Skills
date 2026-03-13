@@ -1,6 +1,6 @@
 export {
   initializeFindingsPage,
-  type FindingsPageDependencies
+  type FindingsPageDependencies,
 } from "./findings_page.ts";
 
 import { initializeFindingsPage } from "./findings_page.ts";

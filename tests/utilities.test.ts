@@ -10,7 +10,7 @@ import {
   ensureSchema,
   openReadOnlyDatabase,
   withReadOnlyDatabase,
-  withWritableDatabase
+  withWritableDatabase,
 } from "../src/db/sqlite.ts";
 import {
   getErrorMessage,
@@ -19,7 +19,7 @@ import {
   phaseHeader,
   safeEngagementName,
   sanitizeTarget,
-  sleep
+  sleep,
 } from "../src/utils.ts";
 
 const tempDirs: string[] = [];
@@ -43,7 +43,7 @@ afterEach(() => {
 describe("utils", () => {
   test("sanitizes targets and engagement names", () => {
     expect(sanitizeTarget("https://Demo.Example:8443/path/")).toBe(
-      "demo-example-8443-path"
+      "demo-example-8443-path",
     );
     expect(safeEngagementName("../../demo")).toBe("demo");
   });
@@ -55,7 +55,7 @@ describe("utils", () => {
     expect(parseJson<unknown>(null)).toBe(null);
     expect(parseJson<unknown>(5)).toBe(5);
     expect(parseJson<{ name: string }>('{ "name": "demo" }')).toEqual({
-      name: "demo"
+      name: "demo",
     });
     expect(parseJson<unknown>("not json")).toBe("not json");
   });
@@ -70,7 +70,7 @@ describe("utils", () => {
       "============================================================",
       "  PHASE: Demo",
       "============================================================",
-      ""
+      "",
     ]);
     expect(getErrorMessage(new Error("broken"))).toBe("broken");
     expect(getErrorMessage("oops")).toBe("oops");
@@ -85,7 +85,7 @@ describe("constants", () => {
       jar: process.env.BURP_JAR,
       java: process.env.BURP_JAVA,
       rest: process.env.BURP_REST_API,
-      mcp: process.env.BURP_MCP_SSE
+      mcp: process.env.BURP_MCP_SSE,
     };
 
     process.env.PENTEST_DASHBOARD_DB = "./custom.db";
@@ -116,7 +116,7 @@ describe("constants", () => {
   test("falls back to defaults and detects existing databases", async () => {
     const previous = {
       db: process.env.PENTEST_DASHBOARD_DB,
-      engagementId: process.env.PENTEST_DASHBOARD_ENGAGEMENT_ID
+      engagementId: process.env.PENTEST_DASHBOARD_ENGAGEMENT_ID,
     };
     delete process.env.PENTEST_DASHBOARD_DB;
     process.env.PENTEST_DASHBOARD_ENGAGEMENT_ID = "not-a-number";
@@ -158,7 +158,7 @@ describe("build client assets", () => {
       writeFn: async (path) => {
         calls.push(`write:${String(path).endsWith("styles.css")}`);
         return 0;
-      }
+      },
     });
 
     expect(calls).toEqual(["mkdir", "build:4", "file:true", "write:true"]);
@@ -170,9 +170,9 @@ describe("build client assets", () => {
         buildFn: async () =>
           ({
             success: false,
-            logs: [{ message: "first" }, { message: "second" }]
-          }) as Awaited<ReturnType<typeof Bun.build>>
-      })
+            logs: [{ message: "first" }, { message: "second" }],
+          }) as Awaited<ReturnType<typeof Bun.build>>,
+      }),
     ).rejects.toThrow("Asset build failed:\nfirst\nsecond");
   });
 });
@@ -180,7 +180,7 @@ describe("build client assets", () => {
 describe("sqlite helpers", () => {
   test("throws when opening a missing database read-only", () => {
     expect(() =>
-      withReadOnlyDatabase("/tmp/does-not-exist.db", () => "never")
+      withReadOnlyDatabase("/tmp/does-not-exist.db", () => "never"),
     ).toThrow("Database does not exist: /tmp/does-not-exist.db");
   });
 

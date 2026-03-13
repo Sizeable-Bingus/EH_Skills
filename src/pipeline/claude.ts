@@ -12,7 +12,7 @@ interface RunClaudePhaseOptions {
 }
 
 export async function runClaudePhase(
-  options: RunClaudePhaseOptions
+  options: RunClaudePhaseOptions,
 ): Promise<void> {
   const queryFn = options.dependencies?.queryFn ?? query;
   for (const line of phaseHeader(options.name)) {
@@ -32,11 +32,11 @@ export async function runClaudePhase(
       mcpServers: {
         burp: {
           type: "sse",
-          url: BURP_MCP_SSE
-        }
+          url: BURP_MCP_SSE,
+        },
       },
-      ...(model ? { model } : {})
-    }
+      ...(model ? { model } : {}),
+    },
   });
 
   try {
@@ -58,7 +58,7 @@ export async function runClaudePhase(
 }
 
 function isAssistantMessage(
-  message: unknown
+  message: unknown,
 ): message is { type: "assistant"; message: { content: unknown[] } } {
   const candidate = message as {
     type?: string;

@@ -1,6 +1,6 @@
 export {
   initializeExecutiveSummaryPage,
-  type ExecutiveSummaryDependencies
+  type ExecutiveSummaryDependencies,
 } from "./executive_summary_page.ts";
 
 import { initializeExecutiveSummaryPage } from "./executive_summary_page.ts";

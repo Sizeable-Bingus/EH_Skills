@@ -8,7 +8,7 @@ import { getPipelineDomRefs } from "./pipeline_shared.ts";
 export type { PipelineUiDependencies } from "./pipeline_shared.ts";
 
 export function initializePipelineUi(
-  dependencies: PipelineUiDependencies = {}
+  dependencies: PipelineUiDependencies = {},
 ): void {
   const documentRef = dependencies.document ?? document;
   const windowRef = dependencies.window ?? window;
@@ -23,7 +23,7 @@ export function initializePipelineUi(
     HTMLElementCtor,
     window: windowRef,
     fetchFn,
-    refs
+    refs,
   });
   const pipelineStatus = createPipelineStatusController({
     createEventSource,
@@ -32,7 +32,7 @@ export function initializePipelineUi(
     onRunFinished: async () => {
       await engagementPicker.loadEngagements();
       engagementPicker.updateDeleteButtonVisibility();
-    }
+    },
   });
 
   createScanControls({
@@ -42,14 +42,14 @@ export function initializePipelineUi(
     onStarted: (target) => {
       pipelineStatus.showStatus("running", "Starting", target);
       pipelineStatus.connect();
-    }
+    },
   });
 
   createDeleteEngagementControls({
     fetchFn,
     getCurrentEngagement: engagementPicker.getCurrentEngagement,
     refs,
-    window: windowRef
+    window: windowRef,
   });
 
   async function init(): Promise<void> {

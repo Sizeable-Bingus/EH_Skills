@@ -43,11 +43,14 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
 
   const severityData = parseJsonAttribute<Record<string, number>>(
     chartData.getAttribute("data-severity-counts") ?? undefined,
-    {}
+    {},
   );
   const categoryData = parseJsonAttribute<
     Array<{ category: string; count: number }>
   >(chartData.getAttribute("data-category-counts") ?? undefined, []);
+
+  const engagement = chartData.getAttribute("data-engagement") ?? "";
+  const findingsUrl = `/findings?engagement=${encodeURIComponent(engagement)}`;
 
   const rootStyles =
     documentRef.defaultView?.getComputedStyle?.(documentRef.documentElement) ??
@@ -68,19 +71,19 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
               severityData.high ?? 0,
               severityData.medium ?? 0,
               severityData.low ?? 0,
-              severityData.info ?? 0
+              severityData.info ?? 0,
             ],
             backgroundColor: [
               sevColor("critical", "#d42a2a"),
               sevColor("high", "#e07314"),
               sevColor("medium", "#f5c542"),
               sevColor("low", "#2567cf"),
-              sevColor("info", "#6b7280")
+              sevColor("info", "#6b7280"),
             ],
             borderWidth: 0,
-            hoverOffset: 6
-          }
-        ]
+            hoverOffset: 6,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -93,12 +96,17 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
               color: "#5a6170",
               font: { size: 12, weight: 500 },
               padding: 16,
-              usePointStyle: true
-            }
+              usePointStyle: true,
+            },
+          },
+        },
+        cutout: "62%",
+        onClick() {
+          if (documentRef.defaultView) {
+            documentRef.defaultView.location.href = findingsUrl;
           }
         },
-        cutout: "62%"
-      }
+      },
     });
   }
 
@@ -116,9 +124,9 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
             borderRadius: 4,
             borderSkipped: false,
             barPercentage: 0.5,
-            categoryPercentage: 0.8
-          }
-        ]
+            categoryPercentage: 0.8,
+          },
+        ],
       },
       options: {
         responsive: true,
@@ -128,18 +136,23 @@ export function initializeSummaryCharts(options: SummaryChartOptions): boolean {
         scales: {
           x: {
             ticks: { color: "#8b919e", font: { size: 11 } },
-            grid: { color: "#e2e5ea", lineWidth: 0.5 }
+            grid: { color: "#e2e5ea", lineWidth: 0.5 },
           },
           y: {
             ticks: {
               color: "#5a6170",
               font: { size: 13, weight: 500 },
-              autoSkip: false
+              autoSkip: false,
             },
-            grid: { display: false }
+            grid: { display: false },
+          },
+        },
+        onClick() {
+          if (documentRef.defaultView) {
+            documentRef.defaultView.location.href = findingsUrl;
           }
-        }
-      }
+        },
+      },
     });
   }
 

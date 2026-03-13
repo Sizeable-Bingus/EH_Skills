@@ -7,11 +7,14 @@ and edge cases.
 ## Field Details
 
 ### meta.tools_used
+
 List every tool that was actually executed (not just checked for). This helps the
 downstream agent understand coverage gaps.
 
 ### subdomains[].source
+
 Use consistent source labels:
+
 - `crt.sh` — Certificate Transparency logs
 - `subfinder` — subfinder passive enumeration
 - `amass` — amass passive enumeration
@@ -21,7 +24,9 @@ Use consistent source labels:
 - `manual` — user-provided or manually discovered
 
 ### potential_vulnerabilities[].severity
+
 Use this scale consistently:
+
 - `info` — interesting observation, not exploitable on its own
 - `low` — minor issue, limited impact
 - `medium` — notable finding, moderate impact potential
@@ -29,6 +34,7 @@ Use this scale consistently:
 - `critical` — immediate risk, trivially exploitable
 
 ### endpoints categories
+
 - `directories` — paths discovered via brute-forcing (gobuster, etc.)
 - `api_endpoints` — REST/GraphQL/SOAP endpoints
 - `admin_panels` — admin interfaces (wp-admin, phpmyadmin, etc.)

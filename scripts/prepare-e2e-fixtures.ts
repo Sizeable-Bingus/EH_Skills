@@ -8,14 +8,14 @@ const fixtureDb = join(
   process.cwd(),
   "engagements",
   "example-com",
-  "pentest_data.db"
+  "pentest_data.db",
 );
 
 rmSync(root, { recursive: true, force: true });
 
 for (const [name, target, scanDate] of [
   ["alpha", "https://alpha.example", "2026-03-10T00:00:00.000Z"],
-  ["bravo", "https://bravo.example", "2026-03-11T00:00:00.000Z"]
+  ["bravo", "https://bravo.example", "2026-03-11T00:00:00.000Z"],
 ] as const) {
   const engagementDir = join(root, name);
   mkdirSync(engagementDir, { recursive: true });
@@ -25,7 +25,7 @@ for (const [name, target, scanDate] of [
   const db = new Database(dbPath);
   db.query("UPDATE engagements SET target = ?, scan_date = ?").run(
     target,
-    scanDate
+    scanDate,
   );
   db.close();
 }

@@ -15,7 +15,7 @@ const fixtureDb = join(
   process.cwd(),
   "engagements",
   "example-com",
-  "pentest_data.db"
+  "pentest_data.db",
 );
 
 describe("route headers and pipeline APIs", () => {
@@ -26,7 +26,7 @@ describe("route headers and pipeline APIs", () => {
         target: "https://example.com",
         engagement: "example-com",
         currentPhase: "Complete",
-        logLines: ["done"]
+        logLines: ["done"],
       }),
       startPipeline: () => Promise.resolve(),
       subscribe: () =>
@@ -34,9 +34,9 @@ describe("route headers and pipeline APIs", () => {
           async *[Symbol.asyncIterator]() {
             yield "hello";
             yield null;
-          }
+          },
         }) as AsyncIterable<string | null>,
-      unsubscribe: () => undefined
+      unsubscribe: () => undefined,
     };
     const app = createApp({ pipelineManager: manager as never });
 
@@ -44,11 +44,11 @@ describe("route headers and pipeline APIs", () => {
       "/",
       "/api/engagements",
       "/api/pipeline/stream",
-      "/static/styles.css"
+      "/static/styles.css",
     ]) {
       const response = await app.request(path);
       expect(response.headers.get("content-security-policy")).toContain(
-        "default-src 'self'"
+        "default-src 'self'",
       );
       expect(response.headers.get("referrer-policy")).toBe("no-referrer");
       expect(response.headers.get("x-content-type-options")).toBe("nosniff");
@@ -63,29 +63,29 @@ describe("route headers and pipeline APIs", () => {
         currentPhase: "",
         target: "",
         engagement: "",
-        logLines: []
+        logLines: [],
       },
       {
         status: "running",
         currentPhase: "Recon",
         target: "https://run.example",
         engagement: "run-example",
-        logLines: ["a"]
+        logLines: ["a"],
       },
       {
         status: "complete",
         currentPhase: "Complete",
         target: "https://done.example",
         engagement: "done-example",
-        logLines: ["a", "b"]
+        logLines: ["a", "b"],
       },
       {
         status: "error",
         currentPhase: "Error: failed",
         target: "https://bad.example",
         engagement: "bad-example",
-        logLines: ["a", "b", "c"]
-      }
+        logLines: ["a", "b", "c"],
+      },
     ];
     let stateIndex = 0;
     let startMode: "success" | "conflict" = "success";
@@ -100,34 +100,34 @@ describe("route headers and pipeline APIs", () => {
         ({
           async *[Symbol.asyncIterator]() {
             yield null;
-          }
+          },
         }) as AsyncIterable<string | null>,
-      unsubscribe: () => undefined
+      unsubscribe: () => undefined,
     };
     const app = createApp({ pipelineManager: manager as never });
 
     const missingTarget = await app.request("/api/pipeline/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({})
+      body: JSON.stringify({}),
     });
     expect(missingTarget.status).toBe(400);
 
     const started = await app.request("/api/pipeline/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ target: "https://demo.example" })
+      body: JSON.stringify({ target: "https://demo.example" }),
     });
     expect(await started.json()).toEqual({
       status: "started",
-      target: "https://demo.example"
+      target: "https://demo.example",
     });
 
     startMode = "conflict";
     const conflict = await app.request("/api/pipeline/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ target: "https://demo.example" })
+      body: JSON.stringify({ target: "https://demo.example" }),
     });
     expect(conflict.status).toBe(409);
     expect(await conflict.json()).toEqual({ detail: "already running" });
@@ -139,7 +139,7 @@ describe("route headers and pipeline APIs", () => {
         status: expected.status,
         target: expected.target,
         current_phase: expected.currentPhase,
-        line_count: expected.logLines.length
+        line_count: expected.logLines.length,
       });
     }
   });
@@ -152,7 +152,7 @@ describe("route headers and pipeline APIs", () => {
         target: "https://demo.example",
         engagement: "demo",
         currentPhase: "Complete",
-        logLines: ["first"]
+        logLines: ["first"],
       }),
       startPipeline: () => Promise.resolve(),
       subscribe: () =>
@@ -160,11 +160,11 @@ describe("route headers and pipeline APIs", () => {
           async *[Symbol.asyncIterator]() {
             yield "first";
             yield null;
-          }
+          },
         }) as AsyncIterable<string | null>,
       unsubscribe: () => {
         unsubscribed = true;
-      }
+      },
     };
     const app = createApp({ pipelineManager: manager as never });
 
@@ -199,7 +199,7 @@ describe("page rendering branches and deletion behavior", () => {
     ensureSchema(db);
     db.query("INSERT INTO engagements (target, scan_date) VALUES (?, ?)").run(
       "https://empty.example",
-      "2026-03-11T00:00:00.000Z"
+      "2026-03-11T00:00:00.000Z",
     );
     db.close();
 
@@ -213,20 +213,20 @@ describe("page rendering branches and deletion behavior", () => {
   test("renders summary scope variants and tool metadata", async () => {
     const base = createSyntheticArtifacts(
       "https://summary.example",
-      "/tmp/recon.json"
+      "/tmp/recon.json",
     ).exploitation;
 
     const structuredPath = join(
       engagementsDir,
       "structured",
-      "pentest_data.db"
+      "pentest_data.db",
     );
     mkdirSync(join(engagementsDir, "structured"), { recursive: true });
     ingestExploitationOutput(base, structuredPath, { includeAll: true });
 
     let db = new Database(structuredPath);
     db.query(
-      "UPDATE engagements SET duration_sec = 120, tools_used = ?, scope_out = ?"
+      "UPDATE engagements SET duration_sec = 120, tools_used = ?, scope_out = ?",
     ).run(JSON.stringify(["burp", "claude"]), JSON.stringify(["/admin"]));
     db.close();
 
@@ -238,11 +238,11 @@ describe("page rendering branches and deletion behavior", () => {
         meta: {
           ...base.meta,
           target: "https://string.example",
-          scan_date: "2026-03-12T00:00:00.000Z"
-        }
+          scan_date: "2026-03-12T00:00:00.000Z",
+        },
       },
       stringPath,
-      { includeAll: true }
+      { includeAll: true },
     );
     db = new Database(stringPath);
     db.exec("ALTER TABLE engagements ADD COLUMN scope TEXT");
@@ -264,7 +264,7 @@ describe("page rendering branches and deletion behavior", () => {
   test("renders the findings clear link when filters are active", async () => {
     const base = createSyntheticArtifacts(
       "https://findings.example",
-      "/tmp/recon.json"
+      "/tmp/recon.json",
     ).exploitation;
     const dbPath = join(engagementsDir, "findings", "pentest_data.db");
     mkdirSync(join(engagementsDir, "findings"), { recursive: true });
@@ -272,11 +272,11 @@ describe("page rendering branches and deletion behavior", () => {
 
     const app = createApp({ engagementsDir });
     const response = await app.request(
-      "/findings?engagement=findings&severity=high"
+      "/findings?engagement=findings&severity=high",
     );
 
     expect(await response.text()).toContain(
-      'href="/findings?engagement=findings"'
+      'href="/findings?engagement=findings"',
     );
   });
 
@@ -287,25 +287,25 @@ describe("page rendering branches and deletion behavior", () => {
       engagementsDir,
       pipelineManager: createPipelineManager({
         modeResolver: () => "synthetic",
-        syntheticRunner: async () => undefined
-      })
+        syntheticRunner: async () => undefined,
+      }),
     });
 
     const deleted = await app.request("/api/engagements/..%2Fdemo", {
-      method: "DELETE"
+      method: "DELETE",
     });
     expect(deleted.status).toBe(200);
     expect(await deleted.json()).toEqual({
       status: "deleted",
-      engagement: "../demo"
+      engagement: "../demo",
     });
 
     const missing = await app.request("/api/engagements/ghost", {
-      method: "DELETE"
+      method: "DELETE",
     });
     expect(missing.status).toBe(404);
     expect(await missing.json()).toEqual({
-      detail: "Unknown engagement: ghost"
+      detail: "Unknown engagement: ghost",
     });
   });
 
@@ -313,7 +313,7 @@ describe("page rendering branches and deletion behavior", () => {
     mkdirSync(join(engagementsDir, "broken"), { recursive: true });
     await Bun.write(
       join(engagementsDir, "broken", "pentest_data.db"),
-      "not sqlite"
+      "not sqlite",
     );
     const app = createApp({ engagementsDir });
     const originalConsoleError = console.error;
@@ -327,7 +327,7 @@ describe("page rendering branches and deletion behavior", () => {
         "/summary?engagement=broken",
         "/findings?engagement=broken",
         "/chains?engagement=broken",
-        "/loot?engagement=broken"
+        "/loot?engagement=broken",
       ]) {
         const response = await app.request(path);
         expect(response.status).toBe(500);
@@ -357,12 +357,12 @@ describe("startServer", () => {
         logs.push(message);
       },
       port: 8123,
-      hostname: "127.0.0.1"
+      hostname: "127.0.0.1",
     });
     expect(first.port).toBe(8123);
     expect(logs).toEqual([
       "build",
-      "Pentest dashboard listening on http://127.0.0.1:8123"
+      "Pentest dashboard listening on http://127.0.0.1:8123",
     ]);
     expect(served).toEqual([{ port: 8123, hostname: "127.0.0.1" }]);
 
@@ -381,10 +381,10 @@ describe("startServer", () => {
         logs.push(message);
       },
       port: 9000,
-      hostname: "0.0.0.0"
+      hostname: "0.0.0.0",
     });
     expect(logs).toEqual([
-      "Pentest dashboard listening on http://0.0.0.0:9000"
+      "Pentest dashboard listening on http://0.0.0.0:9000",
     ]);
     expect(served).toEqual([{ port: 9000, hostname: "0.0.0.0" }]);
   });
@@ -401,7 +401,7 @@ describe("startServer", () => {
       }) => {
         calls.push({ port: options.port, hostname: options.hostname });
         return { stop: true };
-      }
+      },
     });
 
     try {
@@ -409,7 +409,7 @@ describe("startServer", () => {
         skipAssetBuild: true,
         port: 8111,
         hostname: "127.0.0.2",
-        logger: () => undefined
+        logger: () => undefined,
       });
       expect(result.port).toBe(8111);
       expect(calls).toEqual([{ port: 8111, hostname: "127.0.0.2" }]);

@@ -4,7 +4,7 @@ import { join } from "node:path";
 import {
   DEFAULT_DB,
   DEFAULT_ENGAGEMENT_ID,
-  ENGAGEMENTS_DIR
+  ENGAGEMENTS_DIR,
 } from "../constants.ts";
 import type {
   ChainsPageModel,
@@ -15,7 +15,7 @@ import type {
   FindingsPageModel,
   FindingRecord,
   LootPageModel,
-  ScopeModel
+  ScopeModel,
 } from "../types.ts";
 import { parseJson, safeEngagementName, SEVERITY_ORDER_SQL } from "../utils.ts";
 import { withReadOnlyDatabase } from "./sqlite.ts";
@@ -39,34 +39,34 @@ function emptySeverityCounts(): DashboardPageModel["severityCounts"] {
     high: 0,
     medium: 0,
     low: 0,
-    info: 0
+    info: 0,
   };
 }
 
 function fetchAll(dbPath: string, sql: string, params: unknown[] = []): Row[] {
   return withReadOnlyDatabase(
     dbPath,
-    (db) => db.query(sql).all(...(params as never[])) as Row[]
+    (db) => db.query(sql).all(...(params as never[])) as Row[],
   );
 }
 
 function fetchOne(
   dbPath: string,
   sql: string,
-  params: unknown[] = []
+  params: unknown[] = [],
 ): Row | null {
   return withReadOnlyDatabase(
     dbPath,
-    (db) => (db.query(sql).get(...(params as never[])) as Row | null) ?? null
+    (db) => (db.query(sql).get(...(params as never[])) as Row | null) ?? null,
   );
 }
 
 function getLatestEngagementRecord(
-  dbPath: string
+  dbPath: string,
 ): { engagementId: number; scanDate: string } | null {
   const row = fetchOne(
     dbPath,
-    "SELECT id, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+    "SELECT id, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1",
   );
   if (typeof row?.id !== "number") {
     return null;
@@ -74,7 +74,7 @@ function getLatestEngagementRecord(
 
   return {
     engagementId: row.id,
-    scanDate: stringValue(row.scan_date)
+    scanDate: stringValue(row.scan_date),
   };
 }
 
@@ -99,7 +99,7 @@ function normalizeScope(engagement: Row): ScopeModel | string | null {
     return {
       in_scope: inScope,
       out_of_scope: outOfScope,
-      rules_of_engagement: rules
+      rules_of_engagement: rules,
     };
   }
 
@@ -118,13 +118,14 @@ function normalizeEngagement(row: Row | null): EngagementRecord | null {
     tools_used:
       (parseJson<string[]>(row.tools_used) as string[] | null) ?? null,
     scope: normalizeScope(row),
-    duration_sec: typeof row.duration_sec === "number" ? row.duration_sec : null
+    duration_sec:
+      typeof row.duration_sec === "number" ? row.duration_sec : null,
   };
 }
 
 export function getLatestEngagementId(
   dbPath: string = DEFAULT_DB,
-  fallback: number = DEFAULT_ENGAGEMENT_ID
+  fallback: number = DEFAULT_ENGAGEMENT_ID,
 ): number {
   if (!existsSync(dbPath)) {
     return fallback;
@@ -132,7 +133,7 @@ export function getLatestEngagementId(
 
   const row = fetchOne(
     dbPath,
-    "SELECT id FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+    "SELECT id FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1",
   );
 
   return typeof row?.id === "number" ? row.id : fallback;
@@ -140,7 +141,7 @@ export function getLatestEngagementId(
 
 export function resolveEngagementDbInDir(
   engagement: string | null | undefined,
-  engagementsDir: string = ENGAGEMENTS_DIR
+  engagementsDir: string = ENGAGEMENTS_DIR,
 ): {
   dbPath: string;
   engagementId: number;
@@ -164,7 +165,7 @@ export function resolveEngagementDbInDir(
       return {
         dbPath,
         engagementId: latestRecord.engagementId,
-        scanDate: latestRecord.scanDate
+        scanDate: latestRecord.scanDate,
       };
     })
     .filter((record) => record !== null)
@@ -181,22 +182,22 @@ export function resolveEngagementDbInDir(
   if (latestDatabase) {
     return {
       dbPath: latestDatabase.dbPath,
-      engagementId: latestDatabase.engagementId
+      engagementId: latestDatabase.engagementId,
     };
   }
 
   return {
     dbPath: DEFAULT_DB,
-    engagementId: getLatestEngagementId(DEFAULT_DB)
+    engagementId: getLatestEngagementId(DEFAULT_DB),
   };
 }
 
 export function getSummaryPage(
   dbPath: string = DEFAULT_DB,
-  engagementId: number = DEFAULT_ENGAGEMENT_ID
+  engagementId: number = DEFAULT_ENGAGEMENT_ID,
 ): EngagementSummaryViewModel {
   const engagement = normalizeEngagement(
-    fetchOne(dbPath, "SELECT * FROM engagements WHERE id = ?", [engagementId])
+    fetchOne(dbPath, "SELECT * FROM engagements WHERE id = ?", [engagementId]),
   );
 
   const severityCounts: EngagementSummaryViewModel["severityCounts"] =
@@ -205,12 +206,12 @@ export function getSummaryPage(
   for (const row of fetchAll(
     dbPath,
     "SELECT severity, COUNT(*) AS count FROM findings WHERE engagement_id = ? GROUP BY severity",
-    [engagementId]
+    [engagementId],
   )) {
     const severity = stringValue(row.severity);
     if (severity in severityCounts) {
       severityCounts[severity as keyof typeof severityCounts] = Number(
-        row.count ?? 0
+        row.count ?? 0,
       );
     }
   }
@@ -218,10 +219,10 @@ export function getSummaryPage(
   const categoryCounts = fetchAll(
     dbPath,
     "SELECT category, COUNT(*) AS count FROM findings WHERE engagement_id = ? GROUP BY category ORDER BY count DESC, category",
-    [engagementId]
+    [engagementId],
   ).map((row) => ({
     category: stringValue(row.category),
-    count: Number(row.count ?? 0)
+    count: Number(row.count ?? 0),
   }));
 
   const statsRow =
@@ -233,7 +234,7 @@ export function getSummaryPage(
         (SELECT COUNT(*) FROM credentials WHERE engagement_id = ?) AS total_credentials,
         (SELECT COUNT(*) FROM exploitation_chains WHERE engagement_id = ?) AS total_chains
       `,
-      [engagementId, engagementId, engagementId]
+      [engagementId, engagementId, engagementId],
     ) ?? {};
 
   return {
@@ -243,15 +244,15 @@ export function getSummaryPage(
     stats: {
       total_findings: Number(statsRow.total_findings ?? 0),
       total_credentials: Number(statsRow.total_credentials ?? 0),
-      total_chains: Number(statsRow.total_chains ?? 0)
-    }
+      total_chains: Number(statsRow.total_chains ?? 0),
+    },
   };
 }
 
 export function getFindingsPage(
   dbPath: string = DEFAULT_DB,
   engagementId: number = DEFAULT_ENGAGEMENT_ID,
-  options: { severity?: string | null; category?: string | null } = {}
+  options: { severity?: string | null; category?: string | null } = {},
 ): FindingsPageModel {
   const sqlParts = ["SELECT * FROM findings WHERE engagement_id = ?"];
   const params: unknown[] = [engagementId];
@@ -268,27 +269,27 @@ export function getFindingsPage(
   sqlParts.push(`ORDER BY ${SEVERITY_ORDER_SQL}, category, id`);
 
   const findings = fetchAll(dbPath, sqlParts.join(" "), params).map((row) =>
-    normalizeFinding(row)
+    normalizeFinding(row),
   );
 
   const severities = fetchAll(
     dbPath,
     `SELECT DISTINCT severity FROM findings WHERE engagement_id = ? ORDER BY ${SEVERITY_ORDER_SQL}`,
-    [engagementId]
+    [engagementId],
   )
     .map((row) => row.severity)
     .filter(
-      (value): value is string => typeof value === "string" && value.length > 0
+      (value): value is string => typeof value === "string" && value.length > 0,
     );
 
   const categories = fetchAll(
     dbPath,
     "SELECT DISTINCT category FROM findings WHERE engagement_id = ? ORDER BY category",
-    [engagementId]
+    [engagementId],
   )
     .map((row) => row.category)
     .filter(
-      (value): value is string => typeof value === "string" && value.length > 0
+      (value): value is string => typeof value === "string" && value.length > 0,
     );
 
   return {
@@ -296,7 +297,7 @@ export function getFindingsPage(
     severities,
     categories,
     curSeverity: options.severity ?? "",
-    curCategory: options.category ?? ""
+    curCategory: options.category ?? "",
   };
 }
 
@@ -322,23 +323,23 @@ function normalizeFinding(row: Row): FindingRecord {
     remediation: typeof row.remediation === "string" ? row.remediation : null,
     affected_asset:
       typeof row.affected_asset === "string" ? row.affected_asset : null,
-    raw: parseJson(row.raw)
+    raw: parseJson(row.raw),
   };
 }
 
 export function getChainsPage(
   dbPath: string = DEFAULT_DB,
-  engagementId: number = DEFAULT_ENGAGEMENT_ID
+  engagementId: number = DEFAULT_ENGAGEMENT_ID,
 ): ChainsPageModel {
   const chains = fetchAll(
     dbPath,
     "SELECT * FROM exploitation_chains WHERE engagement_id = ? ORDER BY id",
-    [engagementId]
+    [engagementId],
   );
   const steps = fetchAll(
     dbPath,
     "SELECT * FROM chain_steps WHERE chain_id IN (SELECT id FROM exploitation_chains WHERE engagement_id = ?) ORDER BY chain_id, step_order, id",
-    [engagementId]
+    [engagementId],
   );
 
   const stepsByChain = new Map<
@@ -353,7 +354,7 @@ export function getChainsPage(
       step_order: Number(step.step_order ?? 0),
       action: typeof step.action === "string" ? step.action : null,
       vuln_used: typeof step.vuln_used === "string" ? step.vuln_used : null,
-      result: typeof step.result === "string" ? step.result : null
+      result: typeof step.result === "string" ? step.result : null,
     });
     stepsByChain.set(chainId, current);
   }
@@ -365,25 +366,25 @@ export function getChainsPage(
       final_impact:
         typeof row.final_impact === "string" ? row.final_impact : null,
       severity: typeof row.severity === "string" ? row.severity : null,
-      steps: stepsByChain.get(Number(row.id ?? 0)) ?? []
-    }))
+      steps: stepsByChain.get(Number(row.id ?? 0)) ?? [],
+    })),
   };
 }
 
 export function getLootPage(
   dbPath: string = DEFAULT_DB,
-  engagementId: number = DEFAULT_ENGAGEMENT_ID
+  engagementId: number = DEFAULT_ENGAGEMENT_ID,
 ): LootPageModel {
   const credentials = fetchAll(
     dbPath,
     "SELECT * FROM credentials WHERE engagement_id = ? ORDER BY id",
-    [engagementId]
+    [engagementId],
   );
 
   return {
     credentials: credentials.map((credential) => {
       const detailParts = [
-        stringValue(credential.username, "Unknown username")
+        stringValue(credential.username, "Unknown username"),
       ];
       if (
         typeof credential.service === "string" &&
@@ -412,14 +413,14 @@ export function getLootPage(
             ? credential.source
             : "Unknown source",
         detail: detailParts.join(" | "),
-        evidence: evidenceParts.join(" | ") || "Captured credential material"
+        evidence: evidenceParts.join(" | ") || "Captured credential material",
       };
-    })
+    }),
   };
 }
 
 export function listEngagements(
-  engagementsDir: string = ENGAGEMENTS_DIR
+  engagementsDir: string = ENGAGEMENTS_DIR,
 ): string[] {
   if (!existsSync(engagementsDir)) {
     return [];
@@ -434,7 +435,7 @@ export function listEngagements(
 }
 
 export function getDashboardPage(
-  engagementsDir: string = ENGAGEMENTS_DIR
+  engagementsDir: string = ENGAGEMENTS_DIR,
 ): DashboardPageModel {
   const names = listEngagements(engagementsDir);
   const severityCounts = emptySeverityCounts();
@@ -477,14 +478,14 @@ export function getDashboardPage(
       engagements: engagements.length,
       findings: totalFindings,
       credentials: totalCredentials,
-      chains: totalChains
-    }
+      chains: totalChains,
+    },
   };
 }
 
 function getDashboardEngagementSummary(
   dbPath: string,
-  name: string
+  name: string,
 ): {
   row: DashboardEngagementRow;
   severityCounts: DashboardPageModel["severityCounts"];
@@ -494,7 +495,7 @@ function getDashboardEngagementSummary(
     const latestEngagement =
       (db
         .query(
-          "SELECT target, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1"
+          "SELECT target, scan_date FROM engagements ORDER BY scan_date DESC, id DESC LIMIT 1",
         )
         .get() as Row | null) ?? null;
 
@@ -502,7 +503,7 @@ function getDashboardEngagementSummary(
     let totalFindings = 0;
     for (const row of db
       .query(
-        "SELECT severity, COUNT(*) AS count FROM findings GROUP BY severity"
+        "SELECT severity, COUNT(*) AS count FROM findings GROUP BY severity",
       )
       .all() as Row[]) {
       const severity = stringValue(row.severity);
@@ -516,12 +517,12 @@ function getDashboardEngagementSummary(
     const categoryCounts = (
       db
         .query(
-          "SELECT category, COUNT(*) AS count FROM findings GROUP BY category ORDER BY count DESC"
+          "SELECT category, COUNT(*) AS count FROM findings GROUP BY category ORDER BY count DESC",
         )
         .all() as Row[]
     ).map((row) => ({
       category: stringValue(row.category),
-      count: Number(row.count ?? 0)
+      count: Number(row.count ?? 0),
     }));
 
     const stats =
@@ -529,7 +530,7 @@ function getDashboardEngagementSummary(
         .query(
           `SELECT
           (SELECT COUNT(*) FROM credentials) AS cred_count,
-          (SELECT COUNT(*) FROM exploitation_chains) AS chain_count`
+          (SELECT COUNT(*) FROM exploitation_chains) AS chain_count`,
         )
         .get() as Row | null) ?? {};
     const totalCredentials = Number(stats.cred_count ?? 0);
@@ -547,17 +548,17 @@ function getDashboardEngagementSummary(
         low: severityCounts.low,
         info: severityCounts.info,
         total_credentials: totalCredentials,
-        total_chains: totalChains
+        total_chains: totalChains,
       },
       severityCounts,
-      categoryCounts
+      categoryCounts,
     };
   });
 }
 
 export function deleteEngagementDirectory(
   name: string,
-  engagementsDir: string = ENGAGEMENTS_DIR
+  engagementsDir: string = ENGAGEMENTS_DIR,
 ): string {
   const safeName = safeEngagementName(name);
   const path = join(engagementsDir, safeName);

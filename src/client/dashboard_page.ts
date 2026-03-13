@@ -12,14 +12,14 @@ export interface DashboardPageDependencies {
 }
 
 export function initializeDashboardPage(
-  dependencies: DashboardPageDependencies = {}
+  dependencies: DashboardPageDependencies = {},
 ): void {
   const documentRef = dependencies.document ?? document;
   const windowRef = dependencies.window ?? window;
   const initialized = initializeSummaryCharts({
     chartDataId: "dashboard-chart-data",
     document: documentRef,
-    chartConstructor: dependencies.chartConstructor
+    chartConstructor: dependencies.chartConstructor,
   });
   if (!initialized) {
     return;

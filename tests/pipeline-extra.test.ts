@@ -11,7 +11,7 @@ import { createPipelineManager } from "../src/pipeline/manager.ts";
 import { runRealPipeline } from "../src/pipeline/real.ts";
 import {
   createSyntheticArtifacts,
-  runSyntheticPipeline
+  runSyntheticPipeline,
 } from "../src/pipeline/synthetic.ts";
 
 const tempDirs: string[] = [];
@@ -36,7 +36,7 @@ describe("pipeline manager branches", () => {
         log("PHASE: Broken");
         await new Promise((resolve) => setTimeout(resolve, 0));
         throw new Error("runner failed");
-      }
+      },
     });
 
     await manager.startPipeline("https://broken.example");
@@ -53,7 +53,7 @@ describe("pipeline manager branches", () => {
     expect(lines).toContain("ERROR: runner failed");
     expect(manager.getState()).toMatchObject({
       status: "error",
-      currentPhase: "Error: runner failed"
+      currentPhase: "Error: runner failed",
     });
 
     const replayQueue = manager.subscribe();
@@ -68,7 +68,7 @@ describe("pipeline manager branches", () => {
 
     const idleManager = createPipelineManager({
       modeResolver: () => "synthetic",
-      syntheticRunner: async () => undefined
+      syntheticRunner: async () => undefined,
     });
     const idleQueue = idleManager.subscribe();
     idleManager.unsubscribe(idleQueue);
@@ -81,7 +81,7 @@ describe("pipeline manager branches", () => {
       modeResolver: () => "synthetic",
       syntheticRunner: async ({ log }) => {
         log("PHASE: Demo");
-      }
+      },
     });
 
     const staleQueue = manager.subscribe();
@@ -110,7 +110,7 @@ describe("pipeline manager branches", () => {
         syntheticRunner: async ({ log }) => {
           log("PHASE: Synthetic");
           logs.push("ran");
-        }
+        },
       });
       await manager.startPipeline("https://default-mode.example");
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -134,7 +134,7 @@ describe("pipeline manager branches", () => {
         realRunner: async ({ log }) => {
           log("PHASE: Real");
           runs.push("real");
-        }
+        },
       });
       await manager.startPipeline("https://real-mode.example");
       await new Promise((resolve) => setTimeout(resolve, 0));
@@ -160,7 +160,7 @@ describe("synthetic pipeline credential branches", () => {
       engagementDir,
       username: "alice",
       password: "secret",
-      log: (line) => logs.push(line)
+      log: (line) => logs.push(line),
     });
 
     const findingsCount = withReadOnlyDatabase(
@@ -168,11 +168,11 @@ describe("synthetic pipeline credential branches", () => {
       (db) => {
         const row = db
           .query(
-            "SELECT COUNT(*) AS count FROM findings WHERE category = 'authentication' AND technique = 'interactive_login'"
+            "SELECT COUNT(*) AS count FROM findings WHERE category = 'authentication' AND technique = 'interactive_login'",
           )
           .get() as { count: number };
         return row.count;
-      }
+      },
     );
 
     expect(logs.filter((line) => line.startsWith("[creds]"))).toHaveLength(2);
@@ -200,16 +200,16 @@ describe("burp adapter failures", () => {
             kill: () => {
               killed = true;
             },
-            exited: Promise.resolve(0)
+            exited: Promise.resolve(0),
           }),
           sleepFn: async () => undefined,
           nowFn: () => {
             now += 10;
             return now;
           },
-          startupTimeoutMs: 5
-        }
-      )
+          startupTimeoutMs: 5,
+        },
+      ),
     ).rejects.toThrow("Burp Suite did not become ready within 5ms");
 
     expect(killed).toBe(true);
@@ -220,7 +220,7 @@ describe("burp adapter failures", () => {
     const engagementDir = makeTempDir("eh-burp-create-");
     const process = {
       kill: () => undefined,
-      exited: Promise.resolve(0)
+      exited: Promise.resolve(0),
     };
 
     await expect(
@@ -229,14 +229,14 @@ describe("burp adapter failures", () => {
           const responses = [
             new Response("ok"),
             new Response("ok"),
-            new Response(null, { status: 500 })
+            new Response(null, { status: 500 }),
           ];
           return () => Promise.resolve(responses.shift() as Response);
         })(),
         spawnFn: () => process,
         sleepFn: async () => undefined,
-        readJsonFile: async <T>() => ({}) as T
-      })
+        readJsonFile: async <T>() => ({}) as T,
+      }),
     ).rejects.toThrow("Burp scan creation failed with status 500");
 
     await expect(
@@ -245,16 +245,16 @@ describe("burp adapter failures", () => {
           const responses = [
             new Response("ok"),
             new Response("ok"),
-            new Response(null, { status: 201 })
+            new Response(null, { status: 201 }),
           ];
           return () => Promise.resolve(responses.shift() as Response);
         })(),
         spawnFn: () => process,
         sleepFn: async () => undefined,
-        readJsonFile: async <T>() => ({}) as T
-      })
+        readJsonFile: async <T>() => ({}) as T,
+      }),
     ).rejects.toThrow(
-      "Burp scan creation response did not include a location header"
+      "Burp scan creation response did not include a location header",
     );
   });
 
@@ -273,24 +273,24 @@ describe("burp adapter failures", () => {
             new Response("ok"),
             new Response(null, {
               status: 201,
-              headers: { location: "/scan/2" }
+              headers: { location: "/scan/2" },
             }),
             new Response(JSON.stringify({ scan_status: "failed" }), {
-              status: 200
-            })
+              status: 200,
+            }),
           ];
           return () => Promise.resolve(responses.shift() as Response);
         })(),
         spawnFn: () => ({
           kill: () => undefined,
-          exited: Promise.resolve(0)
+          exited: Promise.resolve(0),
         }),
         sleepFn: async () => undefined,
-        readJsonFile: async <T>() => ({}) as T
-      }
+        readJsonFile: async <T>() => ({}) as T,
+      },
     );
     expect(logs).toContain(
-      "WARNING: Burp scan reported failure. Continuing with partial results."
+      "WARNING: Burp scan reported failure. Continuing with partial results.",
     );
 
     await expect(
@@ -301,19 +301,19 @@ describe("burp adapter failures", () => {
             new Response("ok"),
             new Response(null, {
               status: 201,
-              headers: { location: "/scan/3" }
+              headers: { location: "/scan/3" },
             }),
-            new Response(null, { status: 502 })
+            new Response(null, { status: 502 }),
           ];
           return () => Promise.resolve(responses.shift() as Response);
         })(),
         spawnFn: () => ({
           kill: () => undefined,
-          exited: Promise.resolve(0)
+          exited: Promise.resolve(0),
         }),
         sleepFn: async () => undefined,
-        readJsonFile: async <T>() => ({}) as T
-      })
+        readJsonFile: async <T>() => ({}) as T,
+      }),
     ).rejects.toThrow("Burp scan poll failed with status 502");
   });
 
@@ -322,7 +322,7 @@ describe("burp adapter failures", () => {
     const configPath = join(
       process.cwd(),
       "burp_headless_scanner",
-      "deep.json"
+      "deep.json",
     );
     expect(await Bun.file(configPath).json()).toBeDefined();
 
@@ -333,9 +333,9 @@ describe("burp adapter failures", () => {
         calls.push(options.cmd);
         return {
           kill: () => undefined,
-          exited: Promise.resolve(0)
+          exited: Promise.resolve(0),
         };
-      }
+      },
     });
 
     try {
@@ -346,15 +346,15 @@ describe("burp adapter failures", () => {
             new Response("ok"),
             new Response(null, {
               status: 201,
-              headers: { location: "/scan/4" }
+              headers: { location: "/scan/4" },
             }),
             new Response(JSON.stringify({ scan_status: "succeeded" }), {
-              status: 200
-            })
+              status: 200,
+            }),
           ];
           return () => Promise.resolve(responses.shift() as Response);
         })(),
-        sleepFn: async () => undefined
+        sleepFn: async () => undefined,
       });
     } finally {
       Object.assign(Bun, { spawn: originalSpawn });
@@ -378,9 +378,9 @@ describe("burp adapter failures", () => {
           kill: () => {
             killCount += 1;
           },
-          exited: Promise.resolve(0)
+          exited: Promise.resolve(0),
         };
-      }
+      },
     });
 
     try {
@@ -393,12 +393,12 @@ describe("burp adapter failures", () => {
               new Response("ok", { status: 200 }),
               new Response(null, {
                 status: 201,
-                headers: { location: "/scan/5" }
+                headers: { location: "/scan/5" },
               }),
               new Response(JSON.stringify({ scan_status: "running" }), {
-                status: 200
+                status: 200,
               }),
-              new Response(null, { status: 502 })
+              new Response(null, { status: 502 }),
             ];
             return () => Promise.resolve(responses.shift() as Response);
           })(),
@@ -413,8 +413,8 @@ describe("burp adapter failures", () => {
             };
           })(),
           startupTimeoutMs: 10,
-          pollIntervalMs: 7
-        })
+          pollIntervalMs: 7,
+        }),
       ).rejects.toThrow("Burp scan poll failed with status 502");
     } finally {
       Object.assign(Bun, { spawn: originalSpawn, serve: originalServe });
@@ -443,14 +443,14 @@ describe("claude adapter edge cases", () => {
               message: {
                 content: [
                   { type: "tool_use", name: "ignored" },
-                  { type: "text", text: "  " }
-                ]
-              }
+                  { type: "text", text: "  " },
+                ],
+              },
             };
             throw new Error("claude blew up");
-          }
-        }
-      })
+          },
+        },
+      }),
     ).rejects.toThrow("claude blew up");
 
     expect(logs.at(-1)).toBe("Claude phase failed: claude blew up");
@@ -466,7 +466,7 @@ describe("real pipeline branches", () => {
     let killed = false;
     const output = createSyntheticArtifacts(
       "https://real.example",
-      "/tmp/recon.json"
+      "/tmp/recon.json",
     ).exploitation;
 
     await runRealPipeline(
@@ -476,7 +476,7 @@ describe("real pipeline branches", () => {
         engagementDir,
         username: "alice",
         password: "secret",
-        log: (line) => logs.push(line)
+        log: (line) => logs.push(line),
       },
       {
         runBurpScanFn: async () => ({
@@ -485,8 +485,8 @@ describe("real pipeline branches", () => {
             kill: () => {
               killed = true;
             },
-            exited: Promise.resolve(0)
-          }
+            exited: Promise.resolve(0),
+          },
         }),
         runClaudePhaseFn: async ({ prompt }) => {
           prompts.push(prompt);
@@ -496,20 +496,20 @@ describe("real pipeline branches", () => {
         ingestExploitationOutputFn: (_data, path, options) => {
           ingests.push({ path, includeAll: options?.includeAll ?? false });
           return 1;
-        }
-      }
+        },
+      },
     );
 
     expect(prompts).toHaveLength(3);
     expect(prompts.every((prompt) => prompt.includes("/tmp/burp.json"))).toBe(
-      true
+      true,
     );
     expect(prompts[0]).toContain("Application credentials have been provided");
     expect(ingests).toEqual([
       {
         path: join(engagementDir, "pentest_data.db"),
-        includeAll: true
-      }
+        includeAll: true,
+      },
     ]);
     expect(logs).toContain("  PIPELINE COMPLETE");
     expect(killed).toBe(true);
@@ -525,7 +525,7 @@ describe("real pipeline branches", () => {
           target: "https://real.example",
           engagement: "real-example",
           engagementDir,
-          log: () => undefined
+          log: () => undefined,
         },
         {
           runBurpScanFn: async () => ({
@@ -534,15 +534,15 @@ describe("real pipeline branches", () => {
               kill: () => {
                 killed = true;
               },
-              exited: Promise.resolve(0)
-            }
+              exited: Promise.resolve(0),
+            },
           }),
           runClaudePhaseFn: async () => undefined,
-          fileExistsFn: () => false
-        }
-      )
+          fileExistsFn: () => false,
+        },
+      ),
     ).rejects.toThrow(
-      `Expected exploitation output at ${join(engagementDir, "exploitation_output.json")}`
+      `Expected exploitation output at ${join(engagementDir, "exploitation_output.json")}`,
     );
     expect(killed).toBe(true);
   });
@@ -553,7 +553,7 @@ describe("real pipeline branches", () => {
     let killCount = 0;
     const output = createSyntheticArtifacts(
       "https://real.example",
-      "/tmp/recon.json"
+      "/tmp/recon.json",
     ).exploitation;
 
     await expect(
@@ -562,7 +562,7 @@ describe("real pipeline branches", () => {
           target: "https://real.example",
           engagement: "real-example",
           engagementDir,
-          log: (line) => logs.push(line)
+          log: (line) => logs.push(line),
         },
         {
           runBurpScanFn: async () => ({
@@ -571,16 +571,16 @@ describe("real pipeline branches", () => {
               kill: () => {
                 killCount += 1;
               },
-              exited: Promise.resolve(0)
-            }
+              exited: Promise.resolve(0),
+            },
           }),
           runClaudePhaseFn: async ({ name }) => {
             if (name === "Web Reconnaissance") {
               throw new Error("phase failed");
             }
-          }
-        }
-      )
+          },
+        },
+      ),
     ).rejects.toThrow("phase failed");
     expect(killCount).toBe(1);
 
@@ -590,7 +590,7 @@ describe("real pipeline branches", () => {
           target: "https://real.example",
           engagement: "real-example",
           engagementDir,
-          log: (line) => logs.push(line)
+          log: (line) => logs.push(line),
         },
         {
           runBurpScanFn: async () => ({
@@ -599,8 +599,8 @@ describe("real pipeline branches", () => {
               kill: () => {
                 killCount += 1;
               },
-              exited: Promise.resolve(0)
-            }
+              exited: Promise.resolve(0),
+            },
           }),
           runClaudePhaseFn: async ({ prompt }) => {
             expect(prompt.includes("Application credentials")).toBe(false);
@@ -609,9 +609,9 @@ describe("real pipeline branches", () => {
           readJsonFile: async <T>() => output as T,
           ingestExploitationOutputFn: () => {
             throw new Error("db fail");
-          }
-        }
-      )
+          },
+        },
+      ),
     ).rejects.toThrow("db fail");
 
     expect(logs).toContain("SQLite ingestion warning: db fail");
@@ -622,11 +622,11 @@ describe("real pipeline branches", () => {
     const engagementDir = makeTempDir("eh-real-defaults-");
     const output = createSyntheticArtifacts(
       "https://real-defaults.example",
-      join(engagementDir, "recon_output.json")
+      join(engagementDir, "recon_output.json"),
     ).exploitation;
     await Bun.write(
       join(engagementDir, "exploitation_output.json"),
-      JSON.stringify(output, null, 2)
+      JSON.stringify(output, null, 2),
     );
 
     await runRealPipeline(
@@ -634,19 +634,19 @@ describe("real pipeline branches", () => {
         target: "https://real-defaults.example",
         engagement: "real-defaults-example",
         engagementDir,
-        log: () => undefined
+        log: () => undefined,
       },
       {
         runBurpScanFn: async () => ({
           outputPath: "/tmp/burp.json",
           process: {
             kill: () => undefined,
-            exited: Promise.resolve(0)
-          }
+            exited: Promise.resolve(0),
+          },
         }),
         runClaudePhaseFn: async () => undefined,
-        fileExistsFn: () => true
-      }
+        fileExistsFn: () => true,
+      },
     );
 
     const count = withReadOnlyDatabase(
@@ -656,7 +656,7 @@ describe("real pipeline branches", () => {
           .query("SELECT COUNT(*) AS count FROM engagements")
           .get() as { count: number };
         return row.count;
-      }
+      },
     );
     expect(count).toBe(1);
   });

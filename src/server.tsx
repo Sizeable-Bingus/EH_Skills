@@ -7,7 +7,7 @@ import { streamSSE } from "hono/streaming";
 import {
   DIST_PUBLIC_DIR,
   ENGAGEMENTS_DIR,
-  SECURITY_HEADERS
+  SECURITY_HEADERS,
 } from "./constants.ts";
 import {
   deleteEngagementDirectory,
@@ -18,7 +18,7 @@ import {
   getSummaryPage,
   listEngagements,
   resolveEngagementDbInDir,
-  UnknownEngagementError
+  UnknownEngagementError,
 } from "./db/dashboard.ts";
 import { DashboardPage } from "./pages/dashboard.tsx";
 import { SummaryPage } from "./pages/summary.tsx";
@@ -76,8 +76,8 @@ export function createApp(options: AppOptions = {}): Hono {
     "/static/*",
     serveStatic({
       root: assetRoot,
-      rewriteRequestPath: (path) => path.replace(/^\/static\//, "/")
-    })
+      rewriteRequestPath: (path) => path.replace(/^\/static\//, "/"),
+    }),
   );
 
   app.get("/", (c) => {
@@ -91,7 +91,7 @@ export function createApp(options: AppOptions = {}): Hono {
       <SummaryPage
         model={getSummaryPage(resolved.dbPath, resolved.engagementId)}
         currentEngagement={currentEngagement}
-      />
+      />,
     );
   });
 
@@ -102,10 +102,10 @@ export function createApp(options: AppOptions = {}): Hono {
       <FindingsPage
         model={getFindingsPage(resolved.dbPath, resolved.engagementId, {
           severity: c.req.query("severity") ?? null,
-          category: c.req.query("category") ?? null
+          category: c.req.query("category") ?? null,
         })}
         currentEngagement={currentEngagement}
-      />
+      />,
     );
   });
 
@@ -116,7 +116,7 @@ export function createApp(options: AppOptions = {}): Hono {
       <ChainsPage
         model={getChainsPage(resolved.dbPath, resolved.engagementId)}
         currentEngagement={currentEngagement}
-      />
+      />,
     );
   });
 
@@ -127,7 +127,7 @@ export function createApp(options: AppOptions = {}): Hono {
       <LootPage
         model={getLootPage(resolved.dbPath, resolved.engagementId)}
         currentEngagement={currentEngagement}
-      />
+      />,
     );
   });
 
@@ -141,13 +141,13 @@ export function createApp(options: AppOptions = {}): Hono {
       await pipelineManager.startPipeline(
         body.target,
         body.username,
-        body.password
+        body.password,
       );
       return c.json({ status: "started", target: body.target });
     } catch (error) {
       return c.json(
         { detail: error instanceof Error ? error.message : String(error) },
-        409
+        409,
       );
     }
   });
@@ -158,7 +158,7 @@ export function createApp(options: AppOptions = {}): Hono {
       status: state.status,
       target: state.target,
       current_phase: state.currentPhase,
-      line_count: state.logLines.length
+      line_count: state.logLines.length,
     });
   });
 
@@ -174,8 +174,8 @@ export function createApp(options: AppOptions = {}): Hono {
               data: JSON.stringify({
                 status: state.status,
                 current_phase: state.currentPhase,
-                target: state.target
-              })
+                target: state.target,
+              }),
             });
             break;
           }
@@ -197,7 +197,7 @@ export function createApp(options: AppOptions = {}): Hono {
     if (state.status === "running" && state.engagement === name) {
       return c.json(
         { detail: "Cannot delete while pipeline is running for this target" },
-        409
+        409,
       );
     }
 
@@ -208,7 +208,7 @@ export function createApp(options: AppOptions = {}): Hono {
     } catch (error) {
       return c.json(
         { detail: error instanceof Error ? error.message : String(error) },
-        404
+        404,
       );
     }
   });
@@ -217,7 +217,7 @@ export function createApp(options: AppOptions = {}): Hono {
 }
 
 export async function startServer(
-  options: StartServerOptions = {}
+  options: StartServerOptions = {},
 ): Promise<{ app: Hono; server: unknown; port: number; hostname: string }> {
   const app = createApp(options);
   const buildAssets = options.buildAssets ?? buildClientAssets;
@@ -235,13 +235,13 @@ export async function startServer(
       Bun.serve({
         fetch: serveOptions.fetch,
         port: serveOptions.port,
-        hostname: serveOptions.hostname
+        hostname: serveOptions.hostname,
       }));
   const logger = options.logger ?? console.log;
   const server = serveFn({
     fetch: app.fetch,
     port,
-    hostname
+    hostname,
   });
 
   logger(`Pentest dashboard listening on http://${hostname}:${port}`);

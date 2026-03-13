@@ -8,20 +8,20 @@ import {
   BURP_POLL_INTERVAL_MS,
   BURP_REST_API,
   BURP_SCAN_CONFIG,
-  BURP_STARTUP_TIMEOUT_MS
+  BURP_STARTUP_TIMEOUT_MS,
 } from "../constants.ts";
 import { getErrorMessage, sleep } from "../utils.ts";
 import type {
   BurpDependencies,
   BurpProcessLike,
-  BurpScanResult
+  BurpScanResult,
 } from "./types.ts";
 
 export async function runBurpScan(
   target: string,
   engagementDir: string,
   log: (line: string) => void,
-  dependencies: BurpDependencies = {}
+  dependencies: BurpDependencies = {},
 ): Promise<BurpScanResult> {
   const fetchFn = dependencies.fetchFn ?? fetch;
   const spawnFn = dependencies.spawnFn ?? defaultSpawn;
@@ -39,10 +39,10 @@ export async function runBurpScan(
       "-Djava.awt.headless=true",
       "-jar",
       BURP_JAR,
-      "--unpause-spider-and-scanner"
+      "--unpause-spider-and-scanner",
     ],
     stdout: "ignore",
-    stderr: "ignore"
+    stderr: "ignore",
   });
 
   try {
@@ -53,7 +53,7 @@ export async function runBurpScan(
       log,
       nowFn,
       startupTimeoutMs,
-      pollIntervalMs
+      pollIntervalMs,
     );
     const scanId = await createBurpScan(target, fetchFn, readJsonFile, log);
     const scanData = await pollScan(
@@ -61,7 +61,7 @@ export async function runBurpScan(
       fetchFn,
       sleepFn,
       log,
-      pollIntervalMs
+      pollIntervalMs,
     );
 
     mkdirSync(engagementDir, { recursive: true });
@@ -71,7 +71,7 @@ export async function runBurpScan(
 
     if (scanData.scan_status === "failed") {
       log(
-        "WARNING: Burp scan reported failure. Continuing with partial results."
+        "WARNING: Burp scan reported failure. Continuing with partial results.",
       );
     }
 
@@ -94,12 +94,12 @@ async function killStaleBurp(
     stdout?: "ignore" | "pipe";
     stderr?: "ignore" | "pipe";
   }) => BurpProcessLike,
-  sleepFn: (ms: number) => Promise<void>
+  sleepFn: (ms: number) => Promise<void>,
 ): Promise<void> {
   const process = spawnFn({
     cmd: ["pkill", "-f", "burpsuite_pro.jar"],
     stdout: "ignore",
-    stderr: "ignore"
+    stderr: "ignore",
   });
   try {
     await process.exited;
@@ -112,13 +112,13 @@ async function killStaleBurp(
 async function waitForBurp(
   fetchFn: (
     input: string | URL | Request,
-    init?: RequestInit
+    init?: RequestInit,
   ) => Promise<Response>,
   sleepFn: (ms: number) => Promise<void>,
   log: (line: string) => void,
   nowFn: () => number,
   startupTimeoutMs: number,
-  pollIntervalMs: number
+  pollIntervalMs: number,
 ): Promise<void> {
   const start = nowFn();
   let restReady = false;
@@ -128,7 +128,7 @@ async function waitForBurp(
     if (!restReady) {
       try {
         const response = await fetchFn(`${BURP_REST_API}/`, {
-          signal: AbortSignal.timeout(3_000)
+          signal: AbortSignal.timeout(3_000),
         });
         if (response.status < 500) {
           restReady = true;
@@ -142,7 +142,7 @@ async function waitForBurp(
     if (!mcpReady) {
       try {
         const response = await fetchFn(BURP_MCP_SSE, {
-          signal: AbortSignal.timeout(3_000)
+          signal: AbortSignal.timeout(3_000),
         });
         await response.body?.cancel();
         mcpReady = true;
@@ -161,7 +161,7 @@ async function waitForBurp(
   }
 
   throw new Error(
-    `Burp Suite did not become ready within ${startupTimeoutMs}ms`
+    `Burp Suite did not become ready within ${startupTimeoutMs}ms`,
   );
 }
 
@@ -169,10 +169,10 @@ async function createBurpScan(
   target: string,
   fetchFn: (
     input: string | URL | Request,
-    init?: RequestInit
+    init?: RequestInit,
   ) => Promise<Response>,
   readJsonFile: <T>(path: string) => Promise<T>,
-  log: (line: string) => void
+  log: (line: string) => void,
 ): Promise<string> {
   const config = await readJsonFile<Record<string, unknown>>(BURP_SCAN_CONFIG);
   const response = await fetchFn(`${BURP_REST_API}/v0.1/scan`, {
@@ -180,10 +180,10 @@ async function createBurpScan(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       scan_configurations: [
-        { config: JSON.stringify(config), type: "CustomConfiguration" }
+        { config: JSON.stringify(config), type: "CustomConfiguration" },
       ],
-      urls: [target]
-    })
+      urls: [target],
+    }),
   });
 
   if (!response.ok) {
@@ -193,7 +193,7 @@ async function createBurpScan(
   const scanId = response.headers.get("location");
   if (!scanId) {
     throw new Error(
-      "Burp scan creation response did not include a location header"
+      "Burp scan creation response did not include a location header",
     );
   }
 
@@ -205,11 +205,11 @@ async function pollScan(
   scanId: string,
   fetchFn: (
     input: string | URL | Request,
-    init?: RequestInit
+    init?: RequestInit,
   ) => Promise<Response>,
   sleepFn: (ms: number) => Promise<void>,
   log: (line: string) => void,
-  pollIntervalMs: number
+  pollIntervalMs: number,
 ): Promise<Record<string, unknown>> {
   log("Polling Burp scan status...");
 
@@ -245,14 +245,14 @@ function defaultSpawn(options: {
   const subprocess = Bun.spawn({
     cmd: options.cmd,
     stdout: options.stdout ?? "ignore",
-    stderr: options.stderr ?? "ignore"
+    stderr: options.stderr ?? "ignore",
   });
 
   return {
     kill: () => {
       subprocess.kill();
     },
-    exited: subprocess.exited
+    exited: subprocess.exited,
   };
 }
 

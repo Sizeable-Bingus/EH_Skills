@@ -11,7 +11,7 @@ const fixtureDb = join(
   process.cwd(),
   "engagements",
   "example-com",
-  "pentest_data.db"
+  "pentest_data.db",
 );
 
 describe("route responses", () => {
@@ -98,21 +98,21 @@ describe("engagement APIs", () => {
       syntheticRunner: async ({ log }) => {
         log("PHASE: Demo");
         await new Promise((resolve) => setTimeout(resolve, 50));
-      }
+      },
     });
     await manager.startPipeline("https://demo");
 
     const app = createApp({
       engagementsDir: engagementRoot,
-      pipelineManager: manager
+      pipelineManager: manager,
     });
     const response = await app.request("/api/engagements/demo", {
-      method: "DELETE"
+      method: "DELETE",
     });
 
     expect(response.status).toBe(409);
     expect(await response.json()).toEqual({
-      detail: "Cannot delete while pipeline is running for this target"
+      detail: "Cannot delete while pipeline is running for this target",
     });
   });
 
@@ -121,18 +121,18 @@ describe("engagement APIs", () => {
       engagementsDir: engagementRoot,
       pipelineManager: createPipelineManager({
         modeResolver: () => "synthetic",
-        syntheticRunner: () => Promise.resolve()
-      })
+        syntheticRunner: () => Promise.resolve(),
+      }),
     });
 
     const response = await app.request("/api/engagements/demo", {
-      method: "DELETE"
+      method: "DELETE",
     });
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
       status: "deleted",
-      engagement: "demo"
+      engagement: "demo",
     });
   });
 
@@ -153,7 +153,7 @@ describe("engagement APIs", () => {
       "/summary?engagement=missing",
       "/findings?engagement=missing",
       "/chains?engagement=missing",
-      "/loot?engagement=missing"
+      "/loot?engagement=missing",
     ]) {
       const response = await app.request(path);
       expect(response.status).toBe(404);

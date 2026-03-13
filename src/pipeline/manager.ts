@@ -51,7 +51,7 @@ class AsyncQueue<T> implements AsyncIterable<T> {
         const deferred = Promise.withResolvers<IteratorResult<T>>();
         this.resolvers.push(deferred.resolve);
         return deferred.promise;
-      }
+      },
     };
   }
 }
@@ -69,7 +69,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     target: "",
     engagement: "",
     currentPhase: "",
-    logLines: []
+    logLines: [],
   };
   const subscribers = new Set<AsyncQueue<string | null>>();
   const engagementsDir = options.engagementsDir ?? ENGAGEMENTS_DIR;
@@ -91,7 +91,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
   function startPipeline(
     target: string,
     username?: string,
-    password?: string
+    password?: string,
   ): Promise<PipelineState> {
     if (state.status === "running") {
       return Promise.reject(new Error("Pipeline already running"));
@@ -109,7 +109,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
         mode = "synthetic";
       } else {
         throw new Error(
-          `Unsupported pipeline mode: ${configuredMode}. Expected "real" or "synthetic".`
+          `Unsupported pipeline mode: ${configuredMode}. Expected "real" or "synthetic".`,
         );
       }
     }
@@ -123,7 +123,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
         break;
       default:
         throw new Error(
-          `Unsupported pipeline mode: ${String(mode)}. Expected "real" or "synthetic".`
+          `Unsupported pipeline mode: ${String(mode)}. Expected "real" or "synthetic".`,
         );
     }
 
@@ -150,7 +150,7 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
           engagementDir,
           username,
           password,
-          log
+          log,
         });
         state.status = "complete";
         state.currentPhase = "Complete";
@@ -194,6 +194,6 @@ export function createPipelineManager(options: PipelineManagerOptions = {}) {
     },
     startPipeline,
     subscribe,
-    unsubscribe
+    unsubscribe,
   };
 }
