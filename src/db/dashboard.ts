@@ -292,7 +292,12 @@ export function getFindingsPage(
       (value): value is string => typeof value === "string" && value.length > 0,
     );
 
+  const engagement = normalizeEngagement(
+    fetchOne(dbPath, "SELECT * FROM engagements WHERE id = ?", [engagementId]),
+  );
+
   return {
+    engagement,
     findings,
     severities,
     categories,
