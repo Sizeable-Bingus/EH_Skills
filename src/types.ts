@@ -69,6 +69,7 @@ export interface FindingRecord {
 }
 
 export interface FindingsPageModel {
+  engagement: EngagementRecord | null;
   findings: FindingRecord[];
   severities: string[];
   categories: string[];

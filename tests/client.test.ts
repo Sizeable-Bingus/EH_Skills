@@ -104,6 +104,70 @@ describe("client findings page", () => {
     }
   });
 
+  test("clicking a row toggles detail and skips button clicks", () => {
+    const dom = createDom(`
+      <table><tbody>
+      <tr data-finding-id="1">
+        <td><button data-detail-toggle data-id="1" aria-expanded="false"></button></td>
+        <td><a href="#">link</a></td>
+      </tr>
+      <tr id="detail-1" class="hidden"><td></td></tr>
+      <span id="arrow-1"></span>
+      <tr data-finding-id="99">
+        <td><button data-detail-toggle data-id="99" aria-expanded="false"></button></td>
+      </tr>
+      </tbody></table>
+    `);
+    const restore = installDomGlobals(dom.window);
+
+    try {
+      initializeFindingsPage({ document: dom.document });
+
+      // Click on the row itself — should toggle
+      const row = dom.document.querySelector(
+        'tr[data-finding-id="1"]',
+      ) as HTMLTableRowElement;
+      row.click();
+      expect(
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
+      ).toBe(false);
+      expect(
+        dom.document.getElementById("arrow-1")?.getAttribute("style"),
+      ).toBe("transform:rotate(90deg)");
+
+      // Click the row again — should collapse
+      row.click();
+      expect(
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
+      ).toBe(true);
+
+      // Click the link inside the row — should NOT toggle (excluded by closest check)
+      const link = dom.document.querySelector("a") as HTMLAnchorElement;
+      link.click();
+      expect(
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
+      ).toBe(true);
+
+      // Click the button inside the row — should NOT toggle via row handler
+      // (the button handler fires instead)
+      const button = dom.document.querySelector(
+        '[data-detail-toggle][data-id="1"]',
+      ) as HTMLButtonElement;
+      button.click();
+      expect(
+        dom.document.getElementById("detail-1")?.classList.contains("hidden"),
+      ).toBe(false);
+
+      // Row for finding-id=99 has no detail row — should not throw
+      const row99 = dom.document.querySelector(
+        'tr[data-finding-id="99"]',
+      ) as HTMLTableRowElement;
+      row99.click();
+    } finally {
+      restore();
+    }
+  });
+
   test("ignores buttons without ids or missing detail markup", () => {
     const dom = createDom(`
       <button data-detail-toggle aria-expanded="false" id="missing-id"></button>
