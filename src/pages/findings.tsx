@@ -23,10 +23,20 @@ export function FindingsPage(props: {
           style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;"
           class="animate-in animate-in-1"
         >
-          <h1 class="cnh-page-title">
-            Findings{" "}
-            <span class="cnh-page-count">({model.findings.length})</span>
-          </h1>
+          <div>
+            <h1 class="cnh-page-title">
+              Findings{" "}
+              <span class="cnh-page-count">({model.findings.length})</span>
+            </h1>
+            {model.engagement ? (
+              <p style="margin:4px 0 0;color:var(--text-secondary, #94a3b8);font-size:0.85rem;">
+                {model.engagement.target}
+                {model.engagement.scan_date
+                  ? ` — ${model.engagement.scan_date}`
+                  : ""}
+              </p>
+            ) : null}
+          </div>
         </div>
 
         <form method="get" class="cnh-filter-bar animate-in animate-in-2">
@@ -79,7 +89,10 @@ export function FindingsPage(props: {
             <tbody>
               {model.findings.map((finding) => (
                 <>
-                  <tr>
+                  <tr
+                    data-finding-id={String(finding.id)}
+                    style="cursor:pointer;"
+                  >
                     <td>
                       <button
                         type="button"
