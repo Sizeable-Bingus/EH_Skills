@@ -21,12 +21,13 @@ Use consistent source labels:
 - `manual` — user-provided or manually discovered
 
 ### potential_vulnerabilities[].severity
-Use this scale consistently:
-- `info` — interesting observation, not exploitable on its own
-- `low` — minor issue, limited impact
-- `medium` — notable finding, moderate impact potential
-- `high` — significant risk, likely exploitable
-- `critical` — immediate risk, trivially exploitable
+Use this scale consistently. These are **recon-phase assessments based on observation**,
+not confirmed exploitation results:
+- `info` — interesting observation, no direct security impact on its own
+- `low` — minor issue, limited potential impact
+- `medium` — notable finding, warrants investigation by the exploitation agent
+- `high` — significant indicator of risk, should be prioritized for exploitation testing
+- `critical` — strong evidence of severe exposure (e.g., open `.git` with credentials, default admin creds visible in response), prioritize immediately
 
 ### endpoints categories
 - `directories` — paths discovered via brute-forcing (gobuster, etc.)
