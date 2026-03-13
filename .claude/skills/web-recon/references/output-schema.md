@@ -20,9 +20,6 @@ Use consistent source labels:
 - `wayback` — found in Wayback Machine archives
 - `manual` — user-provided or manually discovered
 
-### ports[].state
-Use nmap-style states: `open`, `closed`, `filtered`, `open|filtered`
-
 ### potential_vulnerabilities[].severity
 Use this scale consistently:
 - `info` — interesting observation, not exploitable on its own
