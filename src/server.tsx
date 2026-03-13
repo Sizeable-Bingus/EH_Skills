@@ -4,11 +4,17 @@ import { Hono } from "hono";
 import { serveStatic } from "hono/bun";
 import { streamSSE } from "hono/streaming";
 
+import type { MiddlewareHandler } from "hono";
+
 import {
+  AUTH_DISABLED,
+  AZURE_CLIENT_ID,
+  AZURE_TENANT_ID,
   DIST_PUBLIC_DIR,
   ENGAGEMENTS_DIR,
   SECURITY_HEADERS,
 } from "./constants.ts";
+import { createAuthMiddleware } from "./auth.ts";
 import {
   deleteEngagementDirectory,
   getChainsPage,
@@ -33,6 +39,7 @@ export interface AppOptions {
   engagementsDir?: string;
   assetRoot?: string;
   pipelineManager?: ReturnType<typeof createPipelineManager>;
+  authMiddleware?: MiddlewareHandler;
 }
 
 export interface StartServerOptions extends AppOptions {
@@ -84,6 +91,15 @@ export function createApp(options: AppOptions = {}): Hono {
       rewriteRequestPath: (path) => path.replace(/^\/static\//, "/"),
     }),
   );
+
+  const authMw =
+    options.authMiddleware ??
+    createAuthMiddleware({
+      clientId: AZURE_CLIENT_ID,
+      tenantId: AZURE_TENANT_ID,
+      disabled: AUTH_DISABLED,
+    });
+  app.use(authMw);
 
   app.get("/", (c) => {
     return c.html(<DashboardPage model={getDashboardPage(engagementsDir)} />);

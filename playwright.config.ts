@@ -16,7 +16,7 @@ export default defineConfig({
     command: [
       "bun run scripts/build-assets.ts",
       "bun run scripts/prepare-e2e-fixtures.ts",
-      `PORT=${port} PENTEST_PIPELINE_MODE=synthetic PENTEST_ENGAGEMENTS_DIR=${fixtureRoot} PENTEST_SKIP_ASSET_BUILD=1 bun run scripts/start-server.ts`,
+      `PORT=${port} PENTEST_PIPELINE_MODE=synthetic PENTEST_ENGAGEMENTS_DIR=${fixtureRoot} PENTEST_SKIP_ASSET_BUILD=1 AUTH_DISABLED=true bun run scripts/start-server.ts`,
     ].join(" && "),
     url: `http://127.0.0.1:${port}`,
     reuseExistingServer: false,

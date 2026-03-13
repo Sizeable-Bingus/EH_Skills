@@ -36,6 +36,10 @@ export const BURP_SCAN_CONFIG = resolve(
 export const BURP_STARTUP_TIMEOUT_MS = 120_000;
 export const BURP_POLL_INTERVAL_MS = 5_000;
 
+export const AZURE_CLIENT_ID = process.env.AZURE_CLIENT_ID ?? "";
+export const AZURE_TENANT_ID = process.env.AZURE_TENANT_ID ?? "";
+export const AUTH_DISABLED = process.env.AUTH_DISABLED === "true";
+
 export const SECURITY_HEADERS = {
   "Content-Security-Policy": [
     "default-src 'self'",
