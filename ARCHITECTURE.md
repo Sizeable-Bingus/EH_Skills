@@ -27,6 +27,18 @@
 
 The server keeps the existing multi-page route shape and adds the same security headers at the middleware layer.
 
+### Authentication
+
+`src/auth.ts` provides Azure AD (Entra ID) JWT authentication via the `jose` library. The `createAuthMiddleware` factory returns a Hono middleware that:
+
+- Skips `/static/*` paths (public assets)
+- Extracts and verifies Bearer tokens against Microsoft's JWKS endpoint
+- Validates audience, issuer, and tenant (`tid`) claims
+- Returns 401/403 JSON errors for invalid or unauthorized requests
+- Can be disabled entirely with `AUTH_DISABLED=true` for local development
+
+The middleware is injectable via `AppOptions.authMiddleware` for test isolation.
+
 ### Server-rendered pages
 
 `src/pages/layout.tsx` provides the shared navigation, scan modal, delete modal, and pipeline status bar. Individual page modules render the same product views as the prior Jinja templates, using the shared page models from the SQLite query layer.
@@ -153,6 +165,9 @@ Current environment variables used by the code:
 - `PENTEST_CLAUDE_MODEL`: optional Claude model override for the real pipeline
 - `BURP_JAR`, `BURP_JAVA`, `BURP_REST_API`, `BURP_MCP_SSE`: Burp runtime overrides
 - `PENTEST_SKIP_ASSET_BUILD`: skips the client bundle step on server startup
+- `AZURE_CLIENT_ID`: Azure AD app registration client ID (expected `aud` claim)
+- `AZURE_TENANT_ID`: Azure AD tenant ID (for JWKS URL, issuer, and `tid` claim)
+- `AUTH_DISABLED`: set to `"true"` to bypass authentication (local dev)
 
 ## Development Workflow
 
@@ -173,7 +188,7 @@ current PR. It can:
 
 - Path traversal for engagement selection/deletion is reduced by normalizing names with `basename(...)`.
 - Security headers are added at the Hono middleware layer.
-- There is no authn/authz layer around dashboard or pipeline endpoints.
+- Azure AD (Entra ID) JWT authentication protects all non-static routes. Auth can be disabled for local dev with `AUTH_DISABLED=true`.
 - Pipeline status is not persisted; an app restart resets in-memory status/subscriber state.
 - The real pipeline still depends on local Burp Suite installation paths and a local Claude Code runtime.
 

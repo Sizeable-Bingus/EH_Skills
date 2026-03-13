@@ -4,8 +4,13 @@ import { join } from "node:path";
 
 import { Database } from "bun:sqlite";
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import type { MiddlewareHandler } from "hono";
 
 import { createApp, startServer } from "../src/server.tsx";
+
+const noopAuth: MiddlewareHandler = async (_c, next) => {
+  await next();
+};
 import { ensureSchema } from "../src/db/sqlite.ts";
 import { createPipelineManager } from "../src/pipeline/manager.ts";
 import { ingestExploitationOutput } from "../src/db/ingest.ts";
@@ -38,7 +43,10 @@ describe("route headers and pipeline APIs", () => {
         }) as AsyncIterable<string | null>,
       unsubscribe: () => undefined,
     };
-    const app = createApp({ pipelineManager: manager as never });
+    const app = createApp({
+      pipelineManager: manager as never,
+      authMiddleware: noopAuth,
+    });
 
     for (const path of [
       "/",
@@ -104,7 +112,10 @@ describe("route headers and pipeline APIs", () => {
         }) as AsyncIterable<string | null>,
       unsubscribe: () => undefined,
     };
-    const app = createApp({ pipelineManager: manager as never });
+    const app = createApp({
+      pipelineManager: manager as never,
+      authMiddleware: noopAuth,
+    });
 
     const missingTarget = await app.request("/api/pipeline/start", {
       method: "POST",
@@ -166,7 +177,10 @@ describe("route headers and pipeline APIs", () => {
         unsubscribed = true;
       },
     };
-    const app = createApp({ pipelineManager: manager as never });
+    const app = createApp({
+      pipelineManager: manager as never,
+      authMiddleware: noopAuth,
+    });
 
     const response = await app.request("/api/pipeline/stream");
     const body = await response.text();
@@ -189,7 +203,7 @@ describe("page rendering branches and deletion behavior", () => {
   });
 
   test("renders empty and zero-finding dashboard states", async () => {
-    let app = createApp({ engagementsDir });
+    let app = createApp({ engagementsDir, authMiddleware: noopAuth });
     let response = await app.request("/");
     expect(await response.text()).toContain("No engagements found");
 
@@ -203,7 +217,7 @@ describe("page rendering branches and deletion behavior", () => {
     );
     db.close();
 
-    app = createApp({ engagementsDir });
+    app = createApp({ engagementsDir, authMiddleware: noopAuth });
     response = await app.request("/");
     const html = await response.text();
     expect(html).toContain("https://empty.example");
@@ -249,7 +263,7 @@ describe("page rendering branches and deletion behavior", () => {
     db.query("UPDATE engagements SET scope = ?").run("Legacy flat scope text");
     db.close();
 
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
     const structured = await app.request("/summary?engagement=structured");
     const structuredHtml = await structured.text();
     expect(structuredHtml).toContain("Duration: 2.0 min");
@@ -270,7 +284,7 @@ describe("page rendering branches and deletion behavior", () => {
     mkdirSync(join(engagementsDir, "findings"), { recursive: true });
     ingestExploitationOutput(base, dbPath, { includeAll: true });
 
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
     const response = await app.request(
       "/findings?engagement=findings&severity=high",
     );
@@ -289,6 +303,7 @@ describe("page rendering branches and deletion behavior", () => {
         modeResolver: () => "synthetic",
         syntheticRunner: async () => undefined,
       }),
+      authMiddleware: noopAuth,
     });
 
     const deleted = await app.request("/api/engagements/..%2Fdemo", {
@@ -315,7 +330,7 @@ describe("page rendering branches and deletion behavior", () => {
       join(engagementsDir, "broken", "pentest_data.db"),
       "not sqlite",
     );
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
     const originalConsoleError = console.error;
     const errors: unknown[][] = [];
     console.error = (...args: unknown[]) => {
@@ -348,7 +363,7 @@ describe("page rendering branches and deletion behavior", () => {
     mkdirSync(join(engagementsDir, "apitest"), { recursive: true });
     ingestExploitationOutput(base, dbPath, { includeAll: true });
 
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
 
     const summary = await app.request("/api/summary?engagement=apitest");
     expect(summary.status).toBe(200);
@@ -374,7 +389,7 @@ describe("page rendering branches and deletion behavior", () => {
   });
 
   test("JSON API endpoints return 404 JSON for unknown engagements", async () => {
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
 
     for (const path of [
       "/api/summary?engagement=missing",
@@ -395,7 +410,7 @@ describe("page rendering branches and deletion behavior", () => {
       join(engagementsDir, "broken", "pentest_data.db"),
       "not sqlite",
     );
-    const app = createApp({ engagementsDir });
+    const app = createApp({ engagementsDir, authMiddleware: noopAuth });
     const originalConsoleError = console.error;
     console.error = () => undefined;
 
