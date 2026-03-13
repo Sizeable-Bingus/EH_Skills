@@ -1,0 +1,11 @@
+__pycache__/
+engagements/
+tools/
+SecLists/
+*.db
+*.db.bak
+*.json.bak
+.python-version
+.DS_Store
+dist/
+node_modules/

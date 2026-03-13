@@ -1,0 +1,163 @@
+import { cpSync, mkdtempSync, mkdirSync, rmSync } from "node:fs";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
+
+import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+
+import { createPipelineManager } from "../src/pipeline/manager.ts";
+import { createApp } from "../src/server.tsx";
+
+const fixtureDb = join(
+  process.cwd(),
+  "engagements",
+  "example-com",
+  "pentest_data.db",
+);
+
+describe("route responses", () => {
+  test("renders cross-engagement dashboard at root", async () => {
+    const app = createApp();
+    const response = await app.request("/");
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Cross-Engagement Dashboard");
+    expect(html).toContain("dashboard.js");
+  });
+
+  test("renders all four engagement pages", async () => {
+    const app = createApp();
+
+    const summary = await app.request("/summary");
+    const findings = await app.request("/findings?engagement=example-com");
+    const chains = await app.request("/chains?engagement=example-com");
+    const loot = await app.request("/loot?engagement=example-com");
+
+    expect(summary.status).toBe(200);
+    expect(await summary.text()).toContain("Executive Summary");
+    expect(findings.status).toBe(200);
+    expect(await findings.text()).toContain("Findings");
+    expect(chains.status).toBe(200);
+    expect(await chains.text()).toContain("Attack Chains");
+    expect(loot.status).toBe(200);
+    expect(await loot.text()).toContain("Compromised Credentials");
+  });
+
+  test("serves built static assets under /static", async () => {
+    const app = createApp();
+    const response = await app.request("/static/styles.css");
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/css");
+    expect(await response.text()).toContain(":root");
+  });
+});
+
+describe("engagement APIs", () => {
+  let engagementRoot: string;
+
+  beforeEach(() => {
+    engagementRoot = mkdtempSync(join(tmpdir(), "eh-skills-routes-"));
+    mkdirSync(join(engagementRoot, "demo"), { recursive: true });
+    cpSync(fixtureDb, join(engagementRoot, "demo", "pentest_data.db"));
+  });
+
+  afterEach(() => {
+    rmSync(engagementRoot, { recursive: true, force: true });
+  });
+
+  test("lists valid engagements only", async () => {
+    mkdirSync(join(engagementRoot, "empty-dir"), { recursive: true });
+
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/api/engagements");
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual(["demo"]);
+  });
+
+  test("renders dashboard pages from the configured engagements root", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/findings?engagement=demo");
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("Findings");
+  });
+
+  test("loads the latest engagement from the configured root by default", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/summary");
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toContain("https://example.com");
+  });
+
+  test("blocks deleting the running engagement", async () => {
+    const manager = createPipelineManager({
+      modeResolver: () => "synthetic",
+      syntheticRunner: async ({ log }) => {
+        log("PHASE: Demo");
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
+    await manager.startPipeline("https://demo");
+
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      pipelineManager: manager,
+    });
+    const response = await app.request("/api/engagements/demo", {
+      method: "DELETE",
+    });
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      detail: "Cannot delete while pipeline is running for this target",
+    });
+  });
+
+  test("deletes a completed engagement directory", async () => {
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      pipelineManager: createPipelineManager({
+        modeResolver: () => "synthetic",
+        syntheticRunner: () => Promise.resolve(),
+      }),
+    });
+
+    const response = await app.request("/api/engagements/demo", {
+      method: "DELETE",
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      status: "deleted",
+      engagement: "demo",
+    });
+  });
+
+  test("renders cross-engagement dashboard with configured root", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+    const response = await app.request("/");
+
+    expect(response.status).toBe(200);
+    const html = await response.text();
+    expect(html).toContain("Cross-Engagement Dashboard");
+    expect(html).toContain("demo");
+  });
+
+  test("returns 404 for unknown engagements on page routes", async () => {
+    const app = createApp({ engagementsDir: engagementRoot });
+
+    for (const path of [
+      "/summary?engagement=missing",
+      "/findings?engagement=missing",
+      "/chains?engagement=missing",
+      "/loot?engagement=missing",
+    ]) {
+      const response = await app.request(path);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toContain("Unknown engagement: missing");
+    }
+  });
+});
