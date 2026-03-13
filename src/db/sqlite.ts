@@ -20,7 +20,7 @@ function ensureColumn(
   db: Database,
   table: string,
   column: string,
-  columnType: string
+  columnType: string,
 ): void {
   const columns = db.query(`PRAGMA table_info(${table})`).all() as Array<{
     name?: string;
@@ -35,7 +35,7 @@ function ensureColumn(
 
 export function withReadOnlyDatabase<T>(
   dbPath: string,
-  callback: (db: Database) => T
+  callback: (db: Database) => T,
 ): T {
   if (!existsSync(dbPath)) {
     throw new Error(`Database does not exist: ${dbPath}`);
@@ -50,7 +50,7 @@ export function withReadOnlyDatabase<T>(
 
 export function withWritableDatabase<T>(
   dbPath: string,
-  callback: (db: Database) => T
+  callback: (db: Database) => T,
 ): T {
   const db = openWritableDatabase(dbPath);
   try {

@@ -13,13 +13,13 @@ import {
   getSummaryPage,
   listEngagements,
   resolveEngagementDbInDir,
-  UnknownEngagementError
+  UnknownEngagementError,
 } from "../src/db/dashboard.ts";
 import {
   CATEGORY_MAP,
   VALID_CATEGORIES,
   migrateCategories,
-  normalizeCategory
+  normalizeCategory,
 } from "../src/db/categories.ts";
 import { ingestExploitationOutput } from "../src/db/ingest.ts";
 import { createSyntheticArtifacts } from "../src/pipeline/synthetic.ts";
@@ -37,7 +37,7 @@ function makeTempDir(prefix: string): string {
 
 function createOutput(
   target = "https://demo.example",
-  scanDate = "2026-03-11T00:00:00.000Z"
+  scanDate = "2026-03-11T00:00:00.000Z",
 ): ExploitationOutput {
   const { exploitation } = createSyntheticArtifacts(target, "/tmp/recon.json");
   exploitation.meta.scan_date = scanDate;
@@ -55,7 +55,7 @@ describe("dashboard shaping edge cases", () => {
     expect(getLatestEngagementId("/tmp/missing.db", 42)).toBe(42);
     expect(listEngagements("/tmp/also-missing")).toEqual([]);
     expect(() =>
-      resolveEngagementDbInDir("missing", "/tmp/also-missing")
+      resolveEngagementDbInDir("missing", "/tmp/also-missing"),
     ).toThrow(UnknownEngagementError);
     expect(() => getSummaryPage("/tmp/missing.db", 1)).toThrow();
   });
@@ -64,7 +64,7 @@ describe("dashboard shaping edge cases", () => {
     const root = makeTempDir("eh-dash-resolve-");
     for (const [name, scanDate] of [
       ["alpha", "2026-03-10T00:00:00.000Z"],
-      ["beta", "2026-03-11T00:00:00.000Z"]
+      ["beta", "2026-03-11T00:00:00.000Z"],
     ] as const) {
       const dbPath = join(root, name, "pentest_data.db");
       mkdirSync(join(root, name), { recursive: true });
@@ -72,16 +72,16 @@ describe("dashboard shaping edge cases", () => {
         createOutput(`https://${name}.example`, scanDate),
         dbPath,
         {
-          includeAll: true
-        }
+          includeAll: true,
+        },
       );
     }
 
     expect(resolveEngagementDbInDir(null, root).dbPath).toBe(
-      join(root, "beta", "pentest_data.db")
+      join(root, "beta", "pentest_data.db"),
     );
     expect(resolveEngagementDbInDir("../alpha", root).dbPath).toBe(
-      join(root, "alpha", "pentest_data.db")
+      join(root, "alpha", "pentest_data.db"),
     );
   });
 
@@ -89,16 +89,16 @@ describe("dashboard shaping edge cases", () => {
     const emptyRoot = makeTempDir("eh-dash-empty-root-");
     mkdirSync(join(emptyRoot, "empty"), { recursive: true });
     let db = new Database(join(emptyRoot, "empty", "pentest_data.db"), {
-      create: true
+      create: true,
     });
     db.exec(
-      "CREATE TABLE engagements (id INTEGER PRIMARY KEY AUTOINCREMENT, target TEXT, scan_date TEXT)"
+      "CREATE TABLE engagements (id INTEGER PRIMARY KEY AUTOINCREMENT, target TEXT, scan_date TEXT)",
     );
     db.close();
 
     expect(resolveEngagementDbInDir(null, emptyRoot)).toEqual({
       dbPath: DEFAULT_DB,
-      engagementId: getLatestEngagementId(DEFAULT_DB)
+      engagementId: getLatestEngagementId(DEFAULT_DB),
     });
 
     const sameDateRoot = makeTempDir("eh-dash-sort-date-");
@@ -108,11 +108,11 @@ describe("dashboard shaping edge cases", () => {
       ingestExploitationOutput(
         createOutput(`https://${name}.example`, "2026-03-11T00:00:00.000Z"),
         dbPath,
-        { includeAll: true }
+        { includeAll: true },
       );
     }
     expect(resolveEngagementDbInDir(null, sameDateRoot).dbPath).toBe(
-      join(sameDateRoot, "alpha", "pentest_data.db")
+      join(sameDateRoot, "alpha", "pentest_data.db"),
     );
 
     const sameDateDifferentIdRoot = makeTempDir("eh-dash-sort-id-");
@@ -121,28 +121,28 @@ describe("dashboard shaping edge cases", () => {
     ingestExploitationOutput(
       createOutput("https://first.example", "2026-03-11T00:00:00.000Z"),
       firstPath,
-      { includeAll: true }
+      { includeAll: true },
     );
 
     const secondPath = join(
       sameDateDifferentIdRoot,
       "second",
-      "pentest_data.db"
+      "pentest_data.db",
     );
     mkdirSync(join(sameDateDifferentIdRoot, "second"), { recursive: true });
     ingestExploitationOutput(
       createOutput("https://second.example", "2026-03-11T00:00:00.000Z"),
       secondPath,
-      { includeAll: true }
+      { includeAll: true },
     );
     ingestExploitationOutput(
       createOutput("https://second.example", "2026-03-11T00:00:00.000Z"),
       secondPath,
-      { includeAll: true, force: true }
+      { includeAll: true, force: true },
     );
 
     expect(resolveEngagementDbInDir(null, sameDateDifferentIdRoot).dbPath).toBe(
-      secondPath
+      secondPath,
     );
   });
 
@@ -151,7 +151,7 @@ describe("dashboard shaping edge cases", () => {
 
     const objectDb = join(root, "object.db");
     ingestExploitationOutput(createOutput("https://object.example"), objectDb, {
-      includeAll: true
+      includeAll: true,
     });
     let db = new Database(objectDb);
     db.exec("ALTER TABLE engagements ADD COLUMN scope TEXT");
@@ -159,24 +159,24 @@ describe("dashboard shaping edge cases", () => {
       JSON.stringify({
         in_scope: ["https://object.example"],
         out_of_scope: ["/admin"],
-        rules_of_engagement: "Only synthetic scope"
-      })
+        rules_of_engagement: "Only synthetic scope",
+      }),
     );
     db.close();
 
     const objectSummary = getSummaryPage(
       objectDb,
-      getLatestEngagementId(objectDb)
+      getLatestEngagementId(objectDb),
     );
     expect(objectSummary.engagement?.scope).toEqual({
       in_scope: ["https://object.example"],
       out_of_scope: ["/admin"],
-      rules_of_engagement: "Only synthetic scope"
+      rules_of_engagement: "Only synthetic scope",
     });
 
     const stringDb = join(root, "string.db");
     ingestExploitationOutput(createOutput("https://string.example"), stringDb, {
-      includeAll: true
+      includeAll: true,
     });
     db = new Database(stringDb);
     db.exec("ALTER TABLE engagements ADD COLUMN scope TEXT");
@@ -185,7 +185,7 @@ describe("dashboard shaping edge cases", () => {
 
     const stringSummary = getSummaryPage(
       stringDb,
-      getLatestEngagementId(stringDb)
+      getLatestEngagementId(stringDb),
     );
     expect(stringSummary.engagement?.scope).toBe("Legacy flat scope text");
 
@@ -194,41 +194,41 @@ describe("dashboard shaping edge cases", () => {
     db.close();
     const arraySummary = getSummaryPage(
       stringDb,
-      getLatestEngagementId(stringDb)
+      getLatestEngagementId(stringDb),
     );
     expect(arraySummary.engagement?.scope).toEqual({
       in_scope: ["https://string.example"],
       out_of_scope: [],
-      rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement"
+      rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement",
     });
 
     const legacyDb = join(root, "legacy.db");
     ingestExploitationOutput(createOutput("https://legacy.example"), legacyDb, {
-      includeAll: true
+      includeAll: true,
     });
     const legacySummary = getSummaryPage(
       legacyDb,
-      getLatestEngagementId(legacyDb)
+      getLatestEngagementId(legacyDb),
     );
     expect(legacySummary.engagement?.scope).toEqual({
       in_scope: ["https://legacy.example"],
       out_of_scope: [],
-      rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement"
+      rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement",
     });
 
     const emptyDb = join(root, "empty.db");
     ingestExploitationOutput(createOutput("https://empty.example"), emptyDb, {
-      includeAll: true
+      includeAll: true,
     });
     db = new Database(emptyDb);
     db.query(
-      "UPDATE engagements SET scope_in = NULL, scope_out = NULL, rules = NULL"
+      "UPDATE engagements SET scope_in = NULL, scope_out = NULL, rules = NULL",
     ).run();
     db.close();
 
     const emptySummary = getSummaryPage(
       emptyDb,
-      getLatestEngagementId(emptyDb)
+      getLatestEngagementId(emptyDb),
     );
     expect(emptySummary.engagement?.scope).toBeNull();
   });
@@ -236,20 +236,20 @@ describe("dashboard shaping edge cases", () => {
   test("filters findings and falls back from legacy method columns", () => {
     const dbPath = join(makeTempDir("eh-findings-"), "pentest_data.db");
     ingestExploitationOutput(createOutput(), dbPath, {
-      includeAll: true
+      includeAll: true,
     });
 
     const db = new Database(dbPath);
     db.exec("ALTER TABLE findings ADD COLUMN method TEXT");
     db.query(
-      "INSERT INTO findings (engagement_id, name, category, severity, status, detail, raw, method, http_method) VALUES (1, 'Legacy', 'legacy', 'low', 'confirmed', 'old method', '{}', 'PATCH', NULL)"
+      "INSERT INTO findings (engagement_id, name, category, severity, status, detail, raw, method, http_method) VALUES (1, 'Legacy', 'legacy', 'low', 'confirmed', 'old method', '{}', 'PATCH', NULL)",
     ).run();
     db.close();
 
     const allFindings = getFindingsPage(dbPath, 1);
     const bothFilters = getFindingsPage(dbPath, 1, {
       severity: "low",
-      category: "legacy"
+      category: "legacy",
     });
 
     expect(allFindings.severities.length).toBeGreaterThan(0);
@@ -261,15 +261,15 @@ describe("dashboard shaping edge cases", () => {
   test("applies credential detail and evidence fallbacks", () => {
     const dbPath = join(makeTempDir("eh-loot-"), "pentest_data.db");
     ingestExploitationOutput(createOutput(), dbPath, {
-      includeAll: true
+      includeAll: true,
     });
 
     const db = new Database(dbPath);
     db.query(
-      "INSERT INTO credentials (engagement_id, source, username, password_hash, password_cracked, service) VALUES (1, NULL, NULL, NULL, NULL, '')"
+      "INSERT INTO credentials (engagement_id, source, username, password_hash, password_cracked, service) VALUES (1, NULL, NULL, NULL, NULL, '')",
     ).run();
     db.query(
-      "INSERT INTO credentials (engagement_id, source, username, password_hash, password_cracked, service) VALUES (1, 'test', 'bob', 'hash', 'secret', 'ssh')"
+      "INSERT INTO credentials (engagement_id, source, username, password_hash, password_cracked, service) VALUES (1, 'test', 'bob', 'hash', 'secret', 'ssh')",
     ).run();
     db.close();
 
@@ -277,18 +277,18 @@ describe("dashboard shaping edge cases", () => {
     expect(loot.credentials.at(-1)).toEqual({
       technique: "test",
       detail: "bob | ssh",
-      evidence: "Hash: hash | Cracked: secret"
+      evidence: "Hash: hash | Cracked: secret",
     });
     expect(loot.credentials.at(-2)).toEqual({
       technique: "Unknown source",
       detail: "Unknown username",
-      evidence: "Captured credential material"
+      evidence: "Captured credential material",
     });
   });
 
   test("covers default engagement resolution helpers", () => {
     expect(
-      resolveEngagementDbInDir(null).dbPath.endsWith("pentest_data.db")
+      resolveEngagementDbInDir(null).dbPath.endsWith("pentest_data.db"),
     ).toBe(true);
     expect(getSummaryPageDefault()).toBeDefined();
   });
@@ -296,7 +296,7 @@ describe("dashboard shaping edge cases", () => {
   test("returns an empty summary when the requested engagement row is missing", () => {
     const dbPath = join(makeTempDir("eh-summary-missing-row-"), "pentest.db");
     ingestExploitationOutput(createOutput("https://summary.example"), dbPath, {
-      includeAll: true
+      includeAll: true,
     });
 
     const summary = getSummaryPage(dbPath, 999);
@@ -304,7 +304,7 @@ describe("dashboard shaping edge cases", () => {
     expect(summary.stats).toEqual({
       total_findings: 0,
       total_credentials: 0,
-      total_chains: 0
+      total_chains: 0,
     });
   });
 });
@@ -334,7 +334,7 @@ describe("category normalization", () => {
       path_traversal: "file_access",
       file_upload: "file_access",
       business_logic: "business_logic",
-      websocket: "business_logic"
+      websocket: "business_logic",
     };
 
     for (const [old, consolidated] of Object.entries(expected)) {
@@ -381,7 +381,7 @@ describe("category normalization", () => {
     )`);
     for (const f of output.findings) {
       db.query(
-        "INSERT INTO findings (engagement_id, name, category, severity, status, detail, raw) VALUES (1, ?, ?, ?, ?, ?, '{}')"
+        "INSERT INTO findings (engagement_id, name, category, severity, status, detail, raw) VALUES (1, ?, ?, ?, ?, ?, '{}')",
       ).run(f.name, f.category, f.severity, f.status ?? "confirmed", f.detail);
     }
     db.close();
@@ -400,7 +400,7 @@ describe("category normalization", () => {
     const changedCats = new Set(
       Object.entries(CATEGORY_MAP)
         .filter(([k, v]) => k !== v)
-        .map(([k]) => k)
+        .map(([k]) => k),
     );
     for (const cat of remaining) {
       expect(changedCats.has(cat)).toBe(false);
@@ -416,52 +416,52 @@ describe("ingest error handling", () => {
     expect(() =>
       ingestExploitationOutput(
         { ...base, meta: { ...base.meta, target: "" } },
-        dbPath
-      )
+        dbPath,
+      ),
     ).toThrow("'meta.target' is required");
     expect(() =>
       ingestExploitationOutput(
         { ...base, meta: { ...base.meta, scan_date: "" } },
-        dbPath
-      )
+        dbPath,
+      ),
     ).toThrow("'meta.scan_date' is required");
     expect(() =>
-      ingestExploitationOutput({ ...base, findings: null as never }, dbPath)
+      ingestExploitationOutput({ ...base, findings: null as never }, dbPath),
     ).toThrow("'findings' is required");
     expect(() =>
       ingestExploitationOutput(
         {
           ...base,
-          findings: [{ ...base.findings[0], name: "" }] as typeof base.findings
+          findings: [{ ...base.findings[0], name: "" }] as typeof base.findings,
         },
-        dbPath
-      )
+        dbPath,
+      ),
     ).toThrow("Each finding must include a non-empty 'name'");
     expect(() =>
       ingestExploitationOutput(
         {
           ...base,
           findings: [
-            { ...base.findings[0], category: "" }
-          ] as typeof base.findings
+            { ...base.findings[0], category: "" },
+          ] as typeof base.findings,
         },
-        dbPath
-      )
+        dbPath,
+      ),
     ).toThrow(
-      "Finding 'Admin panel accepts default credentials' is missing 'category'"
+      "Finding 'Admin panel accepts default credentials' is missing 'category'",
     );
     expect(() =>
       ingestExploitationOutput(
         {
           ...base,
           findings: [
-            { ...base.findings[0], detail: "" }
-          ] as typeof base.findings
+            { ...base.findings[0], detail: "" },
+          ] as typeof base.findings,
         },
-        dbPath
-      )
+        dbPath,
+      ),
     ).toThrow(
-      "Finding 'Admin panel accepts default credentials' is missing 'detail'"
+      "Finding 'Admin panel accepts default credentials' is missing 'detail'",
     );
   });
 
@@ -477,34 +477,35 @@ describe("ingest error handling", () => {
       return row.count;
     });
     expect(confirmedCount).toBe(
-      output.findings.filter((finding) => finding.status === "confirmed").length
+      output.findings.filter((finding) => finding.status === "confirmed")
+        .length,
     );
 
     expect(() =>
-      ingestExploitationOutput(output, dbPath, { includeAll: true })
+      ingestExploitationOutput(output, dbPath, { includeAll: true }),
     ).toThrow(
-      `Engagement already exists for ${output.meta.target} at ${output.meta.scan_date}`
+      `Engagement already exists for ${output.meta.target} at ${output.meta.scan_date}`,
     );
 
     const forcedId = ingestExploitationOutput(output, dbPath, {
       force: true,
-      includeAll: true
+      includeAll: true,
     });
     expect(forcedId).toBeGreaterThan(confirmedOnlyId);
 
     const rollbackDb = join(
       makeTempDir("eh-ingest-rollback-"),
-      "pentest_data.db"
+      "pentest_data.db",
     );
     const brokenChain = {
       ...createOutput("https://rollback.example"),
-      exploitation_chains: [{ name: null as never }]
+      exploitation_chains: [{ name: null as never }],
     };
 
     expect(() =>
       ingestExploitationOutput(brokenChain as ExploitationOutput, rollbackDb, {
-        includeAll: true
-      })
+        includeAll: true,
+      }),
     ).toThrow();
     const engagementCount = withReadOnlyDatabase(rollbackDb, (db) => {
       const row = db

@@ -13,7 +13,7 @@ if (!existsSync(engagementsDir)) {
 }
 
 const dirs = readdirSync(engagementsDir, { withFileTypes: true }).filter((d) =>
-  d.isDirectory()
+  d.isDirectory(),
 );
 
 let totalUpdated = 0;
@@ -28,5 +28,5 @@ for (const dir of dirs) {
 }
 
 console.log(
-  `\nMigration complete. ${totalUpdated} total rows updated across ${dirs.length} engagement(s).`
+  `\nMigration complete. ${totalUpdated} total rows updated across ${dirs.length} engagement(s).`,
 );

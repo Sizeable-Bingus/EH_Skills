@@ -11,7 +11,7 @@ const SEVERITIES = new Set([
   "high",
   "medium",
   "low",
-  "info"
+  "info",
 ] as const);
 type Severity = "critical" | "high" | "medium" | "low" | "info";
 
@@ -29,7 +29,7 @@ function assertTopLevel(data: ExploitationOutput): void {
 
 function selectFindings(
   data: ExploitationOutput,
-  includeAll: boolean
+  includeAll: boolean,
 ): ExploitationFinding[] {
   return data.findings.filter((item) => {
     if (!item.name) {
@@ -47,7 +47,7 @@ function selectFindings(
 
 function summaryCounts(
   findings: ExploitationFinding[],
-  credentials: NonNullable<ExploitationOutput["loot"]>["credentials"] = []
+  credentials: NonNullable<ExploitationOutput["loot"]>["credentials"] = [],
 ): {
   total_vulns: number;
   critical: number;
@@ -66,7 +66,7 @@ function summaryCounts(
     low: 0,
     info: 0,
     confirmed: 0,
-    creds_found: credentials.length
+    creds_found: credentials.length,
   };
 
   for (const finding of findings) {
@@ -85,7 +85,7 @@ function summaryCounts(
 export function ingestExploitationOutput(
   data: ExploitationOutput,
   dbPath: string,
-  options: { force?: boolean; includeAll?: boolean } = {}
+  options: { force?: boolean; includeAll?: boolean } = {},
 ): number {
   assertTopLevel(data);
   mkdirSync(dirname(dbPath), { recursive: true });
@@ -112,13 +112,13 @@ export function ingestExploitationOutput(
     try {
       if (existing?.id && options.force) {
         db.query("DELETE FROM findings WHERE engagement_id = ?").run(
-          existing.id
+          existing.id,
         );
         db.query("DELETE FROM credentials WHERE engagement_id = ?").run(
-          existing.id
+          existing.id,
         );
         db.query("DELETE FROM data_exfiltrated WHERE engagement_id = ?").run(
-          existing.id
+          existing.id,
         );
         const chainIds = db
           .query("SELECT id FROM exploitation_chains WHERE engagement_id = ?")
@@ -127,7 +127,7 @@ export function ingestExploitationOutput(
           db.query("DELETE FROM chain_steps WHERE chain_id = ?").run(chain.id);
         }
         db.query("DELETE FROM exploitation_chains WHERE engagement_id = ?").run(
-          existing.id
+          existing.id,
         );
         db.query("DELETE FROM engagements WHERE id = ?").run(existing.id);
       }
@@ -146,7 +146,7 @@ export function ingestExploitationOutput(
              duration_sec, total_vulns, critical, high, medium, low, info,
              confirmed, creds_found)
           VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        `
+        `,
       ).run(
         target,
         scanDate,
@@ -163,7 +163,7 @@ export function ingestExploitationOutput(
         counts.low,
         counts.info,
         counts.confirmed,
-        counts.creds_found
+        counts.creds_found,
       );
 
       const engagementRow = db
@@ -179,7 +179,7 @@ export function ingestExploitationOutput(
                http_method, technique, detail, evidence, impact, remediation,
                affected_asset, raw)
             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-          `
+          `,
         ).run(
           engagementId,
           item.name,
@@ -195,7 +195,7 @@ export function ingestExploitationOutput(
           item.impact ?? null,
           item.remediation ?? null,
           item.affected_asset ?? null,
-          JSON.stringify(item)
+          JSON.stringify(item),
         );
       }
 
@@ -205,14 +205,14 @@ export function ingestExploitationOutput(
             INSERT INTO credentials
               (engagement_id, source, username, password_hash, password_cracked, service)
             VALUES (?,?,?,?,?,?)
-          `
+          `,
         ).run(
           engagementId,
           credential.source ?? null,
           credential.username ?? null,
           credential.password_hash ?? null,
           credential.password_cracked ?? null,
-          credential.service ?? null
+          credential.service ?? null,
         );
       }
 
@@ -222,13 +222,13 @@ export function ingestExploitationOutput(
             INSERT INTO data_exfiltrated
               (engagement_id, source, record_count, data_types, detail)
             VALUES (?,?,?,?,?)
-          `
+          `,
         ).run(
           engagementId,
           item.source ?? null,
           item.record_count ?? null,
           jsonStringify(item.data_types ?? null),
-          item.detail ?? null
+          item.detail ?? null,
         );
       }
 
@@ -238,12 +238,12 @@ export function ingestExploitationOutput(
             INSERT INTO exploitation_chains
               (engagement_id, name, final_impact, severity)
             VALUES (?,?,?,?)
-          `
+          `,
         ).run(
           engagementId,
           chain.name,
           chain.final_impact ?? null,
-          chain.severity ?? null
+          chain.severity ?? null,
         );
 
         const chainRow = db.query("SELECT last_insert_rowid() AS id").get() as {
@@ -257,13 +257,13 @@ export function ingestExploitationOutput(
               INSERT INTO chain_steps
                 (chain_id, step_order, action, vuln_used, result)
               VALUES (?,?,?,?,?)
-            `
+            `,
           ).run(
             chainId,
             step.order ?? index + 1,
             step.action ?? null,
             step.vulnerability_used ?? step.vuln_used ?? null,
-            step.result ?? null
+            step.result ?? null,
           );
         }
       }

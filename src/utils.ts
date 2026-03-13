@@ -7,7 +7,7 @@ export const SEVERITY_ORDER_SQL = [
   "WHEN 'medium' THEN 2",
   "WHEN 'low' THEN 3",
   "WHEN 'info' THEN 4",
-  "ELSE 5 END"
+  "ELSE 5 END",
 ].join(" ");
 
 export function sanitizeTarget(target: string): string {
@@ -74,3 +74,4 @@ export function getErrorMessage(error: unknown): string {
   }
   return String(error);
 }
+

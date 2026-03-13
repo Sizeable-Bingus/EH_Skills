@@ -2,7 +2,7 @@ import type {
   FetchLike,
   PipelineDomRefs,
   StartPipelinePayload,
-  WindowLike
+  WindowLike,
 } from "./pipeline_shared.ts";
 import { parseErrorDetail } from "./pipeline_shared.ts";
 
@@ -57,12 +57,12 @@ export function createScanControls(options: ScanControlsOptions): void {
     const response = await fetchFn("/api/pipeline/start", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       window.alert(
-        (await parseErrorDetail(response)) ?? "Failed to start pipeline"
+        (await parseErrorDetail(response)) ?? "Failed to start pipeline",
       );
       return;
     }

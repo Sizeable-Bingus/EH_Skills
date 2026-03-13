@@ -1,7 +1,7 @@
 import type {
   FetchLike,
   PipelineDomRefs,
-  WindowLike
+  WindowLike,
 } from "./pipeline_shared.ts";
 import { parseErrorDetail } from "./pipeline_shared.ts";
 
@@ -20,7 +20,7 @@ interface DeleteEngagementOptions {
 }
 
 export function createDeleteEngagementControls(
-  options: DeleteEngagementOptions
+  options: DeleteEngagementOptions,
 ): void {
   const { fetchFn, getCurrentEngagement, refs, window } = options;
 
@@ -44,12 +44,12 @@ export function createDeleteEngagementControls(
     const response = await fetchFn(
       `/api/engagements/${encodeURIComponent(engagement)}`,
       {
-        method: "DELETE"
-      }
+        method: "DELETE",
+      },
     );
     if (!response.ok) {
       window.alert(
-        (await parseErrorDetail(response)) ?? "Failed to delete engagement"
+        (await parseErrorDetail(response)) ?? "Failed to delete engagement",
       );
       return;
     }

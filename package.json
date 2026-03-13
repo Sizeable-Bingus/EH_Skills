@@ -8,15 +8,15 @@
     "build": "bun run scripts/build-assets.ts",
     "start": "bun run scripts/start-server.ts",
     "lint": "bun x eslint .",
-    "format": "bun x prettier --write .",
+    "format": "bun x prettier --write --log-level warn .",
     "format:check": "bun x prettier --check .",
     "typecheck": "bun x tsc --noEmit",
-    "test": "bun test tests/*.test.ts",
-    "test:coverage": "bun test tests/*.test.ts --coverage --coverage-reporter=lcov --coverage-reporter=text",
+    "test": "AGENT=1 bun test tests/*.test.ts",
+    "test:coverage": "AGENT=1 bun test tests/*.test.ts --coverage --coverage-reporter=lcov",
     "coverage:check": "bun run scripts/coverage-check.ts",
     "test:e2e": "bun x playwright test",
-    "test:smoke": "bun x playwright test tests/e2e/smoke.e2e.ts",
-    "validate": "bun run typecheck && bun run lint && bun run format:check && bun run test && bun run test:coverage && bun run coverage:check && bun run test:smoke"
+    "test:smoke": "AGENT=1 bun x playwright test tests/e2e/smoke.e2e.ts",
+    "validate": "bun run typecheck && bun run lint && bun run format && bun run test:coverage && bun run coverage:check && bun run test:smoke"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.2.0",

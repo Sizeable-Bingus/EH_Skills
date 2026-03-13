@@ -11,7 +11,7 @@ export interface BuildClientAssetsDependencies {
 }
 
 export async function buildClientAssets(
-  dependencies: BuildClientAssetsDependencies = {}
+  dependencies: BuildClientAssetsDependencies = {},
 ): Promise<void> {
   const mkdirFn = dependencies.mkdirFn ?? mkdirSync;
   const buildFn = dependencies.buildFn ?? Bun.build;
@@ -25,14 +25,14 @@ export async function buildClientAssets(
       join(PROJECT_ROOT, "src", "client", "pipeline.ts"),
       join(PROJECT_ROOT, "src", "client", "findings.ts"),
       join(PROJECT_ROOT, "src", "client", "executive_summary.ts"),
-      join(PROJECT_ROOT, "src", "client", "dashboard.ts")
+      join(PROJECT_ROOT, "src", "client", "dashboard.ts"),
     ],
     outdir: DIST_PUBLIC_DIR,
     target: "browser",
     format: "esm",
     splitting: false,
     naming: "[name].[ext]",
-    minify: false
+    minify: false,
   });
 
   if (!result.success) {
@@ -42,6 +42,6 @@ export async function buildClientAssets(
 
   await writeFn(
     join(DIST_PUBLIC_DIR, "styles.css"),
-    fileFn(join(PROJECT_ROOT, "src", "assets", "styles.css"))
+    fileFn(join(PROJECT_ROOT, "src", "assets", "styles.css")),
   );
 }

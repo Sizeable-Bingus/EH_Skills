@@ -4,13 +4,13 @@ test("dashboard loads and shows the latest engagement", async ({ page }) => {
   await page.goto("/");
 
   await expect(
-    page.getByRole("heading", { name: "Cross-Engagement Dashboard" })
+    page.getByRole("heading", { name: "Cross-Engagement Dashboard" }),
   ).toBeVisible();
   await expect(page.getByText("bravo.example")).toBeVisible();
 });
 
 test("engagement switcher navigates to another engagement", async ({
-  page
+  page,
 }) => {
   await page.goto("/summary?engagement=bravo");
 
@@ -24,7 +24,7 @@ test("engagement switcher navigates to another engagement", async ({
 });
 
 test("start scan streams synthetic pipeline progress to completion", async ({
-  page
+  page,
 }) => {
   await page.goto("/");
 
@@ -36,13 +36,13 @@ test("start scan streams synthetic pipeline progress to completion", async ({
   await expect(page.locator("#pipeline-text")).toContainText("zeta.example");
 
   await expect(page.locator("#pipeline-text")).toContainText("Complete", {
-    timeout: 15_000
+    timeout: 15_000,
   });
   await expect(page.locator("#log-pre")).toContainText("PIPELINE COMPLETE");
 });
 
 test("delete engagement removes the selected engagement and returns to the dashboard", async ({
-  page
+  page,
 }) => {
   await page.goto("/summary?engagement=alpha");
 

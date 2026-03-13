@@ -10,14 +10,14 @@ import {
   getFindingsPage,
   getLatestEngagementId,
   getLootPage,
-  getSummaryPage
+  getSummaryPage,
 } from "../src/db/dashboard.ts";
 
 const fixtureDb = join(
   process.cwd(),
   "engagements",
   "example-com",
-  "pentest_data.db"
+  "pentest_data.db",
 );
 
 describe("dashboard sqlite shaping", () => {
@@ -34,12 +34,12 @@ describe("dashboard sqlite shaping", () => {
     const allFindings = getFindingsPage(fixtureDb, engagementId);
     const filterSeverity = allFindings.severities[0] ?? "info";
     const findings = getFindingsPage(fixtureDb, engagementId, {
-      severity: filterSeverity
+      severity: filterSeverity,
     });
     expect(findings.curSeverity).toBe(filterSeverity);
     expect(findings.findings.length).toBeGreaterThan(0);
     expect(
-      allFindings.findings.some((item) => item.raw !== undefined)
+      allFindings.findings.some((item) => item.raw !== undefined),
     ).toBeTrue();
   });
 
@@ -76,13 +76,13 @@ describe("cross-engagement dashboard", () => {
 
     const singleSummary = getSummaryPage(
       join(engagementsDir, "alpha", "pentest_data.db"),
-      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db"))
+      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db")),
     );
     expect(dashboard.totals.findings).toBe(
-      singleSummary.stats.total_findings * 2
+      singleSummary.stats.total_findings * 2,
     );
     expect(dashboard.totals.credentials).toBe(
-      singleSummary.stats.total_credentials * 2
+      singleSummary.stats.total_credentials * 2,
     );
     expect(dashboard.totals.chains).toBe(singleSummary.stats.total_chains * 2);
   });
@@ -92,11 +92,11 @@ describe("cross-engagement dashboard", () => {
 
     const singleSummary = getSummaryPage(
       join(engagementsDir, "alpha", "pentest_data.db"),
-      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db"))
+      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db")),
     );
     for (const sev of ["critical", "high", "medium", "low", "info"] as const) {
       expect(dashboard.severityCounts[sev]).toBe(
-        singleSummary.severityCounts[sev] * 2
+        singleSummary.severityCounts[sev] * 2,
       );
     }
   });
@@ -107,11 +107,11 @@ describe("cross-engagement dashboard", () => {
 
     const singleSummary = getSummaryPage(
       join(engagementsDir, "alpha", "pentest_data.db"),
-      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db"))
+      getLatestEngagementId(join(engagementsDir, "alpha", "pentest_data.db")),
     );
     for (const cat of singleSummary.categoryCounts) {
       const dashCat = dashboard.categoryCounts.find(
-        (c) => c.category === cat.category
+        (c) => c.category === cat.category,
       );
       expect(dashCat).toBeDefined();
       expect(dashCat!.count).toBe(cat.count * 2);
@@ -126,7 +126,7 @@ describe("cross-engagement dashboard", () => {
     expect(row!.target).toBe("https://example.com");
     expect(row!.total_findings).toBeGreaterThan(0);
     expect(row!.critical + row!.high + row!.medium + row!.low + row!.info).toBe(
-      row!.total_findings
+      row!.total_findings,
     );
   });
 

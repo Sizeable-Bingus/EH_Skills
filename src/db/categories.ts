@@ -42,7 +42,7 @@ export const CATEGORY_MAP: Record<string, string> = {
   path_traversal: "file_access",
   file_upload: "file_access",
   business_logic: "business_logic",
-  websocket: "business_logic"
+  websocket: "business_logic",
 };
 
 export const VALID_CATEGORIES = [
@@ -52,7 +52,7 @@ export const VALID_CATEGORIES = [
   "ssrf",
   "configuration",
   "file_access",
-  "business_logic"
+  "business_logic",
 ] as const;
 
 export type ValidCategory = (typeof VALID_CATEGORIES)[number];

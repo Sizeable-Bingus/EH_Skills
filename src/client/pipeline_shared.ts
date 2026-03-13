@@ -8,7 +8,7 @@ export interface EventSourceLike {
   onerror: ((event: Event) => void) | null;
   addEventListener: (
     type: string,
-    listener: (event: Event | MessageEvent<string>) => void
+    listener: (event: Event | MessageEvent<string>) => void,
   ) => void;
   close: () => void;
 }
@@ -22,7 +22,7 @@ export interface WindowLike {
 
 export type FetchLike = (
   input: string | URL | Request,
-  init?: RequestInit
+  init?: RequestInit,
 ) => Promise<Response>;
 
 export interface PipelineUiDependencies {
@@ -59,7 +59,7 @@ export interface PipelineDomRefs {
 function requiredElement<T extends HTMLElement>(
   documentRef: Document,
   HTMLElementCtor: typeof HTMLElement,
-  id: string
+  id: string,
 ): T {
   const element = documentRef.getElementById(id);
   if (!(element instanceof HTMLElementCtor)) {
@@ -73,7 +73,7 @@ export function getCurrentParams(windowRef: WindowLike): URLSearchParams {
 }
 
 export async function parseErrorDetail(
-  response: Response
+  response: Response,
 ): Promise<string | undefined> {
   try {
     const payload = (await response.json()) as { detail?: string };
@@ -85,113 +85,113 @@ export async function parseErrorDetail(
 
 export function getPipelineDomRefs(
   documentRef: Document,
-  HTMLElementCtor: typeof HTMLElement
+  HTMLElementCtor: typeof HTMLElement,
 ): PipelineDomRefs {
   return {
     modal: requiredElement<HTMLDivElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-modal"
+      "scan-modal",
     ),
     targetInput: requiredElement<HTMLInputElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-target"
+      "scan-target",
     ),
     usernameInput: requiredElement<HTMLInputElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-username"
+      "scan-username",
     ),
     passwordInput: requiredElement<HTMLInputElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-password"
+      "scan-password",
     ),
     startButton: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-start"
+      "scan-start",
     ),
     cancelButton: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-cancel"
+      "scan-cancel",
     ),
     openButton: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "scan-open"
+      "scan-open",
     ),
     statusBar: requiredElement<HTMLDivElement>(
       documentRef,
       HTMLElementCtor,
-      "pipeline-status"
+      "pipeline-status",
     ),
     statusDot: requiredElement<HTMLSpanElement>(
       documentRef,
       HTMLElementCtor,
-      "pipeline-dot"
+      "pipeline-dot",
     ),
     statusText: requiredElement<HTMLSpanElement>(
       documentRef,
       HTMLElementCtor,
-      "pipeline-text"
+      "pipeline-text",
     ),
     logToggle: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "log-toggle"
+      "log-toggle",
     ),
     logPanel: requiredElement<HTMLDivElement>(
       documentRef,
       HTMLElementCtor,
-      "log-panel"
+      "log-panel",
     ),
     logPre: requiredElement<HTMLPreElement>(
       documentRef,
       HTMLElementCtor,
-      "log-pre"
+      "log-pre",
     ),
     combobox: requiredElement<HTMLDivElement>(
       documentRef,
       HTMLElementCtor,
-      "engagement-combobox"
+      "engagement-combobox",
     ),
     comboInput: requiredElement<HTMLInputElement>(
       documentRef,
       HTMLElementCtor,
-      "engagement-input"
+      "engagement-input",
     ),
     listbox: requiredElement<HTMLUListElement>(
       documentRef,
       HTMLElementCtor,
-      "engagement-listbox"
+      "engagement-listbox",
     ),
     deleteButton: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "delete-engagement"
+      "delete-engagement",
     ),
     deleteModal: requiredElement<HTMLDivElement>(
       documentRef,
       HTMLElementCtor,
-      "delete-modal"
+      "delete-modal",
     ),
     deleteCancel: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "delete-cancel"
+      "delete-cancel",
     ),
     deleteConfirm: requiredElement<HTMLButtonElement>(
       documentRef,
       HTMLElementCtor,
-      "delete-confirm"
+      "delete-confirm",
     ),
     deleteTargetName: requiredElement<HTMLParagraphElement>(
       documentRef,
       HTMLElementCtor,
-      "delete-target-name"
-    )
+      "delete-target-name",
+    ),
   };
 }

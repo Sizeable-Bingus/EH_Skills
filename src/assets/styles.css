@@ -179,7 +179,7 @@ a:hover {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.9);
   padding: 16px 12px 8px;
 }
 
@@ -840,7 +840,24 @@ a:hover {
   letter-spacing: 0.02em;
 }
 
+/* ---- Stat Card Links ---- */
+.cnh-stat-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  cursor: pointer;
+}
+
+.cnh-stat-link:hover {
+  text-decoration: none;
+}
+
 /* ---- Charts ---- */
+#severityChart,
+#categoryChart {
+  cursor: pointer;
+}
+
 .chart-container {
   position: relative;
   height: 340px;

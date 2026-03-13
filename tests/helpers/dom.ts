@@ -26,7 +26,7 @@ export function createDom(html: string, url = "https://example.test/") {
   testWindow.document = document;
   testWindow.location = {
     href: location.toString(),
-    search: location.search
+    search: location.search,
   };
   testWindow.alert = () => undefined;
   testWindow.setTimeout = (handler) => {
@@ -61,7 +61,7 @@ export function createDom(html: string, url = "https://example.test/") {
       for (const callback of callbacks) {
         callback();
       }
-    }
+    },
   };
 }
 
@@ -74,7 +74,7 @@ export function installDomGlobals(window: TestWindow): () => void {
     Event: globalThis.Event,
     KeyboardEvent: globalThis.KeyboardEvent,
     MouseEvent: globalThis.MouseEvent,
-    MessageEvent: globalThis.MessageEvent
+    MessageEvent: globalThis.MessageEvent,
   };
 
   const sourceWindow = window as unknown as Window & typeof globalThis;
@@ -103,8 +103,8 @@ export class ChartStub {
   static defaults = {
     font: {
       family: "",
-      weight: 0
-    }
+      weight: 0,
+    },
   };
 
   static instances: Array<{ element: Element; config: unknown }> = [];
@@ -137,7 +137,7 @@ export class EventSourceStub {
 
   addEventListener(
     type: string,
-    listener: (event: Event | MessageEvent<string>) => void
+    listener: (event: Event | MessageEvent<string>) => void,
   ): void {
     const current = this.listeners.get(type) ?? [];
     current.push(listener);

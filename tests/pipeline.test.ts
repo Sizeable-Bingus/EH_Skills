@@ -19,7 +19,7 @@ describe("pipeline manager", () => {
         log("one");
         await new Promise((resolve) => setTimeout(resolve, 5));
         log("two");
-      }
+      },
     });
 
     await manager.startPipeline("https://example.com");
@@ -52,7 +52,7 @@ describe("pipeline manager", () => {
       modeResolver: () => "synthetic",
       syntheticRunner: async ({ engagementDir }) => {
         await Bun.write(join(engagementDir, "pentest_data.db"), "fixture");
-      }
+      },
     });
 
     try {
@@ -60,18 +60,18 @@ describe("pipeline manager", () => {
       await new Promise((resolve) => setTimeout(resolve, 5));
 
       expect(
-        existsSync(join(engagementsDir, "demo-example", "pentest_data.db"))
+        existsSync(join(engagementsDir, "demo-example", "pentest_data.db")),
       ).toBe(true);
       expect(
         existsSync(
-          join(process.cwd(), "engagements", "demo-example", "pentest_data.db")
-        )
+          join(process.cwd(), "engagements", "demo-example", "pentest_data.db"),
+        ),
       ).toBe(false);
     } finally {
       rmSync(engagementsDir, { recursive: true, force: true });
       rmSync(join(process.cwd(), "engagements", "demo-example"), {
         recursive: true,
-        force: true
+        force: true,
       });
     }
   });
@@ -84,14 +84,14 @@ describe("pipeline manager", () => {
       const manager = createPipelineManager();
 
       expect(() => manager.startPipeline("https://example.com")).toThrow(
-        'Unsupported pipeline mode: synth. Expected "real" or "synthetic".'
+        'Unsupported pipeline mode: synth. Expected "real" or "synthetic".',
       );
       expect(manager.getState()).toMatchObject({
         status: "idle",
         target: "",
         engagement: "",
         currentPhase: "",
-        logLines: []
+        logLines: [],
       });
     } finally {
       if (previousMode === undefined) {
@@ -112,11 +112,11 @@ describe("synthetic pipeline", () => {
         target: "https://synthetic.example",
         engagement: "synthetic-example",
         engagementDir,
-        log: () => undefined
+        log: () => undefined,
       });
 
       const db = new Database(join(engagementDir, "pentest_data.db"), {
-        readonly: true
+        readonly: true,
       });
       const counts = db
         .query("SELECT COUNT(*) AS count FROM findings")
@@ -124,10 +124,10 @@ describe("synthetic pipeline", () => {
       db.close();
 
       expect(
-        Bun.file(join(engagementDir, "recon_output.json")).size
+        Bun.file(join(engagementDir, "recon_output.json")).size,
       ).toBeGreaterThan(0);
       expect(
-        Bun.file(join(engagementDir, "exploitation_output.json")).size
+        Bun.file(join(engagementDir, "exploitation_output.json")).size,
       ).toBeGreaterThan(0);
       expect(counts.count).toBeGreaterThan(0);
     } finally {
@@ -146,8 +146,8 @@ describe("burp adapter", () => {
       new Response(null, { status: 201, headers: { location: "/scan/1" } }),
       new Response(JSON.stringify({ scan_status: "running" }), { status: 200 }),
       new Response(JSON.stringify({ scan_status: "succeeded", issues: [] }), {
-        status: 200
-      })
+        status: 200,
+      }),
     ];
 
     try {
@@ -165,11 +165,11 @@ describe("burp adapter", () => {
           },
           spawnFn: () => ({
             kill: () => undefined,
-            exited: Promise.resolve(0)
+            exited: Promise.resolve(0),
           }),
           sleepFn: () => Promise.resolve(),
-          readJsonFile: <T>() => Promise.resolve({ test: true } as T)
-        }
+          readJsonFile: <T>() => Promise.resolve({ test: true } as T),
+        },
       );
 
       expect(result.outputPath).toContain("burp_scan.json");
@@ -195,12 +195,12 @@ describe("claude adapter", () => {
           yield {
             type: "assistant",
             message: {
-              content: [{ type: "text", text: "hello from claude" }]
-            }
+              content: [{ type: "text", text: "hello from claude" }],
+            },
           };
           yield { type: "result", subtype: "success" };
-        }
-      }
+        },
+      },
     });
 
     expect(logs).toContain("hello from claude");

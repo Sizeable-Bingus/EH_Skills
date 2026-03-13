@@ -7,10 +7,10 @@ const srcRoot = resolve(projectRoot, "src");
 const excluded = new Set([
   "src/assets/styles.css",
   "src/types.ts",
-  "src/pipeline/types.ts"
+  "src/pipeline/types.ts",
 ]);
 const minimumFunctions = Number(
-  process.env.COVERAGE_FUNCTIONS_THRESHOLD ?? "100"
+  process.env.COVERAGE_FUNCTIONS_THRESHOLD ?? "100",
 );
 const minimumLines = Number(process.env.COVERAGE_LINES_THRESHOLD ?? "100");
 
@@ -53,13 +53,13 @@ function parseLcov(contents: string): Map<string, CoverageRecord> {
     if (line.startsWith("SF:")) {
       currentPath = relative(
         projectRoot,
-        resolve(projectRoot, line.slice(3))
+        resolve(projectRoot, line.slice(3)),
       ).replaceAll("\\", "/");
       records.set(currentPath, {
         functionsHit: 0,
         functionsFound: 0,
         linesHit: 0,
-        linesFound: 0
+        linesFound: 0,
       });
       continue;
     }
@@ -110,7 +110,7 @@ for (const file of collectSourceFiles(srcRoot)) {
 
   if (functionPct < minimumFunctions || linePct < minimumLines) {
     missingOrPartial.push(
-      `${file}: functions ${functionPct.toFixed(2)}%, lines ${linePct.toFixed(2)}%`
+      `${file}: functions ${functionPct.toFixed(2)}%, lines ${linePct.toFixed(2)}%`,
     );
   }
 }
@@ -119,8 +119,8 @@ if (missingOrPartial.length > 0) {
   throw new Error(
     [
       `Coverage check failed. Required functions=${minimumFunctions}%, lines=${minimumLines}%`,
-      ...missingOrPartial
-    ].join("\n")
+      ...missingOrPartial,
+    ].join("\n"),
   );
 }
 

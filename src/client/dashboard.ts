@@ -1,6 +1,6 @@
 export {
   initializeDashboardPage,
-  type DashboardPageDependencies
+  type DashboardPageDependencies,
 } from "./dashboard_page.ts";
 
 import { initializeDashboardPage } from "./dashboard_page.ts";

@@ -2,7 +2,7 @@ import type {
   EventSourceLike,
   PipelineDomRefs,
   PipelineStatusPayload,
-  WindowLike
+  WindowLike,
 } from "./pipeline_shared.ts";
 
 interface PipelineStatusOptions {
@@ -88,7 +88,7 @@ export function createPipelineStatusController(options: PipelineStatusOptions) {
 
     eventSource.addEventListener("done", (event) => {
       const info = JSON.parse(
-        (event as MessageEvent<string>).data
+        (event as MessageEvent<string>).data,
       ) as PipelineStatusPayload;
       showStatus(info.status, info.current_phase, info.target);
       eventSource?.close();
@@ -118,6 +118,6 @@ export function createPipelineStatusController(options: PipelineStatusOptions) {
 
   return {
     connect,
-    showStatus
+    showStatus,
   };
 }

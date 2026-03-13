@@ -1,7 +1,7 @@
 import type {
   FetchLike,
   PipelineDomRefs,
-  WindowLike
+  WindowLike,
 } from "./pipeline_shared.ts";
 import { getCurrentParams } from "./pipeline_shared.ts";
 
@@ -22,7 +22,7 @@ interface EngagementPickerOptions {
 }
 
 export function createEngagementPickerController(
-  options: EngagementPickerOptions
+  options: EngagementPickerOptions,
 ) {
   const { document, HTMLElementCtor, window, fetchFn, refs } = options;
   let allEngagements: EngagementOption[] = [];
@@ -54,7 +54,7 @@ export function createEngagementPickerController(
   function renderOptions(filter: string): void {
     const query = filter.toLowerCase().trim();
     const filtered = allEngagements.filter((option) =>
-      option.label.toLowerCase().includes(query)
+      option.label.toLowerCase().includes(query),
     );
     const current = getCurrentEngagement() ?? "";
 
@@ -128,7 +128,7 @@ export function createEngagementPickerController(
       function preventDeselect(event) {
         event.preventDefault();
         refs.comboInput.removeEventListener("mouseup", preventDeselect);
-      }
+      },
     );
   });
 
@@ -180,6 +180,6 @@ export function createEngagementPickerController(
   return {
     getCurrentEngagement,
     loadEngagements,
-    updateDeleteButtonVisibility
+    updateDeleteButtonVisibility,
   };
 }

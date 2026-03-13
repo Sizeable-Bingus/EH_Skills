@@ -1,6 +1,6 @@
 export {
   initializePipelineUi,
-  type PipelineUiDependencies
+  type PipelineUiDependencies,
 } from "./pipeline_ui.ts";
 
 import { initializePipelineUi } from "./pipeline_ui.ts";

@@ -5,7 +5,7 @@ import { ingestExploitationOutput } from "../db/ingest.ts";
 import type {
   ExploitationFinding,
   ExploitationOutput,
-  ReconOutput
+  ReconOutput,
 } from "../types.ts";
 import { phaseHeader } from "../utils.ts";
 import type { PipelineExecutionContext, SyntheticArtifacts } from "./types.ts";
@@ -21,7 +21,7 @@ function makeFinding(
   detail: string,
   extra: Partial<
     Omit<ExploitationFinding, "name" | "category" | "severity" | "detail">
-  > = {}
+  > = {},
 ): ExploitationFinding {
   return {
     name,
@@ -37,13 +37,13 @@ function makeFinding(
     impact: extra.impact ?? null,
     affected_asset: extra.affected_asset ?? null,
     remediation: extra.remediation ?? null,
-    attributes: extra.attributes ?? null
+    attributes: extra.attributes ?? null,
   };
 }
 
 export function createSyntheticArtifacts(
   target: string,
-  reconPath: string
+  reconPath: string,
 ): SyntheticArtifacts {
   const now = new Date().toISOString();
   const host = baseHost(target);
@@ -55,10 +55,10 @@ export function createSyntheticArtifacts(
       scope: {
         in_scope: [target],
         out_of_scope: [],
-        rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement"
+        rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement",
       },
       tools_used: ["synthetic-test-generator"],
-      recon_duration_seconds: 0
+      recon_duration_seconds: 0,
     },
     dns: {
       records: {
@@ -68,10 +68,10 @@ export function createSyntheticArtifacts(
         NS: ["ns1.test.synthetic.example"],
         TXT: ["v=spf1 include:_spf.synthetic.example ~all"],
         SOA: ["ns1.test.synthetic.example admin.test.synthetic.example"],
-        CNAME: []
+        CNAME: [],
       },
       zone_transfer_possible: false,
-      nameservers: ["ns1.test.synthetic.example"]
+      nameservers: ["ns1.test.synthetic.example"],
     },
     whois: {
       registrar: "Synthetic Test Registrar Inc.",
@@ -79,7 +79,7 @@ export function createSyntheticArtifacts(
       expiration_date: "2030-01-01T00:00:00Z",
       nameservers: ["ns1.test.synthetic.example"],
       registrant_org: "Synthetic Test Corp",
-      raw: "SYNTHETIC WHOIS DATA — not real"
+      raw: "SYNTHETIC WHOIS DATA — not real",
     },
     subdomains: [
       {
@@ -89,7 +89,7 @@ export function createSyntheticArtifacts(
         http_status: 200,
         title: "SYNTHETIC Test Application",
         server: "nginx/1.18.0",
-        technologies: ["nginx", "PHP/8.1", "jQuery/3.6"]
+        technologies: ["nginx", "PHP/8.1", "jQuery/3.6"],
       },
       {
         hostname: `api.${host}`,
@@ -98,7 +98,7 @@ export function createSyntheticArtifacts(
         http_status: 200,
         title: "SYNTHETIC API Gateway",
         server: "Express",
-        technologies: ["Node.js", "Express"]
+        technologies: ["Node.js", "Express"],
       },
       {
         hostname: `admin.${host}`,
@@ -107,8 +107,8 @@ export function createSyntheticArtifacts(
         http_status: 403,
         title: "SYNTHETIC Admin Panel",
         server: "nginx/1.18.0",
-        technologies: ["nginx", "PHP/8.1"]
-      }
+        technologies: ["nginx", "PHP/8.1"],
+      },
     ],
     ports: [
       {
@@ -117,7 +117,7 @@ export function createSyntheticArtifacts(
         state: "open",
         service: "http",
         version: "nginx 1.18.0",
-        banner: null
+        banner: null,
       },
       {
         host: "192.0.2.1",
@@ -125,7 +125,7 @@ export function createSyntheticArtifacts(
         state: "open",
         service: "https",
         version: "nginx 1.18.0",
-        banner: null
+        banner: null,
       },
       {
         host: "192.0.2.1",
@@ -133,7 +133,7 @@ export function createSyntheticArtifacts(
         state: "filtered",
         service: "ssh",
         version: null,
-        banner: null
+        banner: null,
       },
       {
         host: "192.0.2.1",
@@ -141,7 +141,7 @@ export function createSyntheticArtifacts(
         state: "filtered",
         service: "mysql",
         version: null,
-        banner: null
+        banner: null,
       },
       {
         host: "192.0.2.2",
@@ -149,8 +149,8 @@ export function createSyntheticArtifacts(
         state: "open",
         service: "https",
         version: "Node.js Express",
-        banner: null
-      }
+        banner: null,
+      },
     ],
     web_technologies: {
       server: "nginx/1.18.0",
@@ -163,12 +163,12 @@ export function createSyntheticArtifacts(
       headers: {
         Server: "nginx/1.18.0",
         "X-Powered-By": "PHP/8.1",
-        "Content-Type": "text/html; charset=UTF-8"
+        "Content-Type": "text/html; charset=UTF-8",
       },
       cookies: [
         { name: "PHPSESSID", flags: ["HttpOnly"] },
-        { name: "remember_token", flags: [] }
-      ]
+        { name: "remember_token", flags: [] },
+      ],
     },
     tls: {
       certificate: {
@@ -176,11 +176,11 @@ export function createSyntheticArtifacts(
         issuer: "CN=Synthetic Test CA",
         sans: [host],
         valid_from: "2024-01-01T00:00:00Z",
-        valid_to: "2026-12-31T23:59:59Z"
+        valid_to: "2026-12-31T23:59:59Z",
       },
       protocols: ["TLSv1.2", "TLSv1.3"],
       weak_ciphers: [],
-      issues: []
+      issues: [],
     },
     endpoints: {
       directories: ["/admin", "/api", "/uploads", "/static"],
@@ -188,7 +188,7 @@ export function createSyntheticArtifacts(
         "/api/v1/users",
         "/api/v1/products",
         "/api/v1/orders",
-        "/api/v1/auth/login"
+        "/api/v1/auth/login",
       ],
       admin_panels: ["/admin/login", "/admin/dashboard"],
       login_pages: ["/login", "/admin/login"],
@@ -197,7 +197,7 @@ export function createSyntheticArtifacts(
       from_wayback: ["/old-admin", "/backup"],
       from_robots_txt: ["/admin", "/api/internal"],
       from_sitemap: ["/products", "/about", "/contact"],
-      from_burp_spider: ["/api/v1/health", "/api/v1/debug"]
+      from_burp_spider: ["/api/v1/health", "/api/v1/debug"],
     },
     js_analysis: {
       api_routes_found: ["/api/v1/users", "/api/v1/internal/config"],
@@ -205,8 +205,8 @@ export function createSyntheticArtifacts(
       internal_hosts: ["192.0.2.10"],
       websocket_endpoints: ["wss://ws.synthetic.example/live"],
       interesting_comments: [
-        "// TODO: SYNTHETIC remove debug endpoint before prod"
-      ]
+        "// TODO: SYNTHETIC remove debug endpoint before prod",
+      ],
     },
     security_headers: {
       hsts: null,
@@ -218,8 +218,8 @@ export function createSyntheticArtifacts(
       missing: [
         "Strict-Transport-Security",
         "Content-Security-Policy",
-        "X-XSS-Protection"
-      ]
+        "X-XSS-Protection",
+      ],
     },
     potential_vulnerabilities: [
       {
@@ -228,7 +228,7 @@ export function createSyntheticArtifacts(
         detail:
           "SYNTHETIC: Missing HSTS header allows potential downgrade attacks",
         evidence: "No Strict-Transport-Security header in response",
-        affected_asset: target
+        affected_asset: target,
       },
       {
         type: "exposed_config",
@@ -236,14 +236,14 @@ export function createSyntheticArtifacts(
         detail:
           "SYNTHETIC: .env.example file exposed — may leak configuration patterns",
         evidence: "HTTP 200 on /.env.example",
-        affected_asset: `${target}/.env.example`
+        affected_asset: `${target}/.env.example`,
       },
       {
         type: "cors_wildcard",
         severity: "medium",
         detail: "SYNTHETIC: Wildcard CORS policy allows any origin",
         evidence: "Access-Control-Allow-Origin: *",
-        affected_asset: `${target}/api/v1/`
+        affected_asset: `${target}/api/v1/`,
       },
       {
         type: "hardcoded_secret",
@@ -251,17 +251,17 @@ export function createSyntheticArtifacts(
         detail: "SYNTHETIC: API key found hardcoded in JavaScript bundle",
         evidence:
           "SYNTHETIC_API_KEY=sk-test-not-real-12345 in /static/js/app.js",
-        affected_asset: `${target}/static/js/app.js`
-      }
+        affected_asset: `${target}/static/js/app.js`,
+      },
     ],
     osint: {
       google_dorks_results: [
-        "SYNTHETIC: site:example found test page at /debug"
+        "SYNTHETIC: site:example found test page at /debug",
       ],
       wayback_interesting_urls: [`${target}/old-admin`],
       leaked_credentials: false,
       paste_sites: [],
-      notes: "SYNTHETIC TEST DATA — no real OSINT was performed"
+      notes: "SYNTHETIC TEST DATA — no real OSINT was performed",
     },
     summary: {
       total_subdomains: 3,
@@ -270,14 +270,14 @@ export function createSyntheticArtifacts(
       total_endpoints: 18,
       high_value_targets: [
         `admin.${host} — admin panel`,
-        `api.${host} — API gateway`
+        `api.${host} — API gateway`,
       ],
       recommended_next_steps: [
         "SYNTHETIC: Test /admin/login for default credentials",
         "SYNTHETIC: Test API endpoints for injection vulnerabilities",
-        "SYNTHETIC: Investigate hardcoded API key in JS bundle"
-      ]
-    }
+        "SYNTHETIC: Investigate hardcoded API key in JS bundle",
+      ],
+    },
   };
 
   const exploitation: ExploitationOutput = {
@@ -287,11 +287,11 @@ export function createSyntheticArtifacts(
       scope: {
         in_scope: [target],
         out_of_scope: [],
-        rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement"
+        rules_of_engagement: "SYNTHETIC TEST DATA — not a real engagement",
       },
       tools_used: ["synthetic-test-generator"],
       recon_input: reconPath,
-      exploitation_duration_seconds: 0
+      exploitation_duration_seconds: 0,
     },
     findings: [
       makeFinding(
@@ -311,9 +311,9 @@ export function createSyntheticArtifacts(
           attributes: {
             username: "admin",
             password: "SYNTHETIC_password123",
-            access_level: "admin"
-          }
-        }
+            access_level: "admin",
+          },
+        },
       ),
       makeFinding(
         "JWT none algorithm accepted",
@@ -330,8 +330,8 @@ export function createSyntheticArtifacts(
           affected_asset: `${target}/api/v1/users`,
           remediation:
             "SYNTHETIC: Reject alg:none and pin accepted JWT algorithms server-side.",
-          attributes: { access_level: "user" }
-        }
+          attributes: { access_level: "user" },
+        },
       ),
       makeFinding(
         "Session cookie missing Secure and HttpOnly flags",
@@ -345,9 +345,9 @@ export function createSyntheticArtifacts(
             "SYNTHETIC: Mark session cookies Secure, HttpOnly, and SameSite.",
           attributes: {
             issue_type: "missing_flags",
-            cookie_name: "remember_token"
-          }
-        }
+            cookie_name: "remember_token",
+          },
+        },
       ),
       makeFinding(
         "JWT validation allows unsafe algorithm configuration",
@@ -360,8 +360,8 @@ export function createSyntheticArtifacts(
           affected_asset: `${target}/api/v1/users`,
           remediation:
             "SYNTHETIC: Enforce strong JWT validation and explicit algorithm allowlists.",
-          attributes: { issue_type: "jwt_none" }
-        }
+          attributes: { issue_type: "jwt_none" },
+        },
       ),
       makeFinding(
         "Union SQL injection in product id",
@@ -383,9 +383,9 @@ export function createSyntheticArtifacts(
           attributes: {
             dbms: "mysql",
             payload: "1 UNION SELECT 1,2,version()--",
-            sqlmap_output: null
-          }
-        }
+            sqlmap_output: null,
+          },
+        },
       ),
       makeFinding(
         "Reflected XSS in product search",
@@ -405,9 +405,9 @@ export function createSyntheticArtifacts(
             "SYNTHETIC: Apply context-aware output encoding and input validation.",
           attributes: {
             payload: '<script>alert("SYNTHETIC_XSS")</script>',
-            context: "html_body"
-          }
-        }
+            context: "html_body",
+          },
+        },
       ),
       makeFinding(
         "Stored XSS in order notes",
@@ -428,9 +428,9 @@ export function createSyntheticArtifacts(
             "SYNTHETIC: Sanitize stored HTML and encode untrusted output on render.",
           attributes: {
             payload: '<img src=x onerror=alert("SYNTHETIC_STORED_XSS")>',
-            context: "html_body"
-          }
-        }
+            context: "html_body",
+          },
+        },
       ),
       makeFinding(
         "Path traversal in file API",
@@ -449,9 +449,9 @@ export function createSyntheticArtifacts(
             "SYNTHETIC: Canonicalize paths and enforce an allowlisted base directory.",
           attributes: {
             payload: "../../etc/passwd",
-            files_read: ["/etc/passwd"]
-          }
-        }
+            files_read: ["/etc/passwd"],
+          },
+        },
       ),
       makeFinding(
         "IDOR exposes other user profiles",
@@ -470,8 +470,8 @@ export function createSyntheticArtifacts(
           affected_asset: `${target}/api/v1/users/2`,
           remediation:
             "SYNTHETIC: Enforce object ownership checks on every user lookup.",
-          attributes: { idor_type: "horizontal" }
-        }
+          attributes: { idor_type: "horizontal" },
+        },
       ),
       makeFinding(
         "Mass assignment enables admin role escalation",
@@ -491,9 +491,9 @@ export function createSyntheticArtifacts(
           attributes: {
             from_role: "user",
             to_role: "admin",
-            escalation_type: "vertical"
-          }
-        }
+            escalation_type: "vertical",
+          },
+        },
       ),
       makeFinding(
         "Internal config endpoint exposed without authentication",
@@ -510,8 +510,8 @@ export function createSyntheticArtifacts(
           affected_asset: `${target}/api/v1/internal/config`,
           remediation:
             "SYNTHETIC: Require authentication and authorization for internal endpoints.",
-          attributes: { expected_auth: "Admin authentication required" }
-        }
+          attributes: { expected_auth: "Admin authentication required" },
+        },
       ),
       makeFinding(
         "Login API missing rate limiting",
@@ -529,9 +529,12 @@ export function createSyntheticArtifacts(
           remediation:
             "SYNTHETIC: Add per-account and per-IP throttling with lockout controls.",
           attributes: {
-            tested_endpoints: [`${target}/login`, `${target}/api/v1/auth/login`]
-          }
-        }
+            tested_endpoints: [
+              `${target}/login`,
+              `${target}/api/v1/auth/login`,
+            ],
+          },
+        },
       ),
       makeFinding(
         "SSRF reaches cloud metadata service",
@@ -552,9 +555,9 @@ export function createSyntheticArtifacts(
           attributes: {
             payload: "http://169.254.169.254/latest/meta-data/",
             internal_access: "AWS metadata endpoint",
-            cloud_metadata: true
-          }
-        }
+            cloud_metadata: true,
+          },
+        },
       ),
       makeFinding(
         "CORS reflects arbitrary origins with credentials",
@@ -571,8 +574,8 @@ export function createSyntheticArtifacts(
           affected_asset: `${target}/api/v1/`,
           remediation:
             "SYNTHETIC: Replace origin reflection with an explicit allowlist and disable credentials where unnecessary.",
-          attributes: { cors_type: "arbitrary_origin" }
-        }
+          attributes: { cors_type: "arbitrary_origin" },
+        },
       ),
       makeFinding(
         "Server version disclosed in headers",
@@ -583,8 +586,8 @@ export function createSyntheticArtifacts(
           evidence: "SYNTHETIC: Server: nginx/1.18.0, X-Powered-By: PHP/8.1",
           affected_asset: target,
           remediation:
-            "SYNTHETIC: Remove or generalize version-bearing response headers."
-        }
+            "SYNTHETIC: Remove or generalize version-bearing response headers.",
+        },
       ),
       makeFinding(
         "Outdated client-side library with known exposure",
@@ -596,9 +599,9 @@ export function createSyntheticArtifacts(
           evidence: "SYNTHETIC: jQuery/3.6 detected in page source.",
           affected_asset: `${target}/static/js/vendor.js`,
           remediation:
-            "SYNTHETIC: Upgrade jQuery to the latest approved stable version."
-        }
-      )
+            "SYNTHETIC: Upgrade jQuery to the latest approved stable version.",
+        },
+      ),
     ],
     loot: {
       credentials: [
@@ -608,7 +611,7 @@ export function createSyntheticArtifacts(
           password_hash:
             "$2y$10$SYNTHETIC_HASH_NOT_REAL_abcdefghijklmnopqrstuv",
           password_cracked: null,
-          service: "web application"
+          service: "web application",
         },
         {
           source: "SYNTHETIC: MySQL database via SQLi",
@@ -616,8 +619,8 @@ export function createSyntheticArtifacts(
           password_hash:
             "$2y$10$SYNTHETIC_HASH_NOT_REAL_wxyzabcdefghijklmnopqrs",
           password_cracked: null,
-          service: "internal API"
-        }
+          service: "internal API",
+        },
       ],
       data_exfiltrated: [
         {
@@ -625,9 +628,9 @@ export function createSyntheticArtifacts(
           record_count: 150,
           data_types: ["PII", "credentials"],
           detail:
-            "SYNTHETIC: Extracted 150 user records including emails, hashed passwords, and addresses"
-        }
-      ]
+            "SYNTHETIC: Extracted 150 user records including emails, hashed passwords, and addresses",
+        },
+      ],
     },
     exploitation_chains: [
       {
@@ -639,18 +642,18 @@ export function createSyntheticArtifacts(
               "SYNTHETIC: Exploited union-based SQLi in /api/v1/products?id=",
             vulnerability_used: "sqli",
             result:
-              "SYNTHETIC: Enumerated administrator accounts and backend schema details"
+              "SYNTHETIC: Enumerated administrator accounts and backend schema details",
           },
           {
             order: 2,
             action: "SYNTHETIC: Logged into admin panel at /admin/login",
             vulnerability_used: "default_creds",
-            result: "SYNTHETIC: Full admin access to application"
-          }
+            result: "SYNTHETIC: Full admin access to application",
+          },
         ],
         final_impact:
           "SYNTHETIC: Complete admin takeover — access to all user data and application settings",
-        severity: "critical"
+        severity: "critical",
       },
       {
         name: "SYNTHETIC: SSRF to Cloud Metadata",
@@ -660,34 +663,34 @@ export function createSyntheticArtifacts(
             action:
               "SYNTHETIC: Sent SSRF payload to /api/v1/fetch?url=http://169.254.169.254/",
             vulnerability_used: "ssrf",
-            result: "SYNTHETIC: Retrieved AWS metadata endpoint listing"
+            result: "SYNTHETIC: Retrieved AWS metadata endpoint listing",
           },
           {
             order: 2,
             action: "SYNTHETIC: Fetched IAM role credentials from metadata",
             vulnerability_used: "ssrf",
-            result: "SYNTHETIC: Obtained temporary AWS access keys"
-          }
+            result: "SYNTHETIC: Obtained temporary AWS access keys",
+          },
         ],
         final_impact:
           "SYNTHETIC: AWS IAM credential theft via SSRF — potential cloud account compromise",
-        severity: "critical"
-      }
-    ]
+        severity: "critical",
+      },
+    ],
   };
 
   return { recon: recon as Record<string, unknown>, exploitation };
 }
 
 export async function runSyntheticPipeline(
-  context: PipelineExecutionContext
+  context: PipelineExecutionContext,
 ): Promise<void> {
   mkdirSync(context.engagementDir, { recursive: true });
 
   const reconPath = join(context.engagementDir, "recon_output.json");
   const exploitationPath = join(
     context.engagementDir,
-    "exploitation_output.json"
+    "exploitation_output.json",
   );
   const dbPath = join(context.engagementDir, "pentest_data.db");
 
@@ -696,7 +699,7 @@ export async function runSyntheticPipeline(
   }
   if (context.username || context.password) {
     context.log(
-      `[creds] Username: ${context.username ?? "(none)"}, Password: ${context.password ? "***" : "(none)"}`
+      `[creds] Username: ${context.username ?? "(none)"}, Password: ${context.password ? "***" : "(none)"}`,
     );
   }
 
@@ -711,7 +714,7 @@ export async function runSyntheticPipeline(
   }
   if (context.username || context.password) {
     context.log(
-      `[creds] Username: ${context.username ?? "(none)"}, Password: ${context.password ? "***" : "(none)"}`
+      `[creds] Username: ${context.username ?? "(none)"}, Password: ${context.password ? "***" : "(none)"}`,
     );
   }
 
@@ -729,20 +732,20 @@ export async function runSyntheticPipeline(
           evidence:
             "SYNTHETIC: Login succeeded with the supplied username and password.",
           affected_asset: `${context.target}/login`,
-          attributes: { username: context.username }
-        }
-      )
+          attributes: { username: context.username },
+        },
+      ),
     );
   }
 
   await Bun.write(
     exploitationPath,
-    JSON.stringify(artifacts.exploitation, null, 2)
+    JSON.stringify(artifacts.exploitation, null, 2),
   );
   context.log(`[ok] Wrote synthetic exploitation → ${exploitationPath}`);
   ingestExploitationOutput(artifacts.exploitation, dbPath, {
     force: true,
-    includeAll: true
+    includeAll: true,
   });
 
   context.log("");

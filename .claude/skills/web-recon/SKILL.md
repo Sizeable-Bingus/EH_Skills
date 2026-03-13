@@ -43,13 +43,13 @@ TARGET_DIR="engagements/<sanitized-target>"
 mkdir -p "$TARGET_DIR/scans"
 ```
 
-| File / Dir                              | Contents                              |
-|-----------------------------------------|---------------------------------------|
-| `$TARGET_DIR/recon_output.json`         | Final structured recon output         |
-| `$TARGET_DIR/scans/gobuster_*.txt`      | Directory/file brute-force results    |
-| `$TARGET_DIR/scans/nuclei_output.txt`   | Nuclei scan results                   |
-| `$TARGET_DIR/scans/live_subs.txt`       | Live subdomain probe results          |
-| `$TARGET_DIR/scans/whatweb_*.txt`       | WhatWeb fingerprint output            |
+| File / Dir                            | Contents                           |
+| ------------------------------------- | ---------------------------------- |
+| `$TARGET_DIR/recon_output.json`       | Final structured recon output      |
+| `$TARGET_DIR/scans/gobuster_*.txt`    | Directory/file brute-force results |
+| `$TARGET_DIR/scans/nuclei_output.txt` | Nuclei scan results                |
+| `$TARGET_DIR/scans/live_subs.txt`     | Live subdomain probe results       |
+| `$TARGET_DIR/scans/whatweb_*.txt`     | WhatWeb fingerprint output         |
 
 Always use `$TARGET_DIR` when writing any output file. Never write to the project root.
 
@@ -85,6 +85,7 @@ Store scope as a JSON object — you'll include it in the final output.
 ### 2.1 DNS Enumeration
 
 Query with `dig` or `dnspython`:
+
 - A, AAAA, CNAME, MX, NS, TXT, SOA records
 - SPF/DMARC/DKIM records (from TXT) — these leak internal mail infrastructure
 - Zone transfer attempt (`dig axfr`) — often blocked, but worth trying
@@ -106,6 +107,7 @@ Extract: registrar, creation/expiration dates, nameservers, registrant org.
 ### 2.3 Subdomain Discovery (Passive)
 
 - **Certificate Transparency**: Query `crt.sh`
+
   ```bash
   curl -s "https://crt.sh/?q=%25.<domain>&output=json" | python3 -c "
   import json, sys
@@ -163,6 +165,7 @@ curl -sI https://<domain> | head -30
 ```
 
 Capture:
+
 - Server header (Apache, nginx, IIS, etc.)
 - X-Powered-By, X-AspNet-Version, X-Generator
 - Set-Cookie (session naming conventions reveal frameworks)
@@ -170,6 +173,7 @@ Capture:
 - Security headers present/absent (HSTS, X-Frame-Options, X-Content-Type-Options)
 
 If **whatweb** is available:
+
 ```bash
 whatweb -v <url>
 ```
@@ -201,6 +205,7 @@ gobuster dir -u https://<domain> -w SecLists/Discovery/Web-Content/common.txt -t
 ```
 
 Key things to look for:
+
 - `/robots.txt`, `/sitemap.xml` — often reveal hidden paths
 - `/.git/`, `/.env`, `/.svn/` — exposed version control or config
 - `/api/`, `/graphql`, `/swagger.json`, `/openapi.json` — API documentation
@@ -208,6 +213,7 @@ Key things to look for:
 - `/backup`, `/old`, `/test` — forgotten resources
 
 **Wordlist selection** (all under `SecLists/Discovery/Web-Content/`):
+
 - `common.txt` — quick first pass (~4,700 entries), good for a fast sweep
 - `raft-medium-directories.txt` / `raft-medium-files.txt` — broader coverage, good default for thorough scans
 - `directory-list-2.3-medium.txt` — large general-purpose list for deep coverage
@@ -237,6 +243,7 @@ Add any discovered vhosts to the subdomains list.
 ### 3.6 Burp Suite Integration
 
 When a Burp MCP server is available, use it for:
+
 - Spidering/crawling to discover dynamic and JS-rendered endpoints
 - Pulling passive scan results and sitemap
 - Inspecting captured requests/responses
@@ -249,6 +256,7 @@ curl -s https://<domain> | grep -oP 'src="[^"]*\.js[^"]*"' | sed 's/src="//;s/"/
 ```
 
 In discovered JS files, search for:
+
 - API endpoints and routes
 - Hardcoded keys, tokens, or credentials
 - Internal hostnames or IP addresses
@@ -276,6 +284,7 @@ Merge all findings into the output JSON schema.
 ## Phase 5: Handoff
 
 After writing the JSON output file, provide a brief summary highlighting:
+
 - **Attack surface size**: number of live subdomains, discovered endpoints
 - **High-value targets**: admin panels, exposed APIs, misconfigured services
 - **Notable findings**: anything unusual, leaked credentials, outdated software
@@ -422,15 +431,15 @@ Write the final output to `$TARGET_DIR/recon_output.json`. Use this exact struct
 
 Check with `which <tool>` before use. Fallbacks:
 
-| Preferred        | Fallback                         |
-|------------------|----------------------------------|
-| `subfinder`      | crt.sh API + manual DNS bruteforce |
-| `gobuster`       | Python requests + wordlist       |
-| `whatweb`        | curl + header analysis           |
-| `httpx`          | Python requests probe            |
-| `sslyze`         | openssl s_client                 |
-| `dig`            | `dnspython` library              |
-| Burp MCP         | Manual crawling with curl/requests |
+| Preferred   | Fallback                           |
+| ----------- | ---------------------------------- |
+| `subfinder` | crt.sh API + manual DNS bruteforce |
+| `gobuster`  | Python requests + wordlist         |
+| `whatweb`   | curl + header analysis             |
+| `httpx`     | Python requests probe              |
+| `sslyze`    | openssl s_client                   |
+| `dig`       | `dnspython` library                |
+| Burp MCP    | Manual crawling with curl/requests |
 
 Note any fallback limitations in the output.
 
@@ -450,4 +459,3 @@ Run independent tasks concurrently using subagents:
   Subdomain validation (needs subdomain list), JS analysis (needs endpoint list)
 
 Use the Agent tool to spawn subagents when the workload justifies it.
-

@@ -3,11 +3,11 @@ export interface FindingsPageDependencies {
 }
 
 export function initializeFindingsPage(
-  dependencies: FindingsPageDependencies = {}
+  dependencies: FindingsPageDependencies = {},
 ): void {
   const documentRef = dependencies.document ?? document;
   const buttons = documentRef.querySelectorAll<HTMLButtonElement>(
-    "[data-detail-toggle]"
+    "[data-detail-toggle]",
   );
 
   for (const button of buttons) {
