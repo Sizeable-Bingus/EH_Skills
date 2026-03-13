@@ -58,11 +58,30 @@ Users can delete a selected engagement from the UI. Deletion removes the entire 
 
 ## API Endpoints
 
+### Page data (JSON)
+
+These mirror the HTML page routes and return the same view-model data as JSON. All accept an optional `engagement` query parameter; when omitted, the server resolves to the most recent engagement.
+
+- `GET /api/summary` — engagement metadata, severity breakdown, scope
+- `GET /api/findings` — findings list (also accepts `severity` and `category` filters)
+- `GET /api/chains` — attack chains
+- `GET /api/loot` — credentials and loot
+
+Invalid engagement names return `404` with `{ "detail": "Unknown engagement: <name>" }`.
+
+### Pipeline
+
 - `POST /api/pipeline/start` — start a pipeline run with target and optional credentials
 - `GET /api/pipeline/status` — current pipeline state (status, target, phase, log count)
 - `GET /api/pipeline/stream` — SSE stream for real-time pipeline execution logs
+
+### Engagements
+
 - `GET /api/engagements` — list all valid engagement directory names
 - `DELETE /api/engagements/{name}` — delete an engagement directory (blocked while pipeline targets it)
+
+### Static assets
+
 - `/static/*` — built client assets served from `dist/public/`
 
 ## Pipeline Behavior

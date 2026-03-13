@@ -56,5 +56,5 @@ A task is done when:
 
 - the requested behavior is implemented
 - relevant docs are updated
-- `bun run validate` passes
+- `bun run validate` passes (including any "pre-existing" issues)
 - remaining risks or unknowns are written down

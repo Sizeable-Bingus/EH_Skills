@@ -338,6 +338,83 @@ describe("page rendering branches and deletion behavior", () => {
       console.error = originalConsoleError;
     }
   });
+
+  test("JSON API endpoints return data for all four pages", async () => {
+    const base = createSyntheticArtifacts(
+      "https://api.example",
+      "/tmp/recon.json",
+    ).exploitation;
+    const dbPath = join(engagementsDir, "apitest", "pentest_data.db");
+    mkdirSync(join(engagementsDir, "apitest"), { recursive: true });
+    ingestExploitationOutput(base, dbPath, { includeAll: true });
+
+    const app = createApp({ engagementsDir });
+
+    const summary = await app.request("/api/summary?engagement=apitest");
+    expect(summary.status).toBe(200);
+    const summaryJson = await summary.json();
+    expect(summaryJson).toHaveProperty("engagement");
+
+    const findings = await app.request(
+      "/api/findings?engagement=apitest&severity=high",
+    );
+    expect(findings.status).toBe(200);
+    const findingsJson = await findings.json();
+    expect(findingsJson).toHaveProperty("findings");
+
+    const chains = await app.request("/api/chains?engagement=apitest");
+    expect(chains.status).toBe(200);
+    const chainsJson = await chains.json();
+    expect(chainsJson).toHaveProperty("chains");
+
+    const loot = await app.request("/api/loot?engagement=apitest");
+    expect(loot.status).toBe(200);
+    const lootJson = await loot.json();
+    expect(lootJson).toHaveProperty("credentials");
+  });
+
+  test("JSON API endpoints return 404 JSON for unknown engagements", async () => {
+    const app = createApp({ engagementsDir });
+
+    for (const path of [
+      "/api/summary?engagement=missing",
+      "/api/findings?engagement=missing",
+      "/api/chains?engagement=missing",
+      "/api/loot?engagement=missing",
+    ]) {
+      const response = await app.request(path);
+      expect(response.status).toBe(404);
+      const body = await response.json();
+      expect(body).toEqual({ detail: "Unknown engagement: missing" });
+    }
+  });
+
+  test("JSON API endpoints return 500 JSON for broken databases", async () => {
+    mkdirSync(join(engagementsDir, "broken"), { recursive: true });
+    await Bun.write(
+      join(engagementsDir, "broken", "pentest_data.db"),
+      "not sqlite",
+    );
+    const app = createApp({ engagementsDir });
+    const originalConsoleError = console.error;
+    console.error = () => undefined;
+
+    try {
+      for (const path of [
+        "/api/summary?engagement=broken",
+        "/api/findings?engagement=broken",
+        "/api/chains?engagement=broken",
+        "/api/loot?engagement=broken",
+      ]) {
+        const response = await app.request(path);
+        expect(response.status).toBe(500);
+        const body = await response.json();
+        expect(body).toEqual({ detail: "Internal Server Error" });
+      }
+    } finally {
+      console.error = originalConsoleError;
+    }
+  });
 });
 
 describe("startServer", () => {

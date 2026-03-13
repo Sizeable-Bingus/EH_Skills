@@ -21,7 +21,7 @@
 `src/server.tsx` defines the Hono application and serves:
 
 - HTML pages for summary, findings, chains, and loot
-- JSON endpoints for pipeline start/status and engagement listing/deletion
+- JSON endpoints for page data (summary, findings, chains, loot), pipeline start/status, and engagement listing/deletion
 - an SSE endpoint for streaming pipeline log output
 - static assets from `dist/public/`
 
@@ -108,6 +108,24 @@ The app still treats an engagement directory as selectable when `pentest_data.db
 2. `src/server.tsx` resolves the engagement database path.
 3. `src/db/dashboard.ts` loads and shapes the page model.
 4. Hono renders the TSX response.
+
+### JSON API requests
+
+The `/api/` prefix exposes the same page data as the HTML routes in JSON form:
+
+| Endpoint                        | Query Params                                      | Returns                                                             |
+| ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| `GET /api/summary`              | `engagement`                                      | Summary view model (engagement metadata, severity breakdown, scope) |
+| `GET /api/findings`             | `engagement`, `severity`, `category`              | Findings list with optional severity/category filters               |
+| `GET /api/chains`               | `engagement`                                      | Attack chains list                                                  |
+| `GET /api/loot`                 | `engagement`                                      | Credentials and loot                                                |
+| `GET /api/engagements`          | —                                                 | List of engagement names                                            |
+| `DELETE /api/engagements/:name` | —                                                 | Deletes an engagement directory                                     |
+| `POST /api/pipeline/start`      | — (JSON body: `target`, `username?`, `password?`) | Starts a pipeline run                                               |
+| `GET /api/pipeline/status`      | —                                                 | Current pipeline state                                              |
+| `GET /api/pipeline/stream`      | —                                                 | SSE stream of pipeline log lines                                    |
+
+The `engagement` query parameter selects the target engagement; when omitted, the server resolves to the most recent one. Invalid engagement names return `404` with `{ "detail": "Unknown engagement: <name>" }`. Non-engagement errors on `/api/` routes return `500` with `{ "detail": "Internal Server Error" }`.
 
 ### Starting a scan
 
