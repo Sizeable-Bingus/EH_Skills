@@ -3,9 +3,14 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import type { MiddlewareHandler } from "hono";
 
 import { createPipelineManager } from "../src/pipeline/manager.ts";
 import { createApp } from "../src/server.tsx";
+
+const noopAuth: MiddlewareHandler = async (_c, next) => {
+  await next();
+};
 
 const fixtureDb = join(
   process.cwd(),
@@ -16,7 +21,7 @@ const fixtureDb = join(
 
 describe("route responses", () => {
   test("renders cross-engagement dashboard at root", async () => {
-    const app = createApp();
+    const app = createApp({ authMiddleware: noopAuth });
     const response = await app.request("/");
 
     expect(response.status).toBe(200);
@@ -26,7 +31,7 @@ describe("route responses", () => {
   });
 
   test("renders all four engagement pages", async () => {
-    const app = createApp();
+    const app = createApp({ authMiddleware: noopAuth });
 
     const summary = await app.request("/summary");
     const findings = await app.request("/findings?engagement=example-com");
@@ -44,7 +49,7 @@ describe("route responses", () => {
   });
 
   test("serves built static assets under /static", async () => {
-    const app = createApp();
+    const app = createApp({ authMiddleware: noopAuth });
     const response = await app.request("/static/styles.css");
 
     expect(response.status).toBe(200);
@@ -69,7 +74,10 @@ describe("engagement APIs", () => {
   test("lists valid engagements only", async () => {
     mkdirSync(join(engagementRoot, "empty-dir"), { recursive: true });
 
-    const app = createApp({ engagementsDir: engagementRoot });
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      authMiddleware: noopAuth,
+    });
     const response = await app.request("/api/engagements");
 
     expect(response.status).toBe(200);
@@ -77,7 +85,10 @@ describe("engagement APIs", () => {
   });
 
   test("renders dashboard pages from the configured engagements root", async () => {
-    const app = createApp({ engagementsDir: engagementRoot });
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      authMiddleware: noopAuth,
+    });
     const response = await app.request("/findings?engagement=demo");
 
     expect(response.status).toBe(200);
@@ -85,7 +96,10 @@ describe("engagement APIs", () => {
   });
 
   test("loads the latest engagement from the configured root by default", async () => {
-    const app = createApp({ engagementsDir: engagementRoot });
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      authMiddleware: noopAuth,
+    });
     const response = await app.request("/summary");
 
     expect(response.status).toBe(200);
@@ -105,6 +119,7 @@ describe("engagement APIs", () => {
     const app = createApp({
       engagementsDir: engagementRoot,
       pipelineManager: manager,
+      authMiddleware: noopAuth,
     });
     const response = await app.request("/api/engagements/demo", {
       method: "DELETE",
@@ -123,6 +138,7 @@ describe("engagement APIs", () => {
         modeResolver: () => "synthetic",
         syntheticRunner: () => Promise.resolve(),
       }),
+      authMiddleware: noopAuth,
     });
 
     const response = await app.request("/api/engagements/demo", {
@@ -137,7 +153,10 @@ describe("engagement APIs", () => {
   });
 
   test("renders cross-engagement dashboard with configured root", async () => {
-    const app = createApp({ engagementsDir: engagementRoot });
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      authMiddleware: noopAuth,
+    });
     const response = await app.request("/");
 
     expect(response.status).toBe(200);
@@ -147,7 +166,10 @@ describe("engagement APIs", () => {
   });
 
   test("returns 404 for unknown engagements on page routes", async () => {
-    const app = createApp({ engagementsDir: engagementRoot });
+    const app = createApp({
+      engagementsDir: engagementRoot,
+      authMiddleware: noopAuth,
+    });
 
     for (const path of [
       "/summary?engagement=missing",
