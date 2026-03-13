@@ -1,4 +1,5 @@
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import type { JWTPayload } from "jose";
 import type { MiddlewareHandler } from "hono";
 
 export interface AuthConfig {
@@ -34,20 +35,21 @@ export function createAuthMiddleware(config: AuthConfig): MiddlewareHandler {
     }
 
     const token = authHeader.slice(7);
+    let payload: JWTPayload;
     try {
-      const { payload } = await jwtVerify(token, jwks, {
+      ({ payload } = await jwtVerify(token, jwks, {
         audience: config.clientId,
         issuer: `https://login.microsoftonline.com/${config.tenantId}/v2.0`,
-      });
-
-      if (payload.tid !== config.tenantId) {
-        return c.json({ detail: "Token tenant mismatch" }, 403);
-      }
-
-      c.set("authPayload", payload);
-      await next();
+      }));
     } catch {
       return c.json({ detail: "Invalid or expired token" }, 401);
     }
+
+    if (payload.tid !== config.tenantId) {
+      return c.json({ detail: "Token tenant mismatch" }, 403);
+    }
+
+    c.set("authPayload", payload);
+    await next();
   };
 }
