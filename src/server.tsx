@@ -56,10 +56,15 @@ export function createApp(options: AppOptions = {}): Hono {
 
   const app = new Hono();
   app.onError((error, c) => {
+    const isApi = c.req.path.startsWith("/api/");
     if (error instanceof UnknownEngagementError) {
-      return c.text(error.message, 404);
+      return isApi
+        ? c.json({ detail: error.message }, 404)
+        : c.text(error.message, 404);
     }
-    return c.text("Internal Server Error", 500);
+    return isApi
+      ? c.json({ detail: "Internal Server Error" }, 500)
+      : c.text("Internal Server Error", 500);
   });
 
   function resolvePageEngagement(engagement: string) {
@@ -129,6 +134,35 @@ export function createApp(options: AppOptions = {}): Hono {
         currentEngagement={currentEngagement}
       />,
     );
+  });
+
+  app.get("/api/summary", (c) => {
+    const currentEngagement = c.req.query("engagement") ?? "";
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.json(getSummaryPage(resolved.dbPath, resolved.engagementId));
+  });
+
+  app.get("/api/findings", (c) => {
+    const currentEngagement = c.req.query("engagement") ?? "";
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.json(
+      getFindingsPage(resolved.dbPath, resolved.engagementId, {
+        severity: c.req.query("severity") ?? null,
+        category: c.req.query("category") ?? null,
+      }),
+    );
+  });
+
+  app.get("/api/chains", (c) => {
+    const currentEngagement = c.req.query("engagement") ?? "";
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.json(getChainsPage(resolved.dbPath, resolved.engagementId));
+  });
+
+  app.get("/api/loot", (c) => {
+    const currentEngagement = c.req.query("engagement") ?? "";
+    const resolved = resolvePageEngagement(currentEngagement);
+    return c.json(getLootPage(resolved.dbPath, resolved.engagementId));
   });
 
   app.post("/api/pipeline/start", async (c) => {
