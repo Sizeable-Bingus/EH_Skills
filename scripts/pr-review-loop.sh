@@ -26,6 +26,7 @@ Defaults:
 
 The PR number defaults to the current branch's PR via `gh pr view`.
 For `watch`, the timeout resets whenever the local `HEAD` commit changes.
+The watch loop exits early if a +1 reaction from chatgpt-codex-connector[bot] is detected.
 EOF
 }
 
@@ -90,6 +91,21 @@ fetch_unresolved_threads() {
     -F repo="$repo" \
     -F number="$pr_number" \
     --jq '[.data.repository.pullRequest.reviewThreads.nodes[] | select(.isResolved == false) | {thread_id: .id} + (.comments.nodes[0] | {body, path, line, user: .author.login, created_at: .createdAt})]'
+}
+
+check_pr_approved_reaction() {
+  local owner="$1"
+  local repo="$2"
+  local pr_number="$3"
+
+  local count
+  count="$(gh api "repos/$owner/$repo/issues/$pr_number/reactions" \
+    --jq '[.[] | select(.content == "+1" and .user.login == "chatgpt-codex-connector[bot]")] | length')"
+
+  if (( count > 0 )); then
+    return 0
+  fi
+  return 1
 }
 
 current_head_commit() {
@@ -162,6 +178,11 @@ watch_loop() {
       "$tracked_head" \
       "$timeout_started_at" \
       "$(epoch_to_iso "$deadline")"
+
+    if check_pr_approved_reaction "$owner" "$repo" "$pr_number"; then
+      echo '{"event":"approved","reactor":"chatgpt-codex-connector[bot]","pr":'"$pr_number"'}'
+      break
+    fi
 
     now_epoch="$(date +%s)"
     if (( now_epoch >= deadline )); then

@@ -39,6 +39,7 @@ Repeat steps 2–5 until the code review comes back clean.
    - `scripts/pr-review-loop.sh watch --interval 30 --timeout 600`
    - The script defaults to the current branch's PR via `gh pr view`.
    - The watch timeout resets after each local commit so the loop stays alive while fixes are being pushed.
+   - The loop exits early if a 👍 reaction from `chatgpt-codex-connector[bot]` is detected on the PR.
    - Use `scripts/pr-review-loop.sh status` for a one-shot snapshot.
 3. Implement fixes for each comment.
 4. Resolve review threads after the fix is pushed:

@@ -23,14 +23,15 @@ The current product is aimed at internal security operators working on authorize
 
 ### 1. Review the latest engagement
 
-The dashboard serves four read-focused views over a selected engagement:
+The dashboard serves five views:
 
-- `Executive Summary` at `/`
+- `Cross-Engagement Dashboard` at `/` — an overview across all engagements (not engagement-specific)
+- `Executive Summary` at `/summary`
 - `Findings` at `/findings`
 - `Attack Chains` at `/chains`
 - `Compromised Credentials` at `/loot`
 
-If no `engagement` query parameter is provided, the dashboard loads the latest engagement from the default SQLite database.
+The per-engagement views (`/summary`, `/findings`, `/chains`, `/loot`) accept an `engagement` query parameter. If omitted, the dashboard loads the latest engagement from the default SQLite database.
 
 ### 2. Switch between engagements
 
@@ -141,6 +142,14 @@ The dashboard reads from `pentest_data.db` (schema managed by `src/db/schema.ts`
 
 ## Security
 
+### Authentication
+
+Azure AD (Entra ID) JWT authentication gates access to all non-static routes. The middleware verifies Bearer tokens against Microsoft's JWKS endpoint, validating the audience, issuer, and tenant (`tid`) claims. Requests with missing, invalid, or wrong-tenant tokens receive 401 or 403 JSON errors.
+
+Authentication can be disabled entirely with `AUTH_DISABLED=true` for local development. There is no per-user role system beyond tenant-level access control.
+
+### Security headers
+
 The server applies security headers via middleware:
 
 - `Content-Security-Policy` (self-only scripts, inline styles)
@@ -153,7 +162,6 @@ Engagement names are normalized via `basename()` to prevent path traversal.
 ## Current Constraints
 
 - The product is read-only from the dashboard except for starting scans and deleting engagements.
-- There is no user authentication or role system in the app today.
 - The dashboard assumes the pipeline writes data using the existing SQLite schema.
 - Pipeline execution is process-local and in-memory; restarting the app loses live status state.
 - The target authorization warning is UI text only; server-side authorization enforcement is not implemented.
@@ -162,7 +170,7 @@ Engagement names are normalized via `basename()` to prevent path traversal.
 
 The current codebase does not implement:
 
-- multi-user coordination
+- multi-user coordination (Azure AD authenticates users but does not provide per-user roles or session tracking)
 - concurrent pipeline runs
 - persistent job history beyond on-disk artifacts
 - API endpoints for editing findings or report content

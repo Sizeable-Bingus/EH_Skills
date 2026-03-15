@@ -3,7 +3,7 @@
 ## Repo Structure
 
 - `src/server.tsx`: Bun entrypoint and Hono route registration
-- `src/pages/`: TSX layouts and page components for summary, findings, chains, and loot
+- `src/pages/`: TSX layouts and page components for dashboard, summary, findings, chains, and loot
 - `src/client/`: browser TypeScript for pipeline controls, findings expansion, and summary charts
 - `src/db/`: `bun:sqlite` query shaping plus shared SQLite schema/ingestion logic
 - `src/pipeline/`: in-process pipeline manager, Burp adapter, Claude adapter, real pipeline, and synthetic pipeline
@@ -20,7 +20,7 @@
 
 `src/server.tsx` defines the Hono application and serves:
 
-- HTML pages for summary, findings, chains, and loot
+- HTML pages for the cross-engagement dashboard, summary, findings, chains, and loot
 - JSON endpoints for page data (summary, findings, chains, loot), pipeline start/status, and engagement listing/deletion
 - an SSE endpoint for streaming pipeline log output
 - static assets from `dist/public/`
@@ -50,6 +50,7 @@ The middleware is injectable via `AppOptions.authMiddleware` for test isolation.
 - `dist/public/pipeline.js`
 - `dist/public/findings.js`
 - `dist/public/executive_summary.js`
+- `dist/public/dashboard.js`
 - `dist/public/styles.css`
 
 Chart rendering now uses the bundled `chart.js` npm dependency instead of a CDN script.
@@ -123,7 +124,7 @@ The app still treats an engagement directory as selectable when `pentest_data.db
 
 ### JSON API requests
 
-The `/api/` prefix exposes the same page data as the HTML routes in JSON form:
+The `/api/` prefix exposes page data in JSON form. The cross-engagement dashboard (`/`) has no corresponding JSON API endpoint; the remaining per-engagement pages are mirrored:
 
 | Endpoint                        | Query Params                                      | Returns                                                             |
 | ------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
@@ -164,6 +165,7 @@ Current environment variables used by the code:
 - `PENTEST_DASHBOARD_ENGAGEMENT_ID`: fallback engagement ID when the DB is missing or empty
 - `PENTEST_CLAUDE_MODEL`: optional Claude model override for the real pipeline
 - `BURP_JAR`, `BURP_JAVA`, `BURP_REST_API`, `BURP_MCP_SSE`: Burp runtime overrides
+- `PENTEST_ENGAGEMENTS_DIR`: overrides the default engagements directory (used by `scripts/start-server.ts` and Playwright config)
 - `PENTEST_SKIP_ASSET_BUILD`: skips the client bundle step on server startup
 - `AZURE_CLIENT_ID`: Azure AD app registration client ID (expected `aud` claim)
 - `AZURE_TENANT_ID`: Azure AD tenant ID (for JWKS URL, issuer, and `tid` claim)
